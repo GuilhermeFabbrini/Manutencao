@@ -91,9 +91,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--czc);color:#0F
 .fg textarea{resize:vertical;min-height:60px}
 .bsv{background:linear-gradient(135deg,var(--az3),var(--az2));color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:800;width:100%;cursor:pointer;margin-top:12px}
 .bsv:disabled{background:#94A3B8;cursor:not-allowed}
-.hi{background:var(--czc);border-radius:12px;padding:12px;margin-bottom:8px;border-left:3px solid var(--az2)}
+.hi{background:var(--czc);border-radius:12px;padding:12px;margin-bottom:8px;border-left:3px solid var(--az2);position:relative}
 .hi b{font-size:13px;color:var(--az3)}
 .hi small{font-size:11px;color:var(--cz);display:block;margin-top:4px}
+.btn-excluir{position:absolute;top:8px;right:8px;background:#FEE2E2;border:none;color:var(--vm);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.btn-excluir:hover{background:var(--vm);color:#fff}
 @keyframes piscaBorda{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
 @keyframes pisca{0%,100%{opacity:1}50%{opacity:.4}}
 .ac{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:var(--sh);border:1px solid var(--czm)}
@@ -144,7 +146,7 @@ tbody tr:hover td{background:#EEF2FF}
   <div style="color:#93C5FD;font-size:14px;font-style:italic;margin-top:4px">Transportes</div>
   <div style="color:#64748B;font-size:12px;margin-top:8px">Manutenção Preventiva</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
-  <div style="color:#475569;font-size:11px;margin-top:12px">v3.0 · 35 Veículos</div>
+  <div style="color:#475569;font-size:11px;margin-top:12px">v3.1 · 35 Veículos</div>
 </div>
 <div id="loginScreen">
   <div class="estrelas"></div>
@@ -157,13 +159,9 @@ tbody tr:hover td{background:#EEF2FF}
       <rect x="5" y="60" width="130" height="3" rx="1" fill="rgba(255,255,255,.15)"/>
       <text x="70" y="48" text-anchor="middle" font-size="11" font-weight="900" fill="white" font-family="Arial Black,sans-serif" letter-spacing="1">ANDRIONI</text>
       <text x="70" y="61" text-anchor="middle" font-size="8" fill="#93C5FD" font-family="Georgia,serif" font-style="italic">Transportes</text>
-      <polygon points="12,52 8,60 16,60" fill="white" opacity=".8"/>
       <rect x="140" y="28" width="50" height="42" rx="4" fill="#243280"/>
       <rect x="150" y="31" width="32" height="22" rx="3" fill="#7DD3FC" opacity=".7"/>
-      <rect x="152" y="33" width="10" height="6" rx="2" fill="rgba(255,255,255,.5)"/>
-      <rect x="184" y="42" width="12" height="18" rx="2" fill="#1B2A6B"/>
       <rect x="188" y="36" width="8" height="5" rx="1" fill="#FEF3C7"/>
-      <rect x="194" y="30" width="4" height="8" rx="1" fill="#374151"/>
       <rect x="8" y="70" width="180" height="6" rx="2" fill="#374151"/>
       <circle cx="30" cy="76" r="13" fill="#1F2937"/><circle cx="30" cy="76" r="8" fill="#374151"/><circle cx="30" cy="76" r="3" fill="#6B7280"/>
       <circle cx="55" cy="76" r="13" fill="#1F2937"/><circle cx="55" cy="76" r="8" fill="#374151"/><circle cx="55" cy="76" r="3" fill="#6B7280"/>
@@ -336,7 +334,7 @@ const TRUCKS=[
   {p:"QSR1C39",m:"VW/26.320 CRM 6X7",t:"Frango"},{p:"UFN3H70",m:"VW/26.320 CRM 6X8",t:"Frango"},
   {p:"QSP2D07",m:"VW/26.320 CRM 6X9",t:"Frango"},{p:"UDX7I09",m:"VW/26.320 CRM 6X10",t:"Frango"},
   {p:"SWP7B26",m:"VW/26.320 CRM 6X11",t:"Frango"},{p:"UGU3E16",m:"VW/26.320 CRM 6X12",t:"Frango"},
-  {p:"FWE2C61",m:"SCANIA",t:"Oveira"},{p:"TJH8H67",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
+  {p:"FWB2C61",m:"SCANIA",t:"Oveira"},{p:"TJH8H67",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
   {p:"TIV7G01",m:"VW/18.260 CRM 4X2",t:"Pinteira"},{p:"TJN9H92",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
   {p:"TJJ6H61",m:"SCANIA/P280 B6X2",t:"Oveira"},{p:"TJV5C01",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
   {p:"TJB0H74",m:"VW/18.260 CRM 4X2",t:"Pinteira"},{p:"TJJ2A70",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
@@ -356,21 +354,7 @@ function gU(){try{var s=localStorage.getItem('ul3');return s?JSON.parse(s):null;
 function sU(u){try{localStorage.setItem('ul3',JSON.stringify(u));}catch(e){}}
 function dU(){try{localStorage.removeItem('ul3');}catch(e){}}
 function SP(s){var p=document.getElementById('spill');if(s==='on'){p.textContent='🟢 Online';p.className='pill p-on';}else if(s==='sy'){p.textContent='🔄 Sync';p.className='pill p-sy';}else{p.textContent='⚫ Offline';p.className='pill p-off';}}
-
-async function sendDrive(d){
-  try{
-    const json=encodeURIComponent(JSON.stringify(d));
-    const url=SURL+'?data='+json;
-    await fetch(url,{method:'GET',mode:'no-cors'});
-    return true;
-  }catch(e){
-    try{
-      await fetch(SURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(d)});
-      return true;
-    }catch(e2){return false;}
-  }
-}
-
+async function sendDrive(d){try{const json=encodeURIComponent(JSON.stringify(d));await fetch(SURL+'?data='+json,{method:'GET',mode:'no-cors'});return true;}catch(e){try{await fetch(SURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(d)});return true;}catch(e2){return false;}}}
 async function syncNow(){SP('sy');try{await fetch(SURL,{mode:'cors'});}catch(e){}SP('on');}
 function relogio(){const n=new Date();document.getElementById('relogio').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dataHoje').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
 function doLogin(){const u=document.getElementById('lu').value.trim();const s=document.getElementById('lp').value;const f=EQUIPE.find(x=>x.user===u&&x.senha===s);if(f){user=f;sU(f);document.getElementById('loginScreen').style.display='none';eApp();}else{document.getElementById('lerro').style.display='block';}}
@@ -409,8 +393,7 @@ async function saveReg(){
   d.hist=d.hist||[];
   d.hist.push({tp:checks.join(', '),dt:new Date().toLocaleDateString('pt-BR'),sup,motorista:mot,km,obs:document.getElementById('r-obs').value});
   vd[placa]=d;sVd();
-  const payload={placa,sup,motorista:mot,km,manutencoes:checks,ot:d.ot||'',psi:d.cp||'',obs:document.getElementById('r-obs').value,data,ts:new Date().toISOString()};
-  const ok=await sendDrive(payload);
+  const ok=await sendDrive({placa,sup,motorista:mot,km,manutencoes:checks,ot:d.ot||'',psi:d.cp||'',obs:document.getElementById('r-obs').value,data,ts:new Date().toISOString()});
   btn.disabled=false;btn.innerHTML='☁️ Salvar e Enviar para Nuvem';
   toast(ok?'✅ Enviado para a nuvem!':'✅ Salvo localmente!','tok');
   document.getElementById('r-km').value='';document.getElementById('r-obs').value='';
@@ -419,8 +402,41 @@ async function saveReg(){
   document.querySelectorAll('#ckgrid input').forEach(c=>{c.checked=false;tgl(c,c.parentElement.id);});
   rAll();
 }
-function OM(placa){cp=placa;const t=TRUCKS.find(x=>x.p===placa);const d=vd[placa]||{};document.getElementById('mt').textContent='🚛 '+placa;document.getElementById('ms').textContent=t.m+' · '+t.t;document.getElementById('m-s').value=d.sup||'Não informado';document.getElementById('m-mot').value=d.motorista||'Não informado';document.getElementById('m-k').value=d.km?Number(d.km).toLocaleString('pt-BR')+' km':'Não informado';document.getElementById('m-od').value=d.od||'Não registrado';document.getElementById('m-ot').value=d.ot||'Não informado';document.getElementById('m-ld').value=d.ld||'Não registrado';document.getElementById('m-cd').value=d.cd||'Não registrado';document.getElementById('m-cp').value=d.cp||'Não informado';document.getElementById('m-rd').value=d.rd||'Não registrado';document.getElementById('m-ob').value=d.obs||'';const h=d.hist||[];document.getElementById('mhist').innerHTML=h.length?h.slice(-5).reverse().map(x=>`<div class="hi"><b>${x.tp}</b>${x.obs?' — '+x.obs:''}<small>📅 ${x.dt} · 👤 ${x.sup||'—'} · 🚗 ${x.motorista||'—'} · Km: ${x.km||'—'}</small></div>`).join(''):'<p style="color:#94A3B8;font-size:13px">Sem histórico.</p>';document.getElementById('mov').classList.add('open');}
+function OM(placa){
+  cp=placa;const t=TRUCKS.find(x=>x.p===placa);const d=vd[placa]||{};
+  document.getElementById('mt').textContent='🚛 '+placa;
+  document.getElementById('ms').textContent=t.m+' · '+t.t;
+  document.getElementById('m-s').value=d.sup||'Não informado';
+  document.getElementById('m-mot').value=d.motorista||'Não informado';
+  document.getElementById('m-k').value=d.km?Number(d.km).toLocaleString('pt-BR')+' km':'Não informado';
+  document.getElementById('m-od').value=d.od||'Não registrado';
+  document.getElementById('m-ot').value=d.ot||'Não informado';
+  document.getElementById('m-ld').value=d.ld||'Não registrado';
+  document.getElementById('m-cd').value=d.cd||'Não registrado';
+  document.getElementById('m-cp').value=d.cp||'Não informado';
+  document.getElementById('m-rd').value=d.rd||'Não registrado';
+  document.getElementById('m-ob').value=d.obs||'';
+  const h=d.hist||[];
+  document.getElementById('mhist').innerHTML=h.length?h.slice().reverse().map((x,i)=>`
+    <div class="hi">
+      <b>${x.tp}</b>${x.obs?' — '+x.obs:''}
+      <small>📅 ${x.dt} · 👤 ${x.sup||'—'} · 🚗 ${x.motorista||'—'} · Km: ${x.km||'—'}</small>
+      <button class="btn-excluir" onclick="excluirRegistro('${placa}',${h.length-1-i})">🗑️ Excluir</button>
+    </div>`).join(''):'<p style="color:#94A3B8;font-size:13px">Sem histórico.</p>';
+  document.getElementById('mov').classList.add('open');
+}
 function CM(){document.getElementById('mov').classList.remove('open');}
+async function excluirRegistro(placa,idx){
+  if(!confirm('Tem certeza que deseja excluir este registro?'))return;
+  const d=vd[placa]||{};
+  if(!d.hist||d.hist[idx]===undefined)return;
+  d.hist.splice(idx,1);
+  if(d.hist.length===0){d.od='';d.ld='';d.cd='';d.rd='';}
+  else{d.od='';d.ld='';d.cd='';d.rd='';d.hist.forEach(h=>{const tp=h.tp||'';if(tp.includes('oleo'))d.od=h.dt;if(tp.includes('lubrificacao'))d.ld=h.dt;if(tp.includes('calibracao'))d.cd=h.dt;if(tp.includes('rodizio'))d.rd=h.dt;});}
+  vd[placa]=d;sVd();
+  toast('✅ Registro excluído!','tok');
+  rAll();CM();setTimeout(()=>OM(placa),300);
+}
 function ST(t){['dash','frota','registro','alertas','relatorio','equipe'].forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['dash','frota','registro','alertas','relatorio','equipe'][i]===t));if(t==='alertas')rAl();}
 function toast(msg,cls='tok'){const t=document.getElementById('tst');t.textContent=msg;t.className='toast show '+cls;setTimeout(()=>t.className='toast',3600);}
 async function init(){vd=gVd();user=gU();setTimeout(()=>{document.getElementById('splash').classList.add('hide');setTimeout(()=>{if(user){eApp();}else{document.getElementById('loginScreen').style.display='flex';}},700);},2400);}
