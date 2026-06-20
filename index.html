@@ -91,10 +91,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--czc);color:#0F
 .fg textarea{resize:vertical;min-height:60px}
 .bsv{background:linear-gradient(135deg,var(--az3),var(--az2));color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:800;width:100%;cursor:pointer;margin-top:12px}
 .bsv:disabled{background:#94A3B8;cursor:not-allowed}
-.hi{background:var(--czc);border-radius:12px;padding:12px;margin-bottom:8px;border-left:3px solid var(--az2);position:relative}
+.hi{background:var(--czc);border-radius:12px;padding:12px;margin-bottom:8px;border-left:3px solid var(--az2);position:relative;padding-right:90px}
 .hi b{font-size:13px;color:var(--az3)}
 .hi small{font-size:11px;color:var(--cz);display:block;margin-top:4px}
-.btn-excluir{position:absolute;top:8px;right:8px;background:#FEE2E2;border:none;color:var(--vm);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.btn-excluir{position:absolute;top:50%;right:10px;transform:translateY(-50%);background:#FEE2E2;border:none;color:var(--vm);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
 .btn-excluir:hover{background:var(--vm);color:#fff}
 @keyframes piscaBorda{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
 @keyframes pisca{0%,100%{opacity:1}50%{opacity:.4}}
@@ -146,7 +146,7 @@ tbody tr:hover td{background:#EEF2FF}
   <div style="color:#93C5FD;font-size:14px;font-style:italic;margin-top:4px">Transportes</div>
   <div style="color:#64748B;font-size:12px;margin-top:8px">Manutenção Preventiva</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
-  <div style="color:#475569;font-size:11px;margin-top:12px">v3.1 · 35 Veículos</div>
+  <div style="color:#475569;font-size:11px;margin-top:12px">v3.2 · 35 Veículos</div>
 </div>
 <div id="loginScreen">
   <div class="estrelas"></div>
@@ -344,6 +344,7 @@ const TRUCKS=[
   {p:"QJL4A84",m:"SCANIA/P280 B6X2",t:"Frango"},{p:"FWD5456",m:"VOLVO/VM 270 6X2R",t:"Frango"},
   {p:"FUN7I84",m:"SCANIA/P280 B8X2",t:"Oveira"},{p:"EAK3B50",m:"SCANIA/P320 B8X2",t:"Frango"},
   {p:"GAH0E84",m:"VW/24.280 CRM 6X2",t:"Oveira"},{p:"QXT8H13",m:"SCANIA/P280 B6X2",t:"Oveira"},
+  {p:"SUD9B15",m:"GM CHEV - S10",t:"Caminhonete"},{p:"EEE7D63",m:"VW/17.280 CRM 4X2",t:"Pinteira"},
   {p:"BZR7F46",m:"VW/17.280 CRM 4X2",t:"Pinteira"}
 ];
 let vd={},user=null,cp=null;
@@ -362,7 +363,7 @@ function doLogout(){user=null;dU();document.getElementById('appScreen').style.di
 function eApp(){document.getElementById('appScreen').style.display='block';document.getElementById('huser').textContent=user.nome+' · '+user.cargo;document.getElementById('dashSub').textContent=user.cargo+' · '+new Date().toLocaleDateString('pt-BR');document.getElementById('r-sup').value=user.nome;document.getElementById('r-data').value=new Date().toISOString().split('T')[0];document.getElementById('r-placa').innerHTML=TRUCKS.map(t=>`<option value="${t.p}">${t.p} — ${t.m}</option>`).join('');vd=gVd();rAll();renderEquipe();SP('on');syncNow();setInterval(syncNow,30000);setInterval(relogio,1000);relogio();}
 function gSt(d){if(!d||(!d.od&&!d.ld&&!d.cd&&!d.rd))return'none';const df=s=>s?Math.round((new Date()-new Date(s))/86400000):999;const mx=Math.max(df(d.od),df(d.ld),df(d.cd),df(d.rd));return mx>90?'late':mx>60?'alert':'ok';}
 function rAll(){rTr();rAl();rRep();rSt();rUltimos();}
-function rTr(f=''){const fl=f.toLowerCase();const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(fl)||t.m.toLowerCase().includes(fl)||t.t.toLowerCase().includes(fl));document.getElementById('tgrid').innerHTML=list.map(t=>{const d=vd[t.p]||{};const st=gSt(d);const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{if(!k)return'<div class="dot d-none"></div>';const dy=Math.round((new Date()-new Date(k))/86400000);return`<div class="dot ${dy>90?'d-late':dy>60?'d-al':'d-ok'}"></div>`;}).join('');return`<div class="tc ${st}" onclick="OM('${t.p}')"><div class="tpl">${t.p}</div><div class="tmd">${t.m}</div><span class="tbg">${t.t}</span><div class="tdts">${dots}</div>${d.sup?`<div class="ttag">👤 ${d.motorista||d.sup}</div>`:''}</div>`;}).join('');}
+function rTr(f=''){const fl=f.toLowerCase();const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(fl)||t.m.toLowerCase().includes(fl)||t.t.toLowerCase().includes(fl));document.getElementById('tgrid').innerHTML=list.map(t=>{const d=vd[t.p]||{};const st=gSt(d);const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{if(!k)return'<div class="dot d-none"></div>';const dy=Math.round((new Date()-new Date(k))/86400000);return`<div class="dot ${dy>90?'d-late':dy>60?'d-al':'d-ok'}"></div>`;}).join('');return`<div class="tc ${st}" onclick="OM('${t.p}')"><div class="tpl">${t.p}</div><div class="tmd">${t.m}</div><span class="tbg">${t.t}</span><div class="tdts">${dots}</div>${d.motorista?`<div class="ttag">👤 ${d.motorista}</div>`:''}</div>`;}).join('');}
 function fTrucks(){rTr(document.getElementById('srch').value);}
 function rSt(){let ok=0,al=0,lt=0;TRUCKS.forEach(t=>{const s=gSt(vd[t.p]);if(s==='ok')ok++;else if(s==='alert')al++;else if(s==='late')lt++;});document.getElementById('s-ok').textContent=ok;document.getElementById('s-al').textContent=al;document.getElementById('s-late').textContent=lt;}
 function rUltimos(){const todos=[];TRUCKS.forEach(t=>{const d=vd[t.p];if(d&&d.hist&&d.hist.length){const u=d.hist[d.hist.length-1];todos.push({placa:t.p,...u});}});todos.sort((a,b)=>new Date(b.dt)-new Date(a.dt));document.getElementById('ultimos').innerHTML=todos.slice(0,5).map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--czm)"><div style="background:#EEF2FF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--az3)">${r.placa}</div><div><div style="font-size:12px;font-weight:700">${r.tp}</div><div style="font-size:11px;color:var(--cz)">👤 ${r.sup||'—'} · 📅 ${r.dt}</div></div></div>`).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p>';}
@@ -430,8 +431,12 @@ async function excluirRegistro(placa,idx){
   const d=vd[placa]||{};
   if(!d.hist||d.hist[idx]===undefined)return;
   d.hist.splice(idx,1);
-  if(d.hist.length===0){d.od='';d.ld='';d.cd='';d.rd='';}
-  else{d.od='';d.ld='';d.cd='';d.rd='';d.hist.forEach(h=>{const tp=h.tp||'';if(tp.includes('oleo'))d.od=h.dt;if(tp.includes('lubrificacao'))d.ld=h.dt;if(tp.includes('calibracao'))d.cd=h.dt;if(tp.includes('rodizio'))d.rd=h.dt;});}
+  d.od='';d.ld='';d.cd='';d.rd='';d.km='';d.sup='';d.motorista='';d.ot='';d.cp='';
+  if(d.hist.length>0){
+    const ultimo=d.hist[d.hist.length-1];
+    d.sup=ultimo.sup||'';d.motorista=ultimo.motorista||'';d.km=ultimo.km||'';
+    d.hist.forEach(h=>{const tp=h.tp||'';if(tp.includes('oleo'))d.od=h.dt;if(tp.includes('lubrificacao'))d.ld=h.dt;if(tp.includes('calibracao'))d.cd=h.dt;if(tp.includes('rodizio'))d.rd=h.dt;});
+  }
   vd[placa]=d;sVd();
   toast('✅ Registro excluído!','tok');
   rAll();CM();setTimeout(()=>OM(placa),300);
