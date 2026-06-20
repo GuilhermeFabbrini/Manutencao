@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Manutenção Preventiva — Andrioni Transportes</title>
+<style>
+:root{--az:#1B2A6B;--az2:#2541B2;--az3:#0F1E55;--cz:#6B7280;--czc:#F8FAFC;--czm:#E2E8F0;--vd:#059669;--vdl:#D1FAE5;--lr:#D97706;--lrl:#FEF3C7;--vm:#DC2626;--vml:#FEE2E2;--sh:0 4px 24px rgba(27,42,107,.10);--sh2:0 8px 32px rgba(27,42,107,.18)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--czc);color:#0F172A;min-height:100vh;overflow-x:hidden}
+#splash{position:fixed;inset:0;background:linear-gradient(145deg,#0F1E55 0%,#1B2A6B 50%,#2541B2 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .8s}
+#splash.hide{opacity:0;pointer-events:none}
+.sp-bar{width:200px;height:3px;background:#ffffff22;border-radius:4px;margin-top:16px;overflow:hidden}
+.sp-fill{height:100%;background:linear-gradient(90deg,#93C5FD,#fff);animation:ld 2.2s ease forwards}
+@keyframes ld{from{width:0}to{width:100%}}
+#loginScreen{display:none;min-height:100vh;background:linear-gradient(160deg,#0a1128 0%,#1B2A6B 45%,#0a1128 100%);align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+#loginScreen::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:300px;height:60%;background:linear-gradient(180deg,transparent,rgba(255,255,255,.04) 40%,rgba(255,255,255,.08));clip-path:polygon(35% 0%,65% 0%,100% 100%,0% 100%)}
+.estrelas{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 30% 40%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 60% 10%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 80% 30%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 90% 60%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 20% 70%,rgba(255,255,255,.2) 0%,transparent 100%),radial-gradient(1px 1px at 50% 80%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 70% 90%,rgba(255,255,255,.2) 0%,transparent 100%)}
+.estrada{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;height:100%;pointer-events:none;overflow:hidden}
+.faixa{position:absolute;bottom:-100%;left:50%;transform:translateX(-50%);width:12px;height:80px;background:rgba(255,255,255,.3);border-radius:6px;animation:roda 1.8s linear infinite}
+.f1{animation-delay:0s;margin-left:-30px}.f2{animation-delay:.6s}.f3{animation-delay:1.2s;margin-left:30px}
+@keyframes roda{0%{bottom:-10%;opacity:0}20%{opacity:1}80%{opacity:1}100%{bottom:110%;opacity:0}}
+.caminhao-wrap{position:absolute;bottom:18%;left:-220px;animation:passaCaminhao 6s ease-in-out infinite}
+@keyframes passaCaminhao{0%{left:-220px;opacity:0}10%{opacity:1}50%{left:calc(50% - 100px)}90%{opacity:1}100%{left:calc(100% + 220px);opacity:0}}
+.farol{position:absolute;right:-30px;top:38px;width:35px;height:8px;background:linear-gradient(90deg,rgba(255,235,150,.9),transparent);border-radius:4px;filter:blur(2px)}
+.lcard{background:rgba(255,255,255,.95);backdrop-filter:blur(24px);border-radius:28px;padding:36px 30px;width:100%;max-width:400px;box-shadow:0 32px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.1);position:relative;z-index:10}
+.lcard::before{content:'';position:absolute;top:0;left:30px;right:30px;height:3px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);border-radius:3px}
+.lhead{text-align:center;margin-bottom:28px}
+.lhead h1{font-size:21px;font-weight:900;color:var(--az3);margin-top:12px;letter-spacing:.5px}
+.lhead p{font-size:12px;color:var(--cz);margin-top:5px}
+.lfield{margin-bottom:16px}
+.lfield label{font-size:11px;font-weight:700;color:var(--cz);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:7px}
+.linp{width:100%;padding:13px 16px;border:2px solid var(--czm);border-radius:14px;font-size:15px;outline:none;transition:.2s;background:#F8FAFC;color:#0F172A}
+.linp:focus{border-color:var(--az2);background:#fff;box-shadow:0 0 0 4px rgba(37,65,178,.1)}
+.lbtn{width:100%;background:linear-gradient(135deg,var(--az3),var(--az2));color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(27,42,107,.3);transition:.2s;letter-spacing:.5px}
+.lbtn:hover{transform:translateY(-2px)}
+.lerro{background:#FEE2E2;color:var(--vm);border-radius:12px;padding:11px 14px;font-size:13px;text-align:center;margin-bottom:16px;display:none;font-weight:600;border:1px solid #FECACA}
+.lrodape{text-align:center;margin-top:18px;font-size:11px;color:#94A3B8}
+#appScreen{display:none}
+.hdr{background:linear-gradient(135deg,var(--az3),var(--az2));padding:0 18px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.hdr-logo{background:#fff;border-radius:10px;padding:5px 9px;flex-shrink:0;display:flex;align-items:center;height:38px}
+.hdr-info h1{font-size:14px;font-weight:900;color:#fff;letter-spacing:.5px}
+.hdr-info p{font-size:10px;color:#93C5FD;margin-top:1px}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{font-size:10px;padding:4px 10px;border-radius:20px;font-weight:700}
+.p-on{background:#D1FAE5;color:#065F46}.p-off{background:#FEE2E2;color:#991B1B}.p-sy{background:#DBEAFE;color:#1E40AF}
+.bout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 11px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--czm);overflow-x:auto;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.tab{flex:1;padding:13px 4px;font-size:10px;font-weight:700;cursor:pointer;color:#94A3B8;border-bottom:3px solid transparent;text-align:center;white-space:nowrap;min-width:58px;transition:.2s;letter-spacing:.3px}
+.tab.active{color:var(--az2);border-bottom-color:var(--az2)}
+.tab-icon{font-size:18px;display:block;margin-bottom:2px}
+.cnt{padding:16px;max-width:900px;margin:0 auto;padding-bottom:40px}
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.dash-card{background:#fff;border-radius:18px;padding:18px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.dash-num{font-size:36px;font-weight:900;line-height:1}
+.dash-lbl{font-size:11px;font-weight:700;color:var(--cz);margin-top:5px;text-transform:uppercase;letter-spacing:.5px}
+.dash-icon{font-size:28px;position:absolute;right:14px;top:14px;opacity:.6}
+.c-az{color:var(--az2)}.c-ok{color:var(--vd)}.c-al{color:var(--lr)}.c-late{color:var(--vm)}
+.sw{position:relative;margin-bottom:14px}
+.sw input{width:100%;padding:13px 16px 13px 44px;border:2px solid var(--czm);border-radius:14px;font-size:14px;background:#fff;outline:none;box-shadow:var(--sh)}
+.sw .si{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:18px;color:#94A3B8}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.tc{background:#fff;border-radius:16px;padding:14px;cursor:pointer;border:2px solid var(--czm);transition:all .2s;box-shadow:var(--sh);position:relative;overflow:hidden}
+.tc::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0}
+.tc.ok::before{background:linear-gradient(90deg,var(--vd),#10B981)}
+.tc.alert::before{background:linear-gradient(90deg,var(--lr),#F59E0B)}
+.tc.late::before{background:linear-gradient(90deg,var(--vm),#EF4444);animation:piscaBorda 1.5s infinite}
+.tc.none::before{background:linear-gradient(90deg,#CBD5E1,#E2E8F0)}
+.tc:hover{transform:translateY(-3px);box-shadow:var(--sh2)}
+.tpl{font-size:14px;font-weight:900;color:var(--az3);letter-spacing:1px;margin-top:4px}
+.tmd{font-size:10px;color:var(--cz);margin:4px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbg{font-size:10px;background:#EEF2FF;color:var(--az3);padding:2px 8px;border-radius:20px;display:inline-block;font-weight:700}
+.tdts{display:flex;gap:5px;margin-top:10px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%}
+.d-ok{background:var(--vd)}.d-al{background:var(--lr)}.d-late{background:var(--vm)}.d-none{background:#CBD5E1}
+.ttag{font-size:10px;color:var(--cz);margin-top:7px}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.ov.open{display:flex}
+.modal{background:#fff;border-radius:28px 28px 0 0;width:100%;max-width:600px;max-height:93vh;overflow-y:auto;padding-bottom:24px}
+.mhd{background:linear-gradient(135deg,var(--az3),var(--az2));padding:18px 22px;border-radius:28px 28px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.mhd h2{font-size:18px;font-weight:900;color:#fff}
+.mhd p{font-size:11px;color:#93C5FD;margin-top:2px}
+.bx{background:rgba(255,255,255,.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mbd{padding:20px}
+.sec{font-size:11px;font-weight:700;color:var(--az2);text-transform:uppercase;letter-spacing:1px;margin:18px 0 10px;display:flex;align-items:center;gap:6px}
+.sec::after{content:'';flex:1;height:1px;background:var(--czm)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;font-weight:700;color:var(--cz)}
+.fg input,.fg select,.fg textarea{background:var(--czc);border:2px solid var(--czm);border-radius:12px;padding:10px 13px;color:#0F172A;font-size:14px;outline:none;width:100%}
+.fg textarea{resize:vertical;min-height:60px}
+.bsv{background:linear-gradient(135deg,var(--az3),var(--az2));color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:800;width:100%;cursor:pointer;margin-top:12px}
+.bsv:disabled{background:#94A3B8;cursor:not-allowed}
+.hi{background:var(--czc);border-radius:12px;padding:12px;margin-bottom:8px;border-left:3px solid var(--az2)}
+.hi b{font-size:13px;color:var(--az3)}
+.hi small{font-size:11px;color:var(--cz);display:block;margin-top:4px}
+@keyframes piscaBorda{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
+@keyframes pisca{0%,100%{opacity:1}50%{opacity:.4}}
+.ac{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:var(--sh);border:1px solid var(--czm)}
+.ac.late{border-left:5px solid var(--vm);animation:piscaBorda 1.5s infinite;background:linear-gradient(135deg,#fff,#FFF5F5)}
+.ac.warn{border-left:5px solid var(--lr);background:linear-gradient(135deg,#fff,#FFFBEB)}
+.ac.none{border-left:5px solid #CBD5E1}
+.ai h3{font-size:13px;font-weight:800}.ai p{font-size:11px;color:var(--cz);margin-top:3px}
+.badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-late{background:var(--vml);color:var(--vm);animation:pisca 1s infinite}
+.b-warn{background:var(--lrl);color:#92400E}
+.b-none{background:#F1F5F9;color:#64748B}
+.ckbox{background:var(--czc);border:2px solid var(--czm);border-radius:14px;padding:13px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;transition:.2s}
+.ckbox:has(input:checked){border-color:var(--az2);background:#EEF2FF}
+.ckbox input{width:18px;height:18px;accent-color:var(--az2)}
+.rw{overflow-x:auto;border-radius:16px;box-shadow:var(--sh)}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:12px}
+thead th{background:linear-gradient(135deg,var(--az3),var(--az2));color:#fff;padding:12px 10px;text-align:left;white-space:nowrap;font-size:11px;font-weight:700}
+tbody td{padding:10px;border-bottom:1px solid #F8FAFC;white-space:nowrap}
+tbody tr:nth-child(even) td{background:#F8FAFC}
+tbody tr:hover td{background:#EEF2FF}
+.equipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.membro-card{background:#fff;border-radius:18px;padding:18px;text-align:center;box-shadow:var(--sh);border:2px solid var(--czm);transition:.2s}
+.membro-card:hover{transform:translateY(-3px);box-shadow:var(--sh2)}
+.membro-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 10px;background:var(--czc)}
+.membro-nome{font-size:13px;font-weight:800;color:var(--az3)}
+.membro-cargo{font-size:11px;color:var(--cz);margin-top:3px}
+.membro-user{font-size:10px;color:#94A3B8;margin-top:8px;background:var(--czc);border-radius:8px;padding:4px 8px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:13px 24px;border-radius:14px;font-size:14px;font-weight:700;z-index:999;display:none;max-width:92%;text-align:center}
+.toast.show{display:block;animation:ta 3.5s forwards}
+.tok{background:linear-gradient(135deg,#059669,#10B981);color:#fff}
+.terr{background:linear-gradient(135deg,#DC2626,#EF4444);color:#fff}
+.tinf{background:linear-gradient(135deg,#1B2A6B,#2541B2);color:#fff}
+@keyframes ta{0%{opacity:0;transform:translateX(-50%) translateY(14px)}12%{opacity:1;transform:translateX(-50%) translateY(0)}85%{opacity:1}100%{opacity:0}}
+@media(max-width:480px){.dash-grid{grid-template-columns:repeat(2,1fr)}.tgrid{grid-template-columns:repeat(2,1fr)}.fr{grid-template-columns:1fr}.equipe-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="splash">
+  <svg width="90" height="90" viewBox="0 0 190 170" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="95,5 20,125 46,125 95,32" fill="white" opacity=".95"/>
+    <polygon points="95,5 170,125 144,125 95,32" fill="white" opacity=".95"/>
+    <rect x="58" y="88" width="74" height="13" fill="white"/>
+    <path d="M38 118 C60 90 80 65 95 32" stroke="#93C5FD" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M50 124 C70 95 86 68 95 32" stroke="#BFDBFE" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M62 124 C78 99 90 72 95 32" stroke="#DBEAFE" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div style="color:#fff;font-size:26px;font-weight:900;letter-spacing:2px;margin-top:16px">ANDRIONI</div>
+  <div style="color:#93C5FD;font-size:14px;font-style:italic;margin-top:4px">Transportes</div>
+  <div style="color:#64748B;font-size:12px;margin-top:8px">Manutenção Preventiva</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+  <div style="color:#475569;font-size:11px;margin-top:12px">v3.0 · 35 Veículos</div>
+</div>
+<div id="loginScreen">
+  <div class="estrelas"></div>
+  <div class="estrada"><div class="faixa f1"></div><div class="faixa f2"></div><div class="faixa f3"></div></div>
+  <div class="caminhao-wrap">
+    <div class="farol"></div>
+    <svg width="200" height="90" viewBox="0 0 200 90" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="18" width="140" height="52" rx="4" fill="#1B2A6B"/>
+      <rect x="5" y="23" width="130" height="3" rx="1" fill="rgba(255,255,255,.15)"/>
+      <rect x="5" y="60" width="130" height="3" rx="1" fill="rgba(255,255,255,.15)"/>
+      <text x="70" y="48" text-anchor="middle" font-size="11" font-weight="900" fill="white" font-family="Arial Black,sans-serif" letter-spacing="1">ANDRIONI</text>
+      <text x="70" y="61" text-anchor="middle" font-size="8" fill="#93C5FD" font-family="Georgia,serif" font-style="italic">Transportes</text>
+      <polygon points="12,52 8,60 16,60" fill="white" opacity=".8"/>
+      <rect x="140" y="28" width="50" height="42" rx="4" fill="#243280"/>
+      <rect x="150" y="31" width="32" height="22" rx="3" fill="#7DD3FC" opacity=".7"/>
+      <rect x="152" y="33" width="10" height="6" rx="2" fill="rgba(255,255,255,.5)"/>
+      <rect x="184" y="42" width="12" height="18" rx="2" fill="#1B2A6B"/>
+      <rect x="188" y="36" width="8" height="5" rx="1" fill="#FEF3C7"/>
+      <rect x="194" y="30" width="4" height="8" rx="1" fill="#374151"/>
+      <rect x="8" y="70" width="180" height="6" rx="2" fill="#374151"/>
+      <circle cx="30" cy="76" r="13" fill="#1F2937"/><circle cx="30" cy="76" r="8" fill="#374151"/><circle cx="30" cy="76" r="3" fill="#6B7280"/>
+      <circle cx="55" cy="76" r="13" fill="#1F2937"/><circle cx="55" cy="76" r="8" fill="#374151"/><circle cx="55" cy="76" r="3" fill="#6B7280"/>
+      <circle cx="165" cy="76" r="13" fill="#1F2937"/><circle cx="165" cy="76" r="8" fill="#374151"/><circle cx="165" cy="76" r="3" fill="#6B7280"/>
+    </svg>
+  </div>
+  <div class="lcard">
+    <div class="lhead">
+      <svg width="80" height="72" viewBox="0 0 190 170" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="95,5 20,125 46,125 95,32" fill="#1B2A6B"/>
+        <polygon points="95,5 170,125 144,125 95,32" fill="#1B2A6B"/>
+        <rect x="58" y="88" width="74" height="13" fill="white"/>
+        <path d="M38 118 C60 90 80 65 95 32" stroke="#7A8499" stroke-width="7" fill="none" stroke-linecap="round" opacity=".85"/>
+        <path d="M50 124 C70 95 86 68 95 32" stroke="#9DAABF" stroke-width="5" fill="none" stroke-linecap="round" opacity=".85"/>
+        <path d="M62 124 C78 99 90 72 95 32" stroke="#C0C9D8" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".85"/>
+      </svg>
+      <h1>Andrioni Transportes</h1>
+      <p>Sistema de Manutenção Preventiva</p>
+    </div>
+    <div id="lerro" class="lerro">⚠️ Usuário ou senha incorretos.</div>
+    <div class="lfield"><label>Usuário</label><input class="linp" id="lu" type="text" placeholder="Digite seu usuário" autocomplete="username"></div>
+    <div class="lfield"><label>Senha</label><input class="linp" id="lp" type="password" placeholder="Digite sua senha" autocomplete="current-password"></div>
+    <button class="lbtn" onclick="doLogin()">🔐 Entrar no Sistema</button>
+    <div class="lrodape">🔒 Acesso restrito · Andrioni Transportes LTDA</div>
+  </div>
+</div>
+<div id="appScreen">
+  <div class="hdr">
+    <div class="hdr-logo">
+      <svg width="62" height="24" viewBox="0 0 190 65" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,2 58,52 6,52" fill="#1B2A6B"/>
+        <rect x="18" y="36" width="28" height="6" fill="white"/>
+        <path d="M12 48 C22 36 28 24 32 8" stroke="#7A8499" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M18 50 C26 38 30 26 32 8" stroke="#9DAABF" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <text x="68" y="28" font-size="18" font-weight="900" fill="#1B2A6B" font-family="Arial Black,sans-serif" letter-spacing="1">ANDRIONI</text>
+        <text x="70" y="46" font-size="13" fill="#6B7280" font-family="Georgia,serif" font-style="italic">Transportes</text>
+      </svg>
+    </div>
+    <div class="hdr-info"><h1>Manutenção Preventiva</h1><p id="huser">Carregando...</p></div>
+    <div class="hdr-r"><span class="pill p-off" id="spill">⚫ Offline</span><button class="bout" onclick="doLogout()">Sair</button></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="ST('dash')"><span class="tab-icon">📊</span>PAINEL</div>
+    <div class="tab" onclick="ST('frota')"><span class="tab-icon">🚛</span>FROTA</div>
+    <div class="tab" onclick="ST('registro')"><span class="tab-icon">📝</span>REGISTRO</div>
+    <div class="tab" onclick="ST('alertas')"><span class="tab-icon">🔔</span>ALERTAS</div>
+    <div class="tab" onclick="ST('relatorio')"><span class="tab-icon">📋</span>RELATÓRIO</div>
+    <div class="tab" onclick="ST('equipe')"><span class="tab-icon">👥</span>EQUIPE</div>
+  </div>
+  <div class="cnt">
+    <div id="tab-dash">
+      <div style="margin-bottom:16px"><h2 style="font-size:20px;font-weight:900;color:var(--az3)">Bom dia! 👋</h2><p style="font-size:13px;color:var(--cz);margin-top:3px" id="dashSub">Andrioni Transportes</p></div>
+      <div class="dash-grid">
+        <div class="dash-card"><div class="dash-num c-az" id="s-total">35</div><div class="dash-lbl">Total veículos</div><div class="dash-icon">🚛</div></div>
+        <div class="dash-card"><div class="dash-num c-ok" id="s-ok">0</div><div class="dash-lbl">Em dia</div><div class="dash-icon">✅</div></div>
+        <div class="dash-card"><div class="dash-num c-al" id="s-al">0</div><div class="dash-lbl">Atenção</div><div class="dash-icon">⚠️</div></div>
+        <div class="dash-card"><div class="dash-num c-late" id="s-late">0</div><div class="dash-lbl">Atrasados</div><div class="dash-icon">🚨</div></div>
+      </div>
+      <div style="background:#fff;border-radius:18px;padding:18px;box-shadow:var(--sh);margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--az2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">⚡ Últimos Registros</div>
+        <div id="ultimos"><p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p></div>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--az3),var(--az2));border-radius:18px;padding:18px;color:#fff">
+        <div style="font-size:12px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📅 Data e Hora</div>
+        <div style="font-size:22px;font-weight:900" id="relogio">--:--</div>
+        <div style="font-size:13px;opacity:.8;margin-top:4px" id="dataHoje"></div>
+      </div>
+    </div>
+    <div id="tab-frota" style="display:none">
+      <div style="background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-radius:14px;padding:13px 16px;margin-bottom:14px;border:1px solid #C7D2FE;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">👁️</span>
+        <div><div style="font-size:13px;font-weight:700;color:var(--az3)">Modo Visualização</div><div style="font-size:11px;color:#6366F1">Para registrar use a aba 📝 REGISTRO</div></div>
+      </div>
+      <div class="sw"><span class="si">🔍</span><input type="text" placeholder="Buscar placa, modelo ou tipo..." id="srch" oninput="fTrucks()"></div>
+      <div class="tgrid" id="tgrid"></div>
+    </div>
+    <div id="tab-registro" style="display:none">
+      <div style="background:#fff;border-radius:20px;padding:22px;box-shadow:var(--sh)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--czm)">
+          <div style="background:linear-gradient(135deg,var(--az3),var(--az2));border-radius:12px;padding:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px">📝</div>
+          <div><h2 style="color:var(--az3);font-size:17px;font-weight:900">Registrar Manutenção</h2><p style="color:var(--cz);font-size:12px;margin-top:2px">Dados enviados automaticamente para a nuvem ☁️</p></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Placa</label><select id="r-placa" style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:12px;padding:10px;font-size:13px;outline:none;width:100%"></select></div>
+          <div class="fg"><label>Supervisor</label><input type="text" id="r-sup" style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:12px;padding:10px;font-size:13px;outline:none"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>👤 Motorista</label><input type="text" id="r-mot" placeholder="Nome completo" style="background:#F8FAFC;border:2px solid var(--az2);border-radius:12px;padding:10px;font-size:13px;outline:none"></div>
+          <div class="fg"><label>Km Atual</label><input type="number" id="r-km" placeholder="Ex: 152.430" style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:12px;padding:10px;font-size:13px;outline:none"></div>
+        </div>
+        <div class="fg" style="margin-bottom:14px"><label>Data</label><input type="date" id="r-data" style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:12px;padding:10px;font-size:13px;outline:none"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--az2);text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;display:flex;align-items:center;gap:6px">O que foi realizado? <span style="flex:1;height:1px;background:var(--czm)"></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px" id="ckgrid">
+          <label class="ckbox" id="lb-o"><input type="checkbox" value="oleo"> 🛢️ Troca de Óleo</label>
+          <label class="ckbox" id="lb-l"><input type="checkbox" value="lubrificacao"> 🔧 Lubrificação</label>
+          <label class="ckbox" id="lb-c"><input type="checkbox" value="calibracao"> 🔵 Calibração</label>
+          <label class="ckbox" id="lb-r"><input type="checkbox" value="rodizio"> 🔄 Rodízio Pneus</label>
+          <label class="ckbox" id="lb-op" style="grid-column:span 2"><input type="checkbox" value="operacao"> 🚦 Saída / Operação</label>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Tipo de Óleo</label><input type="text" id="r-otipo" placeholder="Ex: 15W40" style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:12px;padding:10px;font-size:13px;outline:none"></div>
+          <div class="fg"><label>PSI</label><input type="text" id="r-psi" placeholder="Ex: 110" style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:12px;padding:10px;font-size:13px;outline:none"></div>
+        </div>
+        <div class="fg" style="margin-bottom:16px"><label>Observações</label><textarea id="r-obs" placeholder="Problemas ou observações..." style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:12px;padding:10px;font-size:13px;outline:none;resize:vertical;min-height:70px;width:100%"></textarea></div>
+        <button class="bsv" id="btnReg" onclick="saveReg()">☁️ Salvar e Enviar para Nuvem</button>
+      </div>
+    </div>
+    <div id="tab-alertas" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="color:var(--vm);font-size:18px;font-weight:900">🔔 Central de Alertas</h2>
+        <span id="acnt" style="background:var(--vml);color:var(--vm);padding:5px 13px;border-radius:20px;font-size:11px;font-weight:800"></span>
+      </div>
+      <div id="alist"></div>
+    </div>
+    <div id="tab-relatorio" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="color:var(--az3);font-size:18px;font-weight:900">📋 Relatório Geral</h2>
+        <button onclick="syncNow()" style="background:var(--az2);border:none;color:#fff;padding:9px 16px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700">🔄 Atualizar</button>
+      </div>
+      <div class="rw"><table><thead><tr><th>Placa</th><th>Modelo</th><th>Tipo</th><th>Supervisor</th><th>Motorista</th><th>Km</th><th>Óleo</th><th>Lubric.</th><th>Calibr.</th><th>Rodízio</th></tr></thead><tbody id="rbody"></tbody></table></div>
+    </div>
+    <div id="tab-equipe" style="display:none">
+      <div style="margin-bottom:16px"><h2 style="font-size:18px;font-weight:900;color:var(--az3)">👥 Nossa Equipe</h2><p style="font-size:13px;color:var(--cz);margin-top:3px">Andrioni Transportes LTDA</p></div>
+      <div class="equipe-grid" id="equipeGrid"></div>
+    </div>
+  </div>
+</div>
+<div class="ov" id="mov">
+  <div class="modal">
+    <div class="mhd"><div><h2 id="mt">-</h2><p id="ms">-</p></div><button class="bx" onclick="CM()">✕</button></div>
+    <div class="mbd">
+      <div style="background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-radius:12px;padding:12px 16px;margin-bottom:16px;border:1px solid #C7D2FE;display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">👁️</span>
+        <span style="font-size:13px;font-weight:600;color:#3730A3">Somente visualização — use 📝 Registro para incluir manutenções</span>
+      </div>
+      <div class="sec">📍 Informações</div>
+      <div class="fr"><div class="fg"><label>Supervisor</label><input type="text" id="m-s" disabled style="background:#F1F5F9;cursor:not-allowed"></div><div class="fg"><label>Motorista</label><input type="text" id="m-mot" disabled style="background:#F1F5F9;cursor:not-allowed"></div></div>
+      <div class="fg" style="margin-bottom:10px"><label>Km Atual</label><input type="text" id="m-k" disabled style="background:#F1F5F9;cursor:not-allowed"></div>
+      <div class="sec">🛢️ Óleo</div>
+      <div class="fr"><div class="fg"><label>Último</label><input type="text" id="m-od" disabled style="background:#F1F5F9;cursor:not-allowed"></div><div class="fg"><label>Tipo</label><input type="text" id="m-ot" disabled style="background:#F1F5F9;cursor:not-allowed"></div></div>
+      <div class="sec">🔧 Lubrificação</div>
+      <div class="fg" style="margin-bottom:10px"><label>Última</label><input type="text" id="m-ld" disabled style="background:#F1F5F9;cursor:not-allowed"></div>
+      <div class="sec">🔵 Calibração</div>
+      <div class="fr"><div class="fg"><label>Última</label><input type="text" id="m-cd" disabled style="background:#F1F5F9;cursor:not-allowed"></div><div class="fg"><label>PSI</label><input type="text" id="m-cp" disabled style="background:#F1F5F9;cursor:not-allowed"></div></div>
+      <div class="sec">🔄 Rodízio</div>
+      <div class="fg" style="margin-bottom:10px"><label>Último</label><input type="text" id="m-rd" disabled style="background:#F1F5F9;cursor:not-allowed"></div>
+      <div class="sec">📝 Observações</div>
+      <div class="fg" style="margin-bottom:6px"><textarea id="m-ob" disabled style="background:#F1F5F9;cursor:not-allowed;border-radius:12px;padding:10px;font-size:14px;width:100%;min-height:60px;border:2px solid #E2E8F0"></textarea></div>
+      <div class="sec" style="margin-top:16px">📅 Histórico</div>
+      <div id="mhist"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="tst"></div>
+<script>
+const SURL="https://script.google.com/macros/s/AKfycbwCmLpn5ugiOaKX21bNSHxalLPk41ohHEb6FTluqe17pT-uYF8f5w74SvqAnT_mmIBRpQ/exec";
+const EQUIPE=[
+  {user:"rudinei",senha:"123",nome:"Rudinei Andrioni",cargo:"Proprietário",icon:"👑"},
+  {user:"guilherme",senha:"123",nome:"Guilherme Fabbrini Stabile",cargo:"Administrador",icon:"🏆"},
+  {user:"elton",senha:"123",nome:"Elton",cargo:"Coordenador",icon:"📋"},
+  {user:"marcio",senha:"123",nome:"Márcio Junior",cargo:"Almoxarifado",icon:"📦"},
+  {user:"joao",senha:"123",nome:"João Batista",cargo:"Supervisor de Operações",icon:"🔍"},
+  {user:"leonardo",senha:"123",nome:"Leonardo",cargo:"Motorista Encarregado",icon:"🚛"},
+  {user:"weslen",senha:"123",nome:"Weslen",cargo:"Motorista Encarregado",icon:"🚛"}
+];
+const TRUCKS=[
+  {p:"CUF8C41",m:"FIAT/STRADA ENDURAN CS13",t:"Carro"},{p:"UFH3C47",m:"VW/26.320 CRM 6X2",t:"Frango"},
+  {p:"TKL6I24",m:"VW/26.320 CRM 6X3",t:"Frango"},{p:"UEV7B22",m:"VW/26.320 CRM 6X4",t:"Frango"},
+  {p:"GAY7C39",m:"VW/26.320 CRM 6X5",t:"Frango"},{p:"UFM2D34",m:"VW/26.320 CRM 6X6",t:"Frango"},
+  {p:"QSR1C39",m:"VW/26.320 CRM 6X7",t:"Frango"},{p:"UFN3H70",m:"VW/26.320 CRM 6X8",t:"Frango"},
+  {p:"QSP2D07",m:"VW/26.320 CRM 6X9",t:"Frango"},{p:"UDX7I09",m:"VW/26.320 CRM 6X10",t:"Frango"},
+  {p:"SWP7B26",m:"VW/26.320 CRM 6X11",t:"Frango"},{p:"UGU3E16",m:"VW/26.320 CRM 6X12",t:"Frango"},
+  {p:"FWE2C61",m:"SCANIA",t:"Oveira"},{p:"TJH8H67",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
+  {p:"TIV7G01",m:"VW/18.260 CRM 4X2",t:"Pinteira"},{p:"TJN9H92",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
+  {p:"TJJ6H61",m:"SCANIA/P280 B6X2",t:"Oveira"},{p:"TJV5C01",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
+  {p:"TJB0H74",m:"VW/18.260 CRM 4X2",t:"Pinteira"},{p:"TJJ2A70",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
+  {p:"SWW6B06",m:"SCANIA/P320 B8X2",t:"Pinteira"},{p:"FRY3A93",m:"SCANIA/P360 B8X2",t:"Oveira"},
+  {p:"FUG0D75",m:"VW/24.280 CRM 6X2",t:"Oveira"},{p:"FJV6I54",m:"SCANIA/P320 B8X2",t:"Oveira"},
+  {p:"QJH8B10",m:"VW/17.230 CRM 4X2",t:"Oveira"},{p:"FEQ7C43",m:"SCANIA/P360 B8X2",t:"Frango"},
+  {p:"QJL4A84",m:"SCANIA/P280 B6X2",t:"Frango"},{p:"FWD5456",m:"VOLVO/VM 270 6X2R",t:"Frango"},
+  {p:"FUN7I84",m:"SCANIA/P280 B8X2",t:"Oveira"},{p:"EAK3B50",m:"SCANIA/P320 B8X2",t:"Frango"},
+  {p:"GAH0E84",m:"VW/24.280 CRM 6X2",t:"Oveira"},{p:"QXT8H13",m:"SCANIA/P280 B6X2",t:"Oveira"},
+  {p:"SUD9B15",m:"GM CHEV - S10",t:"Caminhonete"},{p:"EEE7D63",m:"VW/17.280 CRM 4X2",t:"Pinteira"},
+  {p:"BZR7F46",m:"VW/17.280 CRM 4X2",t:"Pinteira"}
+];
+let vd={},user=null,cp=null;
+function gVd(){try{var s=localStorage.getItem('vd6');return s?JSON.parse(s):{};}catch(e){return{};}}
+function sVd(){try{localStorage.setItem('vd6',JSON.stringify(vd));}catch(e){}}
+function gU(){try{var s=localStorage.getItem('ul3');return s?JSON.parse(s):null;}catch(e){return null;}}
+function sU(u){try{localStorage.setItem('ul3',JSON.stringify(u));}catch(e){}}
+function dU(){try{localStorage.removeItem('ul3');}catch(e){}}
+function SP(s){var p=document.getElementById('spill');if(s==='on'){p.textContent='🟢 Online';p.className='pill p-on';}else if(s==='sy'){p.textContent='🔄 Sync';p.className='pill p-sy';}else{p.textContent='⚫ Offline';p.className='pill p-off';}}
+
+async function sendDrive(d){
+  try{
+    const json=encodeURIComponent(JSON.stringify(d));
+    const url=SURL+'?data='+json;
+    await fetch(url,{method:'GET',mode:'no-cors'});
+    return true;
+  }catch(e){
+    try{
+      await fetch(SURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(d)});
+      return true;
+    }catch(e2){return false;}
+  }
+}
+
+async function syncNow(){SP('sy');try{await fetch(SURL,{mode:'cors'});}catch(e){}SP('on');}
+function relogio(){const n=new Date();document.getElementById('relogio').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dataHoje').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
+function doLogin(){const u=document.getElementById('lu').value.trim();const s=document.getElementById('lp').value;const f=EQUIPE.find(x=>x.user===u&&x.senha===s);if(f){user=f;sU(f);document.getElementById('loginScreen').style.display='none';eApp();}else{document.getElementById('lerro').style.display='block';}}
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+function doLogout(){user=null;dU();document.getElementById('appScreen').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('lu').value='';document.getElementById('lp').value='';}
+function eApp(){document.getElementById('appScreen').style.display='block';document.getElementById('huser').textContent=user.nome+' · '+user.cargo;document.getElementById('dashSub').textContent=user.cargo+' · '+new Date().toLocaleDateString('pt-BR');document.getElementById('r-sup').value=user.nome;document.getElementById('r-data').value=new Date().toISOString().split('T')[0];document.getElementById('r-placa').innerHTML=TRUCKS.map(t=>`<option value="${t.p}">${t.p} — ${t.m}</option>`).join('');vd=gVd();rAll();renderEquipe();SP('on');syncNow();setInterval(syncNow,30000);setInterval(relogio,1000);relogio();}
+function gSt(d){if(!d||(!d.od&&!d.ld&&!d.cd&&!d.rd))return'none';const df=s=>s?Math.round((new Date()-new Date(s))/86400000):999;const mx=Math.max(df(d.od),df(d.ld),df(d.cd),df(d.rd));return mx>90?'late':mx>60?'alert':'ok';}
+function rAll(){rTr();rAl();rRep();rSt();rUltimos();}
+function rTr(f=''){const fl=f.toLowerCase();const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(fl)||t.m.toLowerCase().includes(fl)||t.t.toLowerCase().includes(fl));document.getElementById('tgrid').innerHTML=list.map(t=>{const d=vd[t.p]||{};const st=gSt(d);const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{if(!k)return'<div class="dot d-none"></div>';const dy=Math.round((new Date()-new Date(k))/86400000);return`<div class="dot ${dy>90?'d-late':dy>60?'d-al':'d-ok'}"></div>`;}).join('');return`<div class="tc ${st}" onclick="OM('${t.p}')"><div class="tpl">${t.p}</div><div class="tmd">${t.m}</div><span class="tbg">${t.t}</span><div class="tdts">${dots}</div>${d.sup?`<div class="ttag">👤 ${d.motorista||d.sup}</div>`:''}</div>`;}).join('');}
+function fTrucks(){rTr(document.getElementById('srch').value);}
+function rSt(){let ok=0,al=0,lt=0;TRUCKS.forEach(t=>{const s=gSt(vd[t.p]);if(s==='ok')ok++;else if(s==='alert')al++;else if(s==='late')lt++;});document.getElementById('s-ok').textContent=ok;document.getElementById('s-al').textContent=al;document.getElementById('s-late').textContent=lt;}
+function rUltimos(){const todos=[];TRUCKS.forEach(t=>{const d=vd[t.p];if(d&&d.hist&&d.hist.length){const u=d.hist[d.hist.length-1];todos.push({placa:t.p,...u});}});todos.sort((a,b)=>new Date(b.dt)-new Date(a.dt));document.getElementById('ultimos').innerHTML=todos.slice(0,5).map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--czm)"><div style="background:#EEF2FF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--az3)">${r.placa}</div><div><div style="font-size:12px;font-weight:700">${r.tp}</div><div style="font-size:11px;color:var(--cz)">👤 ${r.sup||'—'} · 📅 ${r.dt}</div></div></div>`).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p>';}
+function tocarSirene(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,.3,.6].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(880,ctx.currentTime+t);o.frequency.exponentialRampToValueAtTime(440,ctx.currentTime+t+.25);g.gain.setValueAtTime(.3,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.25);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.25);});}catch(e){}}
+function rAl(){const today=new Date();let html='',cnt=0,temAtrasado=false;TRUCKS.forEach(t=>{const d=vd[t.p]||{};[['od','🛢️ Óleo'],['ld','🔧 Lubrificação'],['cd','🔵 Calibração'],['rd','🔄 Rodízio']].forEach(([k,lb])=>{if(!d[k]){cnt++;html+=`<div class="ac none"><div class="ai"><h3>${t.p} — ${lb}</h3><p>${t.m}</p></div><span class="badge b-none">⏳ Sem registro</span></div>`;return;}const dy=Math.round((today-new Date(d[k]))/86400000);if(dy>90){cnt++;temAtrasado=true;html+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${dy} dias atrasado!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}else if(dy>60){cnt++;html+=`<div class="ac warn"><div class="ai"><h3 style="color:var(--lr)">⚠️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--lr)">${dy} dias</b></p></div><span class="badge b-warn">⚠️ ATENÇÃO</span></div>`;}});});if(temAtrasado)tocarSirene();document.getElementById('alist').innerHTML=html||`<div style="background:var(--vdl);border-radius:18px;padding:32px;text-align:center"><div style="font-size:56px">✅</div><p style="color:var(--vd);font-weight:900;font-size:17px;margin-top:10px">Tudo em dia!</p></div>`;document.getElementById('acnt').textContent=cnt>0?cnt+' alertas':'';}
+function rRep(){document.getElementById('rbody').innerHTML=TRUCKS.map(t=>{const d=vd[t.p]||{};return`<tr><td><b>${t.p}</b></td><td>${t.m}</td><td>${t.t}</td><td>${d.sup||'—'}</td><td>${d.motorista||'—'}</td><td>${d.km?Number(d.km).toLocaleString('pt-BR')+' km':'—'}</td><td>${d.od||'—'}</td><td>${d.ld||'—'}</td><td>${d.cd||'—'}</td><td>${d.rd||'—'}</td></tr>`;}).join('');}
+function renderEquipe(){document.getElementById('equipeGrid').innerHTML=EQUIPE.map(m=>`<div class="membro-card"><div class="membro-avatar">${m.icon}</div><div class="membro-nome">${m.nome}</div><div class="membro-cargo">${m.cargo}</div><div class="membro-user">👤 ${m.user} · 🔑 ${m.senha}</div></div>`).join('');}
+function tgl(cb,id){const el=document.getElementById(id);el.style.borderColor=cb.checked?'var(--az2)':'var(--czm)';el.style.background=cb.checked?'#EEF2FF':'var(--czc)';}
+async function saveReg(){
+  const placa=document.getElementById('r-placa').value;
+  const sup=document.getElementById('r-sup').value.trim();
+  const mot=document.getElementById('r-mot').value.trim();
+  const km=parseInt(document.getElementById('r-km').value)||0;
+  const data=document.getElementById('r-data').value;
+  const checks=Array.from(document.querySelectorAll('#ckgrid input:checked')).map(c=>c.value);
+  if(!sup){toast('Informe o supervisor!','terr');return;}
+  if(!mot){toast('Informe o motorista!','terr');return;}
+  if(!checks.length){toast('Marque pelo menos uma manutenção!','terr');return;}
+  const btn=document.getElementById('btnReg');btn.disabled=true;btn.textContent='⏳ Enviando...';
+  const d=vd[placa]||{};
+  if(checks.includes('oleo')){d.od=data;if(km)d.ok=km;}
+  if(checks.includes('lubrificacao')){d.ld=data;if(km)d.lk=km;}
+  if(checks.includes('calibracao')){d.cd=data;d.cp=document.getElementById('r-psi').value;}
+  if(checks.includes('rodizio')){d.rd=data;if(km)d.rk=km;}
+  if(km)d.km=km;d.sup=sup;d.motorista=mot;
+  const ot=document.getElementById('r-otipo').value;if(ot)d.ot=ot;
+  d.hist=d.hist||[];
+  d.hist.push({tp:checks.join(', '),dt:new Date().toLocaleDateString('pt-BR'),sup,motorista:mot,km,obs:document.getElementById('r-obs').value});
+  vd[placa]=d;sVd();
+  const payload={placa,sup,motorista:mot,km,manutencoes:checks,ot:d.ot||'',psi:d.cp||'',obs:document.getElementById('r-obs').value,data,ts:new Date().toISOString()};
+  const ok=await sendDrive(payload);
+  btn.disabled=false;btn.innerHTML='☁️ Salvar e Enviar para Nuvem';
+  toast(ok?'✅ Enviado para a nuvem!':'✅ Salvo localmente!','tok');
+  document.getElementById('r-km').value='';document.getElementById('r-obs').value='';
+  document.getElementById('r-psi').value='';document.getElementById('r-otipo').value='';
+  document.getElementById('r-mot').value='';
+  document.querySelectorAll('#ckgrid input').forEach(c=>{c.checked=false;tgl(c,c.parentElement.id);});
+  rAll();
+}
+function OM(placa){cp=placa;const t=TRUCKS.find(x=>x.p===placa);const d=vd[placa]||{};document.getElementById('mt').textContent='🚛 '+placa;document.getElementById('ms').textContent=t.m+' · '+t.t;document.getElementById('m-s').value=d.sup||'Não informado';document.getElementById('m-mot').value=d.motorista||'Não informado';document.getElementById('m-k').value=d.km?Number(d.km).toLocaleString('pt-BR')+' km':'Não informado';document.getElementById('m-od').value=d.od||'Não registrado';document.getElementById('m-ot').value=d.ot||'Não informado';document.getElementById('m-ld').value=d.ld||'Não registrado';document.getElementById('m-cd').value=d.cd||'Não registrado';document.getElementById('m-cp').value=d.cp||'Não informado';document.getElementById('m-rd').value=d.rd||'Não registrado';document.getElementById('m-ob').value=d.obs||'';const h=d.hist||[];document.getElementById('mhist').innerHTML=h.length?h.slice(-5).reverse().map(x=>`<div class="hi"><b>${x.tp}</b>${x.obs?' — '+x.obs:''}<small>📅 ${x.dt} · 👤 ${x.sup||'—'} · 🚗 ${x.motorista||'—'} · Km: ${x.km||'—'}</small></div>`).join(''):'<p style="color:#94A3B8;font-size:13px">Sem histórico.</p>';document.getElementById('mov').classList.add('open');}
+function CM(){document.getElementById('mov').classList.remove('open');}
+function ST(t){['dash','frota','registro','alertas','relatorio','equipe'].forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['dash','frota','registro','alertas','relatorio','equipe'][i]===t));if(t==='alertas')rAl();}
+function toast(msg,cls='tok'){const t=document.getElementById('tst');t.textContent=msg;t.className='toast show '+cls;setTimeout(()=>t.className='toast',3600);}
+async function init(){vd=gVd();user=gU();setTimeout(()=>{document.getElementById('splash').classList.add('hide');setTimeout(()=>{if(user){eApp();}else{document.getElementById('loginScreen').style.display='flex';}},700);},2400);}
+init();
+</script>
+</body>
+</html>
