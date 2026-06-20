@@ -131,7 +131,6 @@ tbody tr:hover td{background:#EEF2FF}
 </style>
 </head>
 <body>
-
 <div id="splash">
   <svg width="90" height="90" viewBox="0 0 190 170" xmlns="http://www.w3.org/2000/svg">
     <polygon points="95,5 20,125 46,125 95,32" fill="white" opacity=".95"/>
@@ -147,14 +146,9 @@ tbody tr:hover td{background:#EEF2FF}
   <div class="sp-bar"><div class="sp-fill"></div></div>
   <div style="color:#475569;font-size:11px;margin-top:12px">v3.0 · 35 Veículos</div>
 </div>
-
 <div id="loginScreen">
   <div class="estrelas"></div>
-  <div class="estrada">
-    <div class="faixa f1"></div>
-    <div class="faixa f2"></div>
-    <div class="faixa f3"></div>
-  </div>
+  <div class="estrada"><div class="faixa f1"></div><div class="faixa f2"></div><div class="faixa f3"></div></div>
   <div class="caminhao-wrap">
     <div class="farol"></div>
     <svg width="200" height="90" viewBox="0 0 200 90" xmlns="http://www.w3.org/2000/svg">
@@ -196,7 +190,6 @@ tbody tr:hover td{background:#EEF2FF}
     <div class="lrodape">🔒 Acesso restrito · Andrioni Transportes LTDA</div>
   </div>
 </div>
-
 <div id="appScreen">
   <div class="hdr">
     <div class="hdr-logo">
@@ -210,10 +203,7 @@ tbody tr:hover td{background:#EEF2FF}
       </svg>
     </div>
     <div class="hdr-info"><h1>Manutenção Preventiva</h1><p id="huser">Carregando...</p></div>
-    <div class="hdr-r">
-      <span class="pill p-off" id="spill">⚫ Offline</span>
-      <button class="bout" onclick="doLogout()">Sair</button>
-    </div>
+    <div class="hdr-r"><span class="pill p-off" id="spill">⚫ Offline</span><button class="bout" onclick="doLogout()">Sair</button></div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="ST('dash')"><span class="tab-icon">📊</span>PAINEL</div>
@@ -225,7 +215,7 @@ tbody tr:hover td{background:#EEF2FF}
   </div>
   <div class="cnt">
     <div id="tab-dash">
-      <div style="margin-bottom:16px"><h2 style="font-size:20px;font-weight:900;color:var(--az3)">Bom dia! 👋</h2><p style="font-size:13px;color:var(--cz);margin-top:3px" id="dashSub">Andrioni Transportes · Manutenção Preventiva</p></div>
+      <div style="margin-bottom:16px"><h2 style="font-size:20px;font-weight:900;color:var(--az3)">Bom dia! 👋</h2><p style="font-size:13px;color:var(--cz);margin-top:3px" id="dashSub">Andrioni Transportes</p></div>
       <div class="dash-grid">
         <div class="dash-card"><div class="dash-num c-az" id="s-total">35</div><div class="dash-lbl">Total veículos</div><div class="dash-icon">🚛</div></div>
         <div class="dash-card"><div class="dash-num c-ok" id="s-ok">0</div><div class="dash-lbl">Em dia</div><div class="dash-icon">✅</div></div>
@@ -301,7 +291,6 @@ tbody tr:hover td{background:#EEF2FF}
     </div>
   </div>
 </div>
-
 <div class="ov" id="mov">
   <div class="modal">
     <div class="mhd"><div><h2 id="mt">-</h2><p id="ms">-</p></div><button class="bx" onclick="CM()">✕</button></div>
@@ -329,7 +318,6 @@ tbody tr:hover td{background:#EEF2FF}
   </div>
 </div>
 <div class="toast" id="tst"></div>
-
 <script>
 const SURL="https://script.google.com/macros/s/AKfycbwCmLpn5ugiOaKX21bNSHxalLPk41ohHEb6FTluqe17pT-uYF8f5w74SvqAnT_mmIBRpQ/exec";
 const EQUIPE=[
@@ -368,7 +356,21 @@ function gU(){try{var s=localStorage.getItem('ul3');return s?JSON.parse(s):null;
 function sU(u){try{localStorage.setItem('ul3',JSON.stringify(u));}catch(e){}}
 function dU(){try{localStorage.removeItem('ul3');}catch(e){}}
 function SP(s){var p=document.getElementById('spill');if(s==='on'){p.textContent='🟢 Online';p.className='pill p-on';}else if(s==='sy'){p.textContent='🔄 Sync';p.className='pill p-sy';}else{p.textContent='⚫ Offline';p.className='pill p-off';}}
-async function sendDrive(d){try{const f=new FormData();f.append('data',JSON.stringify(d));await fetch(SURL,{method:'POST',mode:'no-cors',body:f});return true;}catch(e){return false;}}
+
+async function sendDrive(d){
+  try{
+    const json=encodeURIComponent(JSON.stringify(d));
+    const url=SURL+'?data='+json;
+    await fetch(url,{method:'GET',mode:'no-cors'});
+    return true;
+  }catch(e){
+    try{
+      await fetch(SURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(d)});
+      return true;
+    }catch(e2){return false;}
+  }
+}
+
 async function syncNow(){SP('sy');try{await fetch(SURL,{mode:'cors'});}catch(e){}SP('on');}
 function relogio(){const n=new Date();document.getElementById('relogio').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dataHoje').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
 function doLogin(){const u=document.getElementById('lu').value.trim();const s=document.getElementById('lp').value;const f=EQUIPE.find(x=>x.user===u&&x.senha===s);if(f){user=f;sU(f);document.getElementById('loginScreen').style.display='none';eApp();}else{document.getElementById('lerro').style.display='block';}}
@@ -380,13 +382,43 @@ function rAll(){rTr();rAl();rRep();rSt();rUltimos();}
 function rTr(f=''){const fl=f.toLowerCase();const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(fl)||t.m.toLowerCase().includes(fl)||t.t.toLowerCase().includes(fl));document.getElementById('tgrid').innerHTML=list.map(t=>{const d=vd[t.p]||{};const st=gSt(d);const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{if(!k)return'<div class="dot d-none"></div>';const dy=Math.round((new Date()-new Date(k))/86400000);return`<div class="dot ${dy>90?'d-late':dy>60?'d-al':'d-ok'}"></div>`;}).join('');return`<div class="tc ${st}" onclick="OM('${t.p}')"><div class="tpl">${t.p}</div><div class="tmd">${t.m}</div><span class="tbg">${t.t}</span><div class="tdts">${dots}</div>${d.sup?`<div class="ttag">👤 ${d.motorista||d.sup}</div>`:''}</div>`;}).join('');}
 function fTrucks(){rTr(document.getElementById('srch').value);}
 function rSt(){let ok=0,al=0,lt=0;TRUCKS.forEach(t=>{const s=gSt(vd[t.p]);if(s==='ok')ok++;else if(s==='alert')al++;else if(s==='late')lt++;});document.getElementById('s-ok').textContent=ok;document.getElementById('s-al').textContent=al;document.getElementById('s-late').textContent=lt;}
-function rUltimos(){const todos=[];TRUCKS.forEach(t=>{const d=vd[t.p];if(d&&d.hist&&d.hist.length){const u=d.hist[d.hist.length-1];todos.push({placa:t.p,...u});}});todos.sort((a,b)=>new Date(b.dt)-new Date(a.dt));const el=document.getElementById('ultimos');el.innerHTML=todos.slice(0,5).map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--czm)"><div style="background:#EEF2FF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--az3)">${r.placa}</div><div><div style="font-size:12px;font-weight:700">${r.tp}</div><div style="font-size:11px;color:var(--cz)">👤 ${r.sup||'—'} · 📅 ${r.dt}</div></div></div>`).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p>';}
+function rUltimos(){const todos=[];TRUCKS.forEach(t=>{const d=vd[t.p];if(d&&d.hist&&d.hist.length){const u=d.hist[d.hist.length-1];todos.push({placa:t.p,...u});}});todos.sort((a,b)=>new Date(b.dt)-new Date(a.dt));document.getElementById('ultimos').innerHTML=todos.slice(0,5).map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--czm)"><div style="background:#EEF2FF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--az3)">${r.placa}</div><div><div style="font-size:12px;font-weight:700">${r.tp}</div><div style="font-size:11px;color:var(--cz)">👤 ${r.sup||'—'} · 📅 ${r.dt}</div></div></div>`).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p>';}
 function tocarSirene(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,.3,.6].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(880,ctx.currentTime+t);o.frequency.exponentialRampToValueAtTime(440,ctx.currentTime+t+.25);g.gain.setValueAtTime(.3,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.25);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.25);});}catch(e){}}
 function rAl(){const today=new Date();let html='',cnt=0,temAtrasado=false;TRUCKS.forEach(t=>{const d=vd[t.p]||{};[['od','🛢️ Óleo'],['ld','🔧 Lubrificação'],['cd','🔵 Calibração'],['rd','🔄 Rodízio']].forEach(([k,lb])=>{if(!d[k]){cnt++;html+=`<div class="ac none"><div class="ai"><h3>${t.p} — ${lb}</h3><p>${t.m}</p></div><span class="badge b-none">⏳ Sem registro</span></div>`;return;}const dy=Math.round((today-new Date(d[k]))/86400000);if(dy>90){cnt++;temAtrasado=true;html+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${dy} dias atrasado!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}else if(dy>60){cnt++;html+=`<div class="ac warn"><div class="ai"><h3 style="color:var(--lr)">⚠️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--lr)">${dy} dias</b></p></div><span class="badge b-warn">⚠️ ATENÇÃO</span></div>`;}});});if(temAtrasado)tocarSirene();document.getElementById('alist').innerHTML=html||`<div style="background:var(--vdl);border-radius:18px;padding:32px;text-align:center"><div style="font-size:56px">✅</div><p style="color:var(--vd);font-weight:900;font-size:17px;margin-top:10px">Tudo em dia!</p></div>`;document.getElementById('acnt').textContent=cnt>0?cnt+' alertas':'';}
 function rRep(){document.getElementById('rbody').innerHTML=TRUCKS.map(t=>{const d=vd[t.p]||{};return`<tr><td><b>${t.p}</b></td><td>${t.m}</td><td>${t.t}</td><td>${d.sup||'—'}</td><td>${d.motorista||'—'}</td><td>${d.km?Number(d.km).toLocaleString('pt-BR')+' km':'—'}</td><td>${d.od||'—'}</td><td>${d.ld||'—'}</td><td>${d.cd||'—'}</td><td>${d.rd||'—'}</td></tr>`;}).join('');}
 function renderEquipe(){document.getElementById('equipeGrid').innerHTML=EQUIPE.map(m=>`<div class="membro-card"><div class="membro-avatar">${m.icon}</div><div class="membro-nome">${m.nome}</div><div class="membro-cargo">${m.cargo}</div><div class="membro-user">👤 ${m.user} · 🔑 ${m.senha}</div></div>`).join('');}
 function tgl(cb,id){const el=document.getElementById(id);el.style.borderColor=cb.checked?'var(--az2)':'var(--czm)';el.style.background=cb.checked?'#EEF2FF':'var(--czc)';}
-async function saveReg(){const placa=document.getElementById('r-placa').value;const sup=document.getElementById('r-sup').value.trim();const mot=document.getElementById('r-mot').value.trim();const km=parseInt(document.getElementById('r-km').value)||0;const data=document.getElementById('r-data').value;const checks=Array.from(document.querySelectorAll('#ckgrid input:checked')).map(c=>c.value);if(!sup){toast('Informe o supervisor!','terr');return;}if(!mot){toast('Informe o motorista!','terr');return;}if(!checks.length){toast('Marque pelo menos uma manutenção!','terr');return;}const btn=document.getElementById('btnReg');btn.disabled=true;btn.textContent='⏳ Enviando...';const d=vd[placa]||{};if(checks.includes('oleo')){d.od=data;if(km)d.ok=km;}if(checks.includes('lubrificacao')){d.ld=data;if(km)d.lk=km;}if(checks.includes('calibracao')){d.cd=data;d.cp=document.getElementById('r-psi').value;}if(checks.includes('rodizio')){d.rd=data;if(km)d.rk=km;}if(km)d.km=km;d.sup=sup;d.motorista=mot;const ot=document.getElementById('r-otipo').value;if(ot)d.ot=ot;d.hist=d.hist||[];d.hist.push({tp:checks.join(', '),dt:new Date().toLocaleDateString('pt-BR'),sup,motorista:mot,km,obs:document.getElementById('r-obs').value});vd[placa]=d;sVd();const ok=await sendDrive({placa,sup,motorista:mot,km,manutencoes:checks,ot:d.ot||'',psi:d.cp||'',obs:document.getElementById('r-obs').value,data,ts:new Date().toISOString()});btn.disabled=false;btn.innerHTML='☁️ Salvar e Enviar para Nuvem';toast(ok?'✅ Enviado para a nuvem!':'✅ Salvo localmente!','tok');document.getElementById('r-km').value='';document.getElementById('r-obs').value='';document.getElementById('r-psi').value='';document.getElementById('r-otipo').value='';document.getElementById('r-mot').value='';document.querySelectorAll('#ckgrid input').forEach(c=>{c.checked=false;tgl(c,c.parentElement.id);});rAll();}
+async function saveReg(){
+  const placa=document.getElementById('r-placa').value;
+  const sup=document.getElementById('r-sup').value.trim();
+  const mot=document.getElementById('r-mot').value.trim();
+  const km=parseInt(document.getElementById('r-km').value)||0;
+  const data=document.getElementById('r-data').value;
+  const checks=Array.from(document.querySelectorAll('#ckgrid input:checked')).map(c=>c.value);
+  if(!sup){toast('Informe o supervisor!','terr');return;}
+  if(!mot){toast('Informe o motorista!','terr');return;}
+  if(!checks.length){toast('Marque pelo menos uma manutenção!','terr');return;}
+  const btn=document.getElementById('btnReg');btn.disabled=true;btn.textContent='⏳ Enviando...';
+  const d=vd[placa]||{};
+  if(checks.includes('oleo')){d.od=data;if(km)d.ok=km;}
+  if(checks.includes('lubrificacao')){d.ld=data;if(km)d.lk=km;}
+  if(checks.includes('calibracao')){d.cd=data;d.cp=document.getElementById('r-psi').value;}
+  if(checks.includes('rodizio')){d.rd=data;if(km)d.rk=km;}
+  if(km)d.km=km;d.sup=sup;d.motorista=mot;
+  const ot=document.getElementById('r-otipo').value;if(ot)d.ot=ot;
+  d.hist=d.hist||[];
+  d.hist.push({tp:checks.join(', '),dt:new Date().toLocaleDateString('pt-BR'),sup,motorista:mot,km,obs:document.getElementById('r-obs').value});
+  vd[placa]=d;sVd();
+  const payload={placa,sup,motorista:mot,km,manutencoes:checks,ot:d.ot||'',psi:d.cp||'',obs:document.getElementById('r-obs').value,data,ts:new Date().toISOString()};
+  const ok=await sendDrive(payload);
+  btn.disabled=false;btn.innerHTML='☁️ Salvar e Enviar para Nuvem';
+  toast(ok?'✅ Enviado para a nuvem!':'✅ Salvo localmente!','tok');
+  document.getElementById('r-km').value='';document.getElementById('r-obs').value='';
+  document.getElementById('r-psi').value='';document.getElementById('r-otipo').value='';
+  document.getElementById('r-mot').value='';
+  document.querySelectorAll('#ckgrid input').forEach(c=>{c.checked=false;tgl(c,c.parentElement.id);});
+  rAll();
+}
 function OM(placa){cp=placa;const t=TRUCKS.find(x=>x.p===placa);const d=vd[placa]||{};document.getElementById('mt').textContent='🚛 '+placa;document.getElementById('ms').textContent=t.m+' · '+t.t;document.getElementById('m-s').value=d.sup||'Não informado';document.getElementById('m-mot').value=d.motorista||'Não informado';document.getElementById('m-k').value=d.km?Number(d.km).toLocaleString('pt-BR')+' km':'Não informado';document.getElementById('m-od').value=d.od||'Não registrado';document.getElementById('m-ot').value=d.ot||'Não informado';document.getElementById('m-ld').value=d.ld||'Não registrado';document.getElementById('m-cd').value=d.cd||'Não registrado';document.getElementById('m-cp').value=d.cp||'Não informado';document.getElementById('m-rd').value=d.rd||'Não registrado';document.getElementById('m-ob').value=d.obs||'';const h=d.hist||[];document.getElementById('mhist').innerHTML=h.length?h.slice(-5).reverse().map(x=>`<div class="hi"><b>${x.tp}</b>${x.obs?' — '+x.obs:''}<small>📅 ${x.dt} · 👤 ${x.sup||'—'} · 🚗 ${x.motorista||'—'} · Km: ${x.km||'—'}</small></div>`).join(''):'<p style="color:#94A3B8;font-size:13px">Sem histórico.</p>';document.getElementById('mov').classList.add('open');}
 function CM(){document.getElementById('mov').classList.remove('open');}
 function ST(t){['dash','frota','registro','alertas','relatorio','equipe'].forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['dash','frota','registro','alertas','relatorio','equipe'][i]===t));if(t==='alertas')rAl();}
