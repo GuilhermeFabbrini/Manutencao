@@ -98,15 +98,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--czc);color:#0F
 .btn-excluir:hover{background:var(--vm);color:#fff}
 @keyframes piscaBorda{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
 @keyframes pisca{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ALERTAS */
 .ac{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:var(--sh);border:1px solid var(--czm)}
 .ac.late{border-left:5px solid var(--vm);animation:piscaBorda 1.5s infinite;background:linear-gradient(135deg,#fff,#FFF5F5)}
 .ac.warn{border-left:5px solid var(--lr);background:linear-gradient(135deg,#fff,#FFFBEB)}
+.ac.prox{border-left:5px solid #0EA5E9;background:linear-gradient(135deg,#fff,#F0F9FF)}
 .ac.none{border-left:5px solid #CBD5E1}
+.ac.km{border-left:5px solid #8B5CF6;background:linear-gradient(135deg,#fff,#FAF5FF)}
 .ai h3{font-size:13px;font-weight:800}.ai p{font-size:11px;color:var(--cz);margin-top:3px}
 .badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .b-late{background:var(--vml);color:var(--vm);animation:pisca 1s infinite}
 .b-warn{background:var(--lrl);color:#92400E}
 .b-none{background:#F1F5F9;color:#64748B}
+.b-prox{background:#E0F2FE;color:#0369A1}
+.b-km{background:#EDE9FE;color:#6D28D9}
+
+/* SEÇÃO PRÓXIMAS */
+.prox-section{background:linear-gradient(135deg,#F0F9FF,#E0F2FE);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #BAE6FD}
+.prox-title{font-size:13px;font-weight:800;color:#0369A1;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
 .ckbox{background:var(--czc);border:2px solid var(--czm);border-radius:14px;padding:13px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;transition:.2s}
 .ckbox:has(input:checked){border-color:var(--az2);background:#EEF2FF}
 .ckbox input{width:18px;height:18px;accent-color:var(--az2)}
@@ -146,7 +157,7 @@ tbody tr:hover td{background:#EEF2FF}
   <div style="color:#93C5FD;font-size:14px;font-style:italic;margin-top:4px">Transportes</div>
   <div style="color:#64748B;font-size:12px;margin-top:8px">Manutenção Preventiva</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
-  <div style="color:#475569;font-size:11px;margin-top:12px">v3.2 · 35 Veículos</div>
+  <div style="color:#475569;font-size:11px;margin-top:12px">v3.4 · 35 Veículos</div>
 </div>
 <div id="loginScreen">
   <div class="estrelas"></div>
@@ -274,6 +285,13 @@ tbody tr:hover td{background:#EEF2FF}
         <h2 style="color:var(--vm);font-size:18px;font-weight:900">🔔 Central de Alertas</h2>
         <span id="acnt" style="background:var(--vml);color:var(--vm);padding:5px 13px;border-radius:20px;font-size:11px;font-weight:800"></span>
       </div>
+      <!-- PRÓXIMAS REVISÕES -->
+      <div class="prox-section">
+        <div class="prox-title">🗓️ Próximas Revisões — Chegando em breve</div>
+        <div id="proximasList"><p style="color:#94A3B8;font-size:13px">Nenhuma revisão próxima.</p></div>
+      </div>
+      <!-- ALERTAS VENCIDOS -->
+      <div style="font-size:13px;font-weight:800;color:var(--vm);margin-bottom:10px">🚨 Vencidos e Atrasados</div>
       <div id="alist"></div>
     </div>
     <div id="tab-relatorio" style="display:none">
@@ -318,14 +336,24 @@ tbody tr:hover td{background:#EEF2FF}
 <div class="toast" id="tst"></div>
 <script>
 const SURL="https://script.google.com/macros/s/AKfycbwCmLpn5ugiOaKX21bNSHxalLPk41ohHEb6FTluqe17pT-uYF8f5w74SvqAnT_mmIBRpQ/exec";
+
+// REGRAS DE MANUTENÇÃO
+const REGRAS={
+  lubrificacao:{tipo:'dias',limite:20,label:'🔧 Lubrificação',campo:'ld'},
+  calibracao:{tipo:'dias',limite:20,label:'🔵 Calibração',campo:'cd'},
+  rodizio:{tipo:'km',limite:40000,label:'🔄 Rodízio de Pneus',campo:'rd'},
+  oleo:{tipo:'km',limite:40000,label:'🛢️ Troca de Óleo',campo:'od'}
+};
+
 const EQUIPE=[
   {user:"rudinei",senha:"123",nome:"Rudinei Andrioni",cargo:"Proprietário",icon:"👑"},
-  {user:"guilherme",senha:"123",nome:"Guilherme Fabbrini Stabile",cargo:"Administrador",icon:"🏆"},
+  {user:"GUILHERME",senha:"411",nome:"Guilherme Fabbrini Stabile",cargo:"Administrador",icon:"🏆"},
   {user:"elton",senha:"123",nome:"Elton",cargo:"Coordenador",icon:"📋"},
   {user:"marcio",senha:"123",nome:"Márcio Junior",cargo:"Almoxarifado",icon:"📦"},
   {user:"joao",senha:"123",nome:"João Batista",cargo:"Supervisor de Operações",icon:"🔍"},
   {user:"leonardo",senha:"123",nome:"Leonardo",cargo:"Motorista Encarregado",icon:"🚛"},
   {user:"weslen",senha:"123",nome:"Weslen",cargo:"Motorista Encarregado",icon:"🚛"}
+  {user:"pedro",senha:"123",nome:"Pedro",cargo:"Auxiliar de Logistica",icon:"🚛"}
 ];
 const TRUCKS=[
   {p:"CUF8C41",m:"FIAT/STRADA ENDURAN CS13",t:"Carro"},{p:"UFH3C47",m:"VW/26.320 CRM 6X2",t:"Frango"},
@@ -361,14 +389,89 @@ function doLogin(){const u=document.getElementById('lu').value.trim();const s=do
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 function doLogout(){user=null;dU();document.getElementById('appScreen').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('lu').value='';document.getElementById('lp').value='';}
 function eApp(){document.getElementById('appScreen').style.display='block';document.getElementById('huser').textContent=user.nome+' · '+user.cargo;document.getElementById('dashSub').textContent=user.cargo+' · '+new Date().toLocaleDateString('pt-BR');document.getElementById('r-sup').value=user.nome;document.getElementById('r-data').value=new Date().toISOString().split('T')[0];document.getElementById('r-placa').innerHTML=TRUCKS.map(t=>`<option value="${t.p}">${t.p} — ${t.m}</option>`).join('');vd=gVd();rAll();renderEquipe();SP('on');syncNow();setInterval(syncNow,30000);setInterval(relogio,1000);relogio();}
-function gSt(d){if(!d||(!d.od&&!d.ld&&!d.cd&&!d.rd))return'none';const df=s=>s?Math.round((new Date()-new Date(s))/86400000):999;const mx=Math.max(df(d.od),df(d.ld),df(d.cd),df(d.rd));return mx>90?'late':mx>60?'alert':'ok';}
+function gSt(d){
+  if(!d||(!d.od&&!d.ld&&!d.cd&&!d.rd))return'none';
+  const df=s=>s?Math.round((new Date()-new Date(s))/86400000):999;
+  const mx=Math.max(df(d.od),df(d.ld),df(d.cd),df(d.rd));
+  // Verifica também por km
+  const km=parseInt(d.km)||0;
+  const kmOleo=parseInt(d.ok)||0;
+  const kmRod=parseInt(d.rk)||0;
+  if(mx>20)return'late';
+  if(mx>15)return'alert';
+  if(kmOleo>0&&(km-kmOleo)>40000)return'late';
+  if(kmRod>0&&(km-kmRod)>40000)return'late';
+  if(kmOleo>0&&(km-kmOleo)>35000)return'alert';
+  if(kmRod>0&&(km-kmRod)>35000)return'alert';
+  return'ok';
+}
 function rAll(){rTr();rAl();rRep();rSt();rUltimos();}
-function rTr(f=''){const fl=f.toLowerCase();const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(fl)||t.m.toLowerCase().includes(fl)||t.t.toLowerCase().includes(fl));document.getElementById('tgrid').innerHTML=list.map(t=>{const d=vd[t.p]||{};const st=gSt(d);const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{if(!k)return'<div class="dot d-none"></div>';const dy=Math.round((new Date()-new Date(k))/86400000);return`<div class="dot ${dy>90?'d-late':dy>60?'d-al':'d-ok'}"></div>`;}).join('');return`<div class="tc ${st}" onclick="OM('${t.p}')"><div class="tpl">${t.p}</div><div class="tmd">${t.m}</div><span class="tbg">${t.t}</span><div class="tdts">${dots}</div>${d.motorista?`<div class="ttag">👤 ${d.motorista}</div>`:''}</div>`;}).join('');}
+function rTr(f=''){const fl=f.toLowerCase();const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(fl)||t.m.toLowerCase().includes(fl)||t.t.toLowerCase().includes(fl));document.getElementById('tgrid').innerHTML=list.map(t=>{const d=vd[t.p]||{};const st=gSt(d);const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{if(!k)return'<div class="dot d-none"></div>';const dy=Math.round((new Date()-new Date(k))/86400000);return`<div class="dot ${dy>20?'d-late':dy>15?'d-al':'d-ok'}"></div>`;}).join('');return`<div class="tc ${st}" onclick="OM('${t.p}')"><div class="tpl">${t.p}</div><div class="tmd">${t.m}</div><span class="tbg">${t.t}</span><div class="tdts">${dots}</div>${d.motorista?`<div class="ttag">👤 ${d.motorista}</div>`:''}</div>`;}).join('');}
 function fTrucks(){rTr(document.getElementById('srch').value);}
 function rSt(){let ok=0,al=0,lt=0;TRUCKS.forEach(t=>{const s=gSt(vd[t.p]);if(s==='ok')ok++;else if(s==='alert')al++;else if(s==='late')lt++;});document.getElementById('s-ok').textContent=ok;document.getElementById('s-al').textContent=al;document.getElementById('s-late').textContent=lt;}
 function rUltimos(){const todos=[];TRUCKS.forEach(t=>{const d=vd[t.p];if(d&&d.hist&&d.hist.length){const u=d.hist[d.hist.length-1];todos.push({placa:t.p,...u});}});todos.sort((a,b)=>new Date(b.dt)-new Date(a.dt));document.getElementById('ultimos').innerHTML=todos.slice(0,5).map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--czm)"><div style="background:#EEF2FF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--az3)">${r.placa}</div><div><div style="font-size:12px;font-weight:700">${r.tp}</div><div style="font-size:11px;color:var(--cz)">👤 ${r.sup||'—'} · 📅 ${r.dt}</div></div></div>`).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p>';}
 function tocarSirene(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,.3,.6].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(880,ctx.currentTime+t);o.frequency.exponentialRampToValueAtTime(440,ctx.currentTime+t+.25);g.gain.setValueAtTime(.3,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.25);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.25);});}catch(e){}}
-function rAl(){const today=new Date();let html='',cnt=0,temAtrasado=false;TRUCKS.forEach(t=>{const d=vd[t.p]||{};[['od','🛢️ Óleo'],['ld','🔧 Lubrificação'],['cd','🔵 Calibração'],['rd','🔄 Rodízio']].forEach(([k,lb])=>{if(!d[k]){cnt++;html+=`<div class="ac none"><div class="ai"><h3>${t.p} — ${lb}</h3><p>${t.m}</p></div><span class="badge b-none">⏳ Sem registro</span></div>`;return;}const dy=Math.round((today-new Date(d[k]))/86400000);if(dy>90){cnt++;temAtrasado=true;html+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${dy} dias atrasado!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}else if(dy>60){cnt++;html+=`<div class="ac warn"><div class="ai"><h3 style="color:var(--lr)">⚠️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--lr)">${dy} dias</b></p></div><span class="badge b-warn">⚠️ ATENÇÃO</span></div>`;}});});if(temAtrasado)tocarSirene();document.getElementById('alist').innerHTML=html||`<div style="background:var(--vdl);border-radius:18px;padding:32px;text-align:center"><div style="font-size:56px">✅</div><p style="color:var(--vd);font-weight:900;font-size:17px;margin-top:10px">Tudo em dia!</p></div>`;document.getElementById('acnt').textContent=cnt>0?cnt+' alertas':'';}
+
+function rAl(){
+  const today=new Date();
+  let htmlVencido='',htmlProximo='',cntV=0,cntP=0,temAtrasado=false;
+
+  TRUCKS.forEach(t=>{
+    const d=vd[t.p]||{};
+    const km=parseInt(d.km)||0;
+
+    // ── ALERTAS POR DIAS (Lubrificação e Calibração) ──
+    [['ld','🔧 Lubrificação',20],['cd','🔵 Calibração',20]].forEach(([campo,lb,limDias])=>{
+      if(!d[campo]){
+        cntV++;
+        htmlVencido+=`<div class="ac none"><div class="ai"><h3>${t.p} — ${lb}</h3><p>${t.m}</p></div><span class="badge b-none">⏳ Sem registro</span></div>`;
+        return;
+      }
+      const dy=Math.round((today-new Date(d[campo]))/86400000);
+      const restam=limDias-dy;
+      if(dy>=limDias){
+        cntV++;temAtrasado=true;
+        htmlVencido+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${dy} dias — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;
+      } else if(restam<=5){
+        cntP++;
+        htmlProximo+=`<div class="ac prox"><div class="ai"><h3 style="color:#0369A1">🗓️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:#0369A1">Vence em ${restam} dia${restam===1?'':'s'}!</b></p></div><span class="badge b-prox">⏰ ${restam}d</span></div>`;
+      }
+    });
+
+    // ── ALERTAS POR KM (Óleo e Rodízio) ──
+    [['ok','od','🛢️ Troca de Óleo',40000],['rk','rd','🔄 Rodízio de Pneus',40000]].forEach(([campoKm,campoData,lb,limKm])=>{
+      if(!d[campoData]){
+        cntV++;
+        htmlVencido+=`<div class="ac none"><div class="ai"><h3>${t.p} — ${lb}</h3><p>${t.m}</p></div><span class="badge b-none">⏳ Sem registro</span></div>`;
+        return;
+      }
+      const kmNaManutencao=parseInt(d[campoKm])||0;
+      if(kmNaManutencao>0&&km>0){
+        const kmRodados=km-kmNaManutencao;
+        const kmRestam=limKm-kmRodados;
+        if(kmRodados>=limKm){
+          cntV++;temAtrasado=true;
+          htmlVencido+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${kmRodados.toLocaleString('pt-BR')} km rodados — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;
+        } else if(kmRestam<=5000){
+          cntP++;
+          htmlProximo+=`<div class="ac km"><div class="ai"><h3 style="color:#6D28D9">🗓️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:#6D28D9">Faltam ${kmRestam.toLocaleString('pt-BR')} km</b></p></div><span class="badge b-km">⚡ ${kmRestam.toLocaleString('pt-BR')}km</span></div>`;
+        }
+      }
+    });
+  });
+
+  if(temAtrasado)tocarSirene();
+
+  // Próximas revisões
+  document.getElementById('proximasList').innerHTML=htmlProximo||'<p style="color:#0369A1;font-size:13px;font-weight:600">✅ Nenhuma revisão chegando em breve.</p>';
+
+  // Vencidos
+  document.getElementById('alist').innerHTML=htmlVencido||`<div style="background:var(--vdl);border-radius:18px;padding:32px;text-align:center"><div style="font-size:56px">✅</div><p style="color:var(--vd);font-weight:900;font-size:17px;margin-top:10px">Tudo em dia!</p></div>`;
+
+  const total=cntV+cntP;
+  document.getElementById('acnt').textContent=total>0?total+' alertas':'';
+}
+
 function rRep(){document.getElementById('rbody').innerHTML=TRUCKS.map(t=>{const d=vd[t.p]||{};return`<tr><td><b>${t.p}</b></td><td>${t.m}</td><td>${t.t}</td><td>${d.sup||'—'}</td><td>${d.motorista||'—'}</td><td>${d.km?Number(d.km).toLocaleString('pt-BR')+' km':'—'}</td><td>${d.od||'—'}</td><td>${d.ld||'—'}</td><td>${d.cd||'—'}</td><td>${d.rd||'—'}</td></tr>`;}).join('');}
 function renderEquipe(){document.getElementById('equipeGrid').innerHTML=EQUIPE.map(m=>`<div class="membro-card"><div class="membro-avatar">${m.icon}</div><div class="membro-nome">${m.nome}</div><div class="membro-cargo">${m.cargo}</div><div class="membro-user">👤 ${m.user} · 🔑 ${m.senha}</div></div>`).join('');}
 function tgl(cb,id){const el=document.getElementById(id);el.style.borderColor=cb.checked?'var(--az2)':'var(--czm)';el.style.background=cb.checked?'#EEF2FF':'var(--czc)';}
