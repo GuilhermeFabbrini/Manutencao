@@ -362,7 +362,40 @@ function sU(u){try{localStorage.setItem('ul3',JSON.stringify(u));}catch(e){}}
 function dU(){try{localStorage.removeItem('ul3');}catch(e){}}
 function SP(s){var p=document.getElementById('spill');if(s==='on'){p.textContent='🟢 Online';p.className='pill p-on';}else if(s==='sy'){p.textContent='🔄 Sync';p.className='pill p-sy';}else{p.textContent='⚫ Offline';p.className='pill p-off';}}
 async function sendDrive(d){try{const json=encodeURIComponent(JSON.stringify(d));await fetch(SURL+'?data='+json,{method:'GET',mode:'no-cors'});return true;}catch(e){try{await fetch(SURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(d)});return true;}catch(e2){return false;}}}
-async function syncNow(){SP('sy');try{await fetch(SURL,{mode:'cors'});}catch(e){}SP('on');}
+function __cbSync(json){
+  try{
+    if(json&&json.frota){
+      let mudou=false;
+      json.frota.forEach(row=>{
+        const p=row.placa;if(!p)return;
+        const tsRemoto=row.ts||0;
+        const tsLocal=(vd[p]&&vd[p]._ts)||0;
+        if(tsRemoto>tsLocal){
+          vd[p]={
+            sup:row.sup||'',motorista:row.motorista||'',km:row.km||'',
+            od:row.od||'',ot:row.ot||'',ld:row.ld||'',
+            cd:row.cd||'',cp:row.cp||'',rd:row.rd||'',
+            obs:row.obs||'',
+            hist:(vd[p]&&vd[p].hist)||[],
+            _ts:tsRemoto
+          };
+          mudou=true;
+        }
+      });
+      if(mudou){sVd();rAll();toast('🔄 Atualizado por outro supervisor','tinf');}
+    }
+  }catch(e){}
+  SP('on');
+}
+function syncNow(){
+  SP('sy');
+  const old=document.getElementById('__syncScript');if(old)old.remove();
+  const s=document.createElement('script');
+  s.id='__syncScript';
+  s.src=SURL+'?action=getData&cb=__cbSync&_='+Date.now();
+  s.onerror=()=>{SP('off');};
+  document.head.appendChild(s);
+}
 function relogio(){const n=new Date();document.getElementById('relogio').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dataHoje').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
 function doLogin(){const u=document.getElementById('lu').value.trim();const s=document.getElementById('lp').value;const f=EQUIPE.find(x=>x.user===u&&x.senha===s);if(f){user=f;sU(f);document.getElementById('loginScreen').style.display='none';eApp();}else{document.getElementById('lerro').style.display='block';}}
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
@@ -376,7 +409,7 @@ function eApp(){
     document.getElementById('r-data').value=new Date().toISOString().split('T')[0];
     document.getElementById('r-placa').innerHTML=TRUCKS.map(t=>`<option value="${t.p}">${t.p} — ${t.m}</option>`).join('');
     vd=gVd();rAll();renderEquipe();SP('on');syncNow();
-    setInterval(syncNow,30000);setInterval(relogio,1000);relogio();
+    setInterval(syncNow,20000);setInterval(relogio,1000);relogio();
   }catch(e){localStorage.clear();location.reload();}
 }
 function gSt(d){
@@ -447,8 +480,9 @@ async function saveReg(){
   if(checks.includes('calibracao')){d.cd=data;d.cp=document.getElementById('r-psi').value;}if(checks.includes('rodizio')){d.rd=data;if(km)d.rk=km;}
   if(km)d.km=km;d.sup=sup;d.motorista=mot;const ot=document.getElementById('r-otipo').value;if(ot)d.ot=ot;
   d.hist=d.hist||[];d.hist.push({tp:checks.join(', '),dt:new Date().toLocaleDateString('pt-BR'),sup,motorista:mot,km,obs:document.getElementById('r-obs').value});
+  d._ts=Date.now();
   vd[placa]=d;sVd();
-  const ok=await sendDrive({placa,sup,motorista:mot,km,manutencoes:checks,ot:d.ot||'',psi:d.cp||'',obs:document.getElementById('r-obs').value,data,ts:new Date().toISOString()});
+  const ok=await sendDrive({placa,sup,motorista:mot,km,manutencoes:checks,ot:d.ot||'',psi:d.cp||'',obs:document.getElementById('r-obs').value,data,ts:d._ts});
   btn.disabled=false;btn.innerHTML='☁️ Salvar e Enviar para Nuvem';
   toast(ok?'✅ Enviado para a nuvem!':'✅ Salvo localmente!','tok');
   document.getElementById('r-km').value='';document.getElementById('r-obs').value='';document.getElementById('r-psi').value='';document.getElementById('r-otipo').value='';document.getElementById('r-mot').value='';
