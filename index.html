@@ -99,19 +99,17 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--czc);color:#0F
 @keyframes pisca{0%,100%{opacity:1}50%{opacity:.4}}
 .ac{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:var(--sh);border:1px solid var(--czm)}
 .ac.late{border-left:5px solid var(--vm);animation:piscaBorda 1.5s infinite;background:linear-gradient(135deg,#fff,#FFF5F5)}
-.ac.warn{border-left:5px solid var(--lr);background:linear-gradient(135deg,#fff,#FFFBEB)}
 .ac.prox{border-left:5px solid #0EA5E9;background:linear-gradient(135deg,#fff,#F0F9FF)}
 .ac.none{border-left:5px solid #CBD5E1}
 .ac.km{border-left:5px solid #8B5CF6;background:linear-gradient(135deg,#fff,#FAF5FF)}
 .ai h3{font-size:13px;font-weight:800}.ai p{font-size:11px;color:var(--cz);margin-top:3px}
 .badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .b-late{background:var(--vml);color:var(--vm);animation:pisca 1s infinite}
-.b-warn{background:var(--lrl);color:#92400E}
 .b-none{background:#F1F5F9;color:#64748B}
 .b-prox{background:#E0F2FE;color:#0369A1}
 .b-km{background:#EDE9FE;color:#6D28D9}
 .prox-section{background:linear-gradient(135deg,#F0F9FF,#E0F2FE);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #BAE6FD}
-.prox-title{font-size:13px;font-weight:800;color:#0369A1;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.prox-title{font-size:13px;font-weight:800;color:#0369A1;margin-bottom:12px}
 .ckbox{background:var(--czc);border:2px solid var(--czm);border-radius:14px;padding:13px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;transition:.2s}
 .ckbox:has(input:checked){border-color:var(--az2);background:#EEF2FF}
 .ckbox input{width:18px;height:18px;accent-color:var(--az2)}
@@ -151,7 +149,7 @@ tbody tr:hover td{background:#EEF2FF}
   <div style="color:#93C5FD;font-size:14px;font-style:italic;margin-top:4px">Transportes</div>
   <div style="color:#64748B;font-size:12px;margin-top:8px">Manutenção Preventiva</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
-  <div style="color:#475569;font-size:11px;margin-top:12px">v3.5 · 35 Veículos</div>
+  <div style="color:#475569;font-size:11px;margin-top:12px">v3.6 · 35 Veículos</div>
 </div>
 <div id="loginScreen">
   <div class="estrelas"></div>
@@ -333,8 +331,8 @@ const EQUIPE=[
   {user:"marcio",senha:"123",nome:"Márcio Junior",cargo:"Almoxarifado",icon:"📦"},
   {user:"joao",senha:"123",nome:"João Batista",cargo:"Supervisor de Operações",icon:"🔍"},
   {user:"leonardo",senha:"123",nome:"Leonardo",cargo:"Motorista Encarregado",icon:"🚛"},
-  {user:"weslen",senha:"123",nome:"Weslen",cargo:"Motorista Encarregado",icon:"🚛"}
-  {user:"pedro",senha:"123",nome:"Pedro",cargo:"Auxiliar de Logistica",icon:"🚛"}
+  {user:"weslen",senha:"123",nome:"Weslen",cargo:"Motorista Encarregado",icon:"🚛"},
+  {user:"pedro",senha:"123",nome:"Pedro",cargo:"Auxiliar de Logística",icon:"📦"}
 ];
 const TRUCKS=[
   {p:"CUF8C41",m:"FIAT/STRADA ENDURAN CS13",t:"Carro"},{p:"UFH3C47",m:"VW/26.320 CRM 6X2",t:"Frango"},
@@ -347,13 +345,13 @@ const TRUCKS=[
   {p:"TIV7G01",m:"VW/18.260 CRM 4X2",t:"Pinteira"},{p:"TJN9H92",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
   {p:"TJJ6H61",m:"SCANIA/P280 B6X2",t:"Oveira"},{p:"TJV5C01",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
   {p:"TJB0H74",m:"VW/18.260 CRM 4X2",t:"Pinteira"},{p:"TJJ2A70",m:"VW/18.260 CRM 4X2",t:"Pinteira"},
-  {p:"SWW6B06",m:"SCANIA/P320 B8X2",t:"Oveira"},{p:"FRY3A93",m:"SCANIA/P360 B8X2",t:"Oveira"},
+  {p:"SWW6B06",m:"SCANIA/P320 B8X2",t:"Pinteira"},{p:"FRY3A93",m:"SCANIA/P360 B8X2",t:"Oveira"},
   {p:"FUG0D75",m:"VW/24.280 CRM 6X2",t:"Oveira"},{p:"FJV6I54",m:"SCANIA/P320 B8X2",t:"Oveira"},
   {p:"QJH8B10",m:"VW/17.230 CRM 4X2",t:"Oveira"},{p:"FEQ7C43",m:"SCANIA/P360 B8X2",t:"Frango"},
   {p:"QJL4A84",m:"SCANIA/P280 B6X2",t:"Frango"},{p:"FWD5456",m:"VOLVO/VM 270 6X2R",t:"Frango"},
   {p:"FUN7I84",m:"SCANIA/P280 B8X2",t:"Oveira"},{p:"EAK3B50",m:"SCANIA/P320 B8X2",t:"Frango"},
   {p:"GAH0E84",m:"VW/24.280 CRM 6X2",t:"Oveira"},{p:"QXT8H13",m:"SCANIA/P280 B6X2",t:"Oveira"},
-  {p:"SUS9B68",m:"SCANIA/320 B8X2",t:"Oveira"},{p:"EEE7D63",m:"VW/17.280 CRM 4X2",t:"Pinteira"},
+  {p:"SUS9B68",m:"SCANIA/P320 B8X2",t:"Oveira"},{p:"EEE7D63",m:"VW/17.280 CRM 4X2",t:"Pinteira"},
   {p:"BZR7F46",m:"VW/17.280 CRM 4X2",t:"Pinteira"}
 ];
 let vd={},user=null,cp=null;
@@ -384,9 +382,8 @@ function eApp(){
 function gSt(d){
   if(!d||(!d.od&&!d.ld&&!d.cd&&!d.rd))return'none';
   const df=s=>s?Math.round((new Date()-new Date(s))/86400000):999;
-  const dyLub=df(d.ld);const dyCal=df(d.cd);
-  const km=parseInt(d.km)||0;
-  const kmOleo=parseInt(d.ok)||0;const kmRod=parseInt(d.rk)||0;
+  const dyLub=df(d.ld),dyCal=df(d.cd);
+  const km=parseInt(d.km)||0,kmOleo=parseInt(d.ok)||0,kmRod=parseInt(d.rk)||0;
   if(dyLub>=20||dyCal>=20)return'late';
   if(kmOleo>0&&(km-kmOleo)>=40000)return'late';
   if(kmRod>0&&(km-kmRod)>=40000)return'late';
@@ -401,11 +398,7 @@ function rTr(f=''){
   const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(fl)||t.m.toLowerCase().includes(fl)||t.t.toLowerCase().includes(fl));
   document.getElementById('tgrid').innerHTML=list.map(t=>{
     const d=vd[t.p]||{};const st=gSt(d);
-    const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{
-      if(!k)return'<div class="dot d-none"></div>';
-      const dy=Math.round((new Date()-new Date(k))/86400000);
-      return`<div class="dot ${dy>=20?'d-late':dy>=15?'d-al':'d-ok'}"></div>`;
-    }).join('');
+    const dots=[d.od,d.ld,d.cd,d.rd].map(k=>{if(!k)return'<div class="dot d-none"></div>';const dy=Math.round((new Date()-new Date(k))/86400000);return`<div class="dot ${dy>=20?'d-late':dy>=15?'d-al':'d-ok'}"></div>`;}).join('');
     return`<div class="tc ${st}" onclick="OM('${t.p}')"><div class="tpl">${t.p}</div><div class="tmd">${t.m}</div><span class="tbg">${t.t}</span><div class="tdts">${dots}</div>${d.motorista?`<div class="ttag">👤 ${d.motorista}</div>`:''}</div>`;
   }).join('');
 }
@@ -417,27 +410,24 @@ function rAl(){
   const today=new Date();let htmlV='',htmlP='',cntV=0,cntP=0,temAtrasado=false;
   TRUCKS.forEach(t=>{
     const d=vd[t.p]||{};const km=parseInt(d.km)||0;
-    // DIAS: Lubrificação e Calibração (limite 20 dias)
     [['ld','🔧 Lubrificação',20],['cd','🔵 Calibração',20]].forEach(([campo,lb,lim])=>{
       if(!d[campo]){cntV++;htmlV+=`<div class="ac none"><div class="ai"><h3>${t.p} — ${lb}</h3><p>${t.m}</p></div><span class="badge b-none">⏳ Sem registro</span></div>`;return;}
-      const dy=Math.round((today-new Date(d[campo]))/86400000);
-      const restam=lim-dy;
+      const dy=Math.round((today-new Date(d[campo]))/86400000);const restam=lim-dy;
       if(dy>=lim){cntV++;temAtrasado=true;htmlV+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${dy} dias — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}
       else if(restam<=5){cntP++;htmlP+=`<div class="ac prox"><div class="ai"><h3 style="color:#0369A1">🗓️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:#0369A1">Vence em ${restam} dia${restam===1?'':'s'}!</b></p></div><span class="badge b-prox">⏰ ${restam}d</span></div>`;}
     });
-    // KM: Óleo e Rodízio (limite 40.000 km)
     [['ok','od','🛢️ Troca de Óleo'],['rk','rd','🔄 Rodízio de Pneus']].forEach(([campoKm,campoData,lb])=>{
       if(!d[campoData]){cntV++;htmlV+=`<div class="ac none"><div class="ai"><h3>${t.p} — ${lb}</h3><p>${t.m}</p></div><span class="badge b-none">⏳ Sem registro</span></div>`;return;}
       const kmMnt=parseInt(d[campoKm])||0;
       if(kmMnt>0&&km>0){
         const rodados=km-kmMnt;const restamKm=40000-rodados;
-        if(rodados>=40000){cntV++;temAtrasado=true;htmlV+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${rodados.toLocaleString('pt-BR')} km rodados — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}
+        if(rodados>=40000){cntV++;temAtrasado=true;htmlV+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${rodados.toLocaleString('pt-BR')} km — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}
         else if(restamKm<=5000){cntP++;htmlP+=`<div class="ac km"><div class="ai"><h3 style="color:#6D28D9">🗓️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:#6D28D9">Faltam ${restamKm.toLocaleString('pt-BR')} km</b></p></div><span class="badge b-km">⚡ ${restamKm.toLocaleString('pt-BR')}km</span></div>`;}
       }
     });
   });
   if(temAtrasado)tocarSirene();
-  document.getElementById('proximasList').innerHTML=htmlP||'<p style="color:#0369A1;font-size:13px;font-weight:600">✅ Nenhuma revisão chegando em breve.</p>';
+  document.getElementById('proximasList').innerHTML=htmlP||'<p style="color:#0369A1;font-size:13px;font-weight:600">✅ Nenhuma revisão próxima.</p>';
   document.getElementById('alist').innerHTML=htmlV||`<div style="background:var(--vdl);border-radius:18px;padding:32px;text-align:center"><div style="font-size:56px">✅</div><p style="color:var(--vd);font-weight:900;font-size:17px;margin-top:10px">Tudo em dia!</p></div>`;
   document.getElementById('acnt').textContent=(cntV+cntP)>0?(cntV+cntP)+' alertas':'';
 }
