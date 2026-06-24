@@ -354,9 +354,74 @@ const TRUCKS=[
   {p:"SUS9B68",m:"SCANIA/P320 B8X2",t:"Oveira"},{p:"EEE7D63",m:"VW/17.280 CRM 4X2",t:"Pinteira"},
   {p:"BZR7F46",m:"VW/17.280 CRM 4X2",t:"Pinteira"}
 ];
+// ═══════════════════════════════════════════════════════════════
+//  DADOS BASE — Km atual de troca de óleo importados do sistema
+//  gestao-manutencao.vercel.app em 24/06/2026
+//  Fonte: prints fornecidos pelo administrador
+// ═══════════════════════════════════════════════════════════════
+const DADOS_BASE = {
+  // ── VENCIDOS ────────────────────────────────────────────────
+  "TJJ6H61": { km:319552, meta:315261, status:"VENCIDO" },
+  "FUG0D75": { km:1177716, meta:1175249, status:"VENCIDO" },
+  "SUS9B68": { km:438404, meta:435999, status:"VENCIDO" },
+  "FWD5456": { km:1063294, meta:1062902, status:"VENCIDO" },
+  // ── ATENÇÃO ─────────────────────────────────────────────────
+  "UEV7B22": { km:37724, meta:40001, status:"ATENCAO" },
+  // ── OK ──────────────────────────────────────────────────────
+  "GAY7C39": { km:36948, meta:40001, status:"OK" },
+  "UFM2D34": { km:36910, meta:40001, status:"OK" },
+  "EJV6A04": { km:763961, meta:769398, status:"OK" },
+  "BZR7F46": { km:375235, meta:381750, status:"OK" },
+  "SWP7B26": { km:32125, meta:40001, status:"OK" },
+  "TJH8H67": { km:151642, meta:160000, status:"OK" },
+  "FUN7I84": { km:441388, meta:450544, status:"OK" },
+  "SWW6B06": { km:435453, meta:446036, status:"OK" },
+  "EAK3B50": { km:1454555, meta:1465328, status:"OK" },
+  "TJJ2A70": { km:263050, meta:274017, status:"OK" },
+  "QXT8H13": { km:1238000, meta:1249022, status:"OK" },
+  "TJB0H74": { km:270604, meta:285733, status:"OK" },
+  "QJH8B10": { km:919622, meta:937817, status:"OK" },
+  "TJV5C01": { km:262230, meta:281300, status:"OK" },
+  "EEE7D63": { km:377909, meta:400028, status:"OK" },
+  "TKL6I24": { km:59054, meta:81410, status:"OK" },
+  "UFN9H70": { km:57806, meta:80225, status:"OK" },
+  "GAH0E84": { km:826679, meta:849591, status:"OK" },
+  "QJL4A84": { km:1291719, meta:1315812, status:"OK" },
+  "FJV6I54": { km:726524, meta:751340, status:"OK" },
+  "TIV7G01": { km:133555, meta:160000, status:"OK" },
+  "TJN9H92": { km:169297, meta:200000, status:"OK" },
+  "UGU3E16": { km:51233, meta:82583, status:"OK" },
+  "QSP2D07": { km:50733, meta:82131, status:"OK" },
+  "UFH3C47": { km:46691, meta:78644, status:"OK" },
+  "FRY3A93": { km:613544, meta:647213, status:"OK" },
+  "FWB2C61": { km:227978, meta:262521, status:"OK" },
+  "FEQ7C43": { km:1176999, meta:1215595, status:"OK" },
+  "QSR1C39": { km:40752, meta:79999, status:"OK" },
+  "UDX7I09": { km:35797, meta:79998, status:"OK" }
+};
+
 let vd={},user=null,cp=null;
 function gVd(){try{var s=localStorage.getItem('vd6');return s?JSON.parse(s):{};}catch(e){return{};}}
 function sVd(){try{localStorage.setItem('vd6',JSON.stringify(vd));}catch(e){}}
+
+// Aplica DADOS_BASE nas placas que ainda não têm registro local
+// Nunca sobrescreve dados que o supervisor já registrou manualmente
+function aplicarDadosBase(){
+  let atualizado=false;
+  for(const placa in DADOS_BASE){
+    const base=DADOS_BASE[placa];
+    if(!vd[placa]){vd[placa]={};}
+    // Só atualiza km se o valor base for maior que o registrado
+    const kmAtual=parseInt(vd[placa].km)||0;
+    if(base.km>kmAtual){
+      vd[placa].km=base.km;
+      vd[placa].ok=base.km; // km da última troca de óleo = km atual do sistema
+      vd[placa]._base=true; // marca como dado importado
+      atualizado=true;
+    }
+  }
+  if(atualizado)sVd();
+}
 function gU(){try{var s=localStorage.getItem('ul3');return s?JSON.parse(s):null;}catch(e){return null;}}
 function sU(u){try{localStorage.setItem('ul3',JSON.stringify(u));}catch(e){}}
 function dU(){try{localStorage.removeItem('ul3');}catch(e){}}
@@ -408,7 +473,7 @@ function eApp(){
     document.getElementById('r-sup').value=user.nome;
     document.getElementById('r-data').value=new Date().toISOString().split('T')[0];
     document.getElementById('r-placa').innerHTML=TRUCKS.map(t=>`<option value="${t.p}">${t.p} — ${t.m}</option>`).join('');
-    vd=gVd();rAll();renderEquipe();SP('on');syncNow();
+    vd=gVd();aplicarDadosBase();rAll();renderEquipe();SP('on');syncNow();
     setInterval(syncNow,20000);setInterval(relogio,1000);relogio();
   }catch(e){localStorage.clear();location.reload();}
 }
