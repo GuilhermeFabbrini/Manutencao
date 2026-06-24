@@ -404,23 +404,20 @@ let vd={},user=null,cp=null;
 function gVd(){try{var s=localStorage.getItem('vd6');return s?JSON.parse(s):{};}catch(e){return{};}}
 function sVd(){try{localStorage.setItem('vd6',JSON.stringify(vd));}catch(e){}}
 
-// Aplica DADOS_BASE nas placas que ainda não têm registro local
-// Nunca sobrescreve dados que o supervisor já registrou manualmente
+// Aplica DADOS_BASE com versionamento — força atualização em todos os dispositivos
+// Versão: 24/06/2026 — dados importados de gestao-manutencao.vercel.app
+const _BV='20260624v1';
 function aplicarDadosBase(){
-  let atualizado=false;
+  if(localStorage.getItem('_bv')===_BV) return; // já aplicado
   for(const placa in DADOS_BASE){
     const base=DADOS_BASE[placa];
-    if(!vd[placa]){vd[placa]={};}
-    // Só atualiza km se o valor base for maior que o registrado
-    const kmAtual=parseInt(vd[placa].km)||0;
-    if(base.km>kmAtual){
-      vd[placa].km=base.km;
-      vd[placa].ok=base.km; // km da última troca de óleo = km atual do sistema
-      vd[placa]._base=true; // marca como dado importado
-      atualizado=true;
-    }
+    if(!vd[placa]) vd[placa]={};
+    vd[placa].km =base.km;
+    vd[placa].ok =base.km;
+    vd[placa]._base=_BV;
   }
-  if(atualizado)sVd();
+  localStorage.setItem('_bv',_BV);
+  sVd();
 }
 function gU(){try{var s=localStorage.getItem('ul3');return s?JSON.parse(s):null;}catch(e){return null;}}
 function sU(u){try{localStorage.setItem('ul3',JSON.stringify(u));}catch(e){}}
