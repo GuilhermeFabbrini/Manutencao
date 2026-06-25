@@ -133,7 +133,37 @@ tbody tr:hover td{background:#EEF2FF}
 .tinf{background:linear-gradient(135deg,#1B2A6B,#2541B2);color:#fff}
 @keyframes ta{0%{opacity:0;transform:translateX(-50%) translateY(14px)}12%{opacity:1;transform:translateX(-50%) translateY(0)}85%{opacity:1}100%{opacity:0}}
 @media(max-width:480px){.dash-grid{grid-template-columns:repeat(2,1fr)}.tgrid{grid-template-columns:repeat(2,1fr)}.fr{grid-template-columns:1fr}.equipe-grid{grid-template-columns:repeat(2,1fr)}}
+/* === v4.0 RASTREAMENTO/TELEMETRIA + POLIMENTO === */
+#mapa{height:360px;width:100%;border-radius:18px;box-shadow:var(--sh);z-index:1;border:1px solid var(--czm)}
+.leaflet-popup-content{font-family:'Segoe UI',system-ui,sans-serif;margin:12px 14px}
+.map-pin{display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:10px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,.4);border:2px solid #fff}
+.map-pin span{transform:rotate(45deg)}
+.rast-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.rast-stat{flex:1;min-width:90px;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:var(--sh);border:1px solid var(--czm)}
+.rast-stat .n{font-size:24px;font-weight:900;line-height:1}.rast-stat .l{font-size:10px;font-weight:700;color:var(--cz);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.tel-card{background:#fff;border-radius:14px;padding:13px 15px;margin-bottom:10px;box-shadow:var(--sh);border:1px solid var(--czm);display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s}
+.tel-card:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.tel-ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.tel-mov{background:var(--vdl);color:var(--vd)}.tel-par{background:#FEF3C7;color:var(--lr)}.tel-off{background:#F1F5F9;color:#94A3B8}
+.tel-info{flex:1;min-width:0}
+.tel-pl{font-size:14px;font-weight:900;color:var(--az3);letter-spacing:.5px}
+.tel-end{font-size:11px;color:var(--cz);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.tel-meta{font-size:10px;color:#94A3B8;margin-top:3px}
+.tel-r{text-align:right;flex-shrink:0}
+.tel-km{font-size:14px;font-weight:900;color:var(--az2)}
+.tel-vel{font-size:11px;font-weight:700;margin-top:2px}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--vd);margin-right:5px;animation:pisca 1.2s infinite;vertical-align:middle}
+.live-dot.off{background:#CBD5E1;animation:none}
+.dist-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12px}
+.dist-lbl{width:74px;font-weight:700;flex-shrink:0}
+.dist-bar{flex:1;height:10px;background:var(--czm);border-radius:6px;overflow:hidden}
+.dist-bar i{display:block;height:100%;border-radius:6px;width:0}
+.dist-n{width:26px;text-align:right;font-weight:800;color:var(--cz);flex-shrink:0}
+.banner-sas{background:linear-gradient(135deg,#FAF5FF,#EDE9FE);border:1px solid #DDD6FE;border-radius:14px;padding:12px 15px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.banner-sas .t{font-size:13px;font-weight:800;color:#6D28D9}.banner-sas .s{font-size:11px;color:#7C3AED;margin-top:1px}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 <div id="splash">
@@ -149,7 +179,7 @@ tbody tr:hover td{background:#EEF2FF}
   <div style="color:#93C5FD;font-size:14px;font-style:italic;margin-top:4px">Transportes</div>
   <div style="color:#64748B;font-size:12px;margin-top:8px">Manutenção Preventiva</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
-  <div style="color:#475569;font-size:11px;margin-top:12px">v3.6 · 35 Veículos</div>
+  <div style="color:#475569;font-size:11px;margin-top:12px">v4.0 · 35 Veículos · 🛰️ SASCAR</div>
 </div>
 <div id="loginScreen">
   <div class="estrelas"></div>
@@ -207,6 +237,7 @@ tbody tr:hover td{background:#EEF2FF}
   <div class="tabs">
     <div class="tab active" onclick="ST('dash')"><span class="tab-icon">📊</span>PAINEL</div>
     <div class="tab" onclick="ST('frota')"><span class="tab-icon">🚛</span>FROTA</div>
+    <div class="tab" onclick="ST('rastreio')"><span class="tab-icon">🛰️</span>RASTREIO</div>
     <div class="tab" onclick="ST('registro')"><span class="tab-icon">📝</span>REGISTRO</div>
     <div class="tab" onclick="ST('alertas')"><span class="tab-icon">🔔</span>ALERTAS</div>
     <div class="tab" onclick="ST('relatorio')"><span class="tab-icon">📋</span>RELATÓRIO</div>
@@ -220,6 +251,15 @@ tbody tr:hover td{background:#EEF2FF}
         <div class="dash-card"><div class="dash-num c-ok" id="s-ok">0</div><div class="dash-lbl">Em dia</div><div class="dash-icon">✅</div></div>
         <div class="dash-card"><div class="dash-num c-al" id="s-al">0</div><div class="dash-lbl">Atenção</div><div class="dash-icon">⚠️</div></div>
         <div class="dash-card"><div class="dash-num c-late" id="s-late">0</div><div class="dash-lbl">Atrasados</div><div class="dash-icon">🚨</div></div>
+      </div>
+      <div style="background:#fff;border-radius:18px;padding:18px;box-shadow:var(--sh);margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--az2);text-transform:uppercase;letter-spacing:1px">📈 Saúde da Frota</div>
+          <span style="font-size:11px;font-weight:700;color:#6D28D9" id="dashRast">🛰️ — rastreados</span>
+        </div>
+        <div class="dist-row"><div class="dist-lbl" style="color:var(--vd)">Em dia</div><div class="dist-bar"><i style="background:var(--vd)" id="bar-ok"></i></div><div class="dist-n" id="dn-ok">0</div></div>
+        <div class="dist-row"><div class="dist-lbl" style="color:var(--lr)">Atenção</div><div class="dist-bar"><i style="background:var(--lr)" id="bar-al"></i></div><div class="dist-n" id="dn-al">0</div></div>
+        <div class="dist-row"><div class="dist-lbl" style="color:var(--vm)">Atrasados</div><div class="dist-bar"><i style="background:var(--vm)" id="bar-lt"></i></div><div class="dist-n" id="dn-lt">0</div></div>
       </div>
       <div style="background:#fff;border-radius:18px;padding:18px;box-shadow:var(--sh);margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:var(--az2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">⚡ Últimos Registros</div>
@@ -238,6 +278,25 @@ tbody tr:hover td{background:#EEF2FF}
       </div>
       <div class="sw"><span class="si">🔍</span><input type="text" placeholder="Buscar placa, modelo ou tipo..." id="srch" oninput="fTrucks()"></div>
       <div class="tgrid" id="tgrid"></div>
+    </div>
+    <div id="tab-rastreio" style="display:none">
+      <div class="banner-sas">
+        <span style="font-size:22px">🛰️</span>
+        <div><div class="t">Rastreamento em tempo real</div><div class="s" id="rastFonte">Fonte: SASCAR · posições REAIS capturadas em 25/06/2026 13:45</div></div>
+      </div>
+      <div class="rast-bar">
+        <div class="rast-stat"><div class="n c-az" id="rs-tot">0</div><div class="l">Rastreados</div></div>
+        <div class="rast-stat"><div class="n c-ok" id="rs-mov">0</div><div class="l">Em movimento</div></div>
+        <div class="rast-stat"><div class="n c-al" id="rs-par">0</div><div class="l">Parados</div></div>
+        <div class="rast-stat"><div class="n c-late" id="rs-off">0</div><div class="l">Sem sinal</div></div>
+      </div>
+      <div id="mapa"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px">
+        <h2 style="color:var(--az3);font-size:15px;font-weight:900">📍 Veículos ao vivo</h2>
+        <span style="font-size:11px;color:var(--cz)" id="rastUpd">—</span>
+      </div>
+      <div class="sw"><span class="si">🔍</span><input type="text" placeholder="Buscar placa..." id="srchRast" oninput="rRastList()"></div>
+      <div id="rastList"></div>
     </div>
     <div id="tab-registro" style="display:none">
       <div style="background:#fff;border-radius:20px;padding:22px;box-shadow:var(--sh)">
@@ -458,6 +517,62 @@ function syncNow(){
   s.onerror=()=>{SP('off');};
   document.head.appendChild(s);
 }
+// === MODULO RASTREAMENTO/TELEMETRIA v4.0 ===
+// COMO LIGAR A SASCAR REAL: troque TELE_MODO p/ 'sascar' e informe TELE_URL
+// (endpoint backend que devolve JSON {veiculos:[{placa,lat,lon,km,vel,ign,ts,end}]}).
+// Enquanto nao ligar, roda em modo 'demo'. Ajuste TELE_BASE p/ a sua regiao.
+const TELE_MODO='snapshot';
+const TELE_URL='';
+const TELE_BASE=[-19.8,-47.3];
+let TELE={},_map=null,_markers={},_demoInit=false;
+const ENDERECOS=['BR-364 km 102','Rod. Anhanguera km 168','Av. Brasil, 1200','BR-153 km 47','Centro de Distribuicao','Rod. Washington Luis km 210','Patio Andrioni','BR-262 km 88','Marginal Tiete','Rod. dos Bandeirantes km 75'];
+// === POSICOES REAIS SASCAR — captura 25/06/2026 ~13:45 (BRT) ===
+function _ts(d){return Date.parse(d);}
+const TELE_REAL={
+ "EAK3B50":{lat:-20.723074,lon:-47.750490,km:1454555,vel:0,ign:false,sinal:true,end:"Nuporanga/SP — Rua João Sabaini Neto",ts:_ts("2026-06-25T13:44:20-03:00")},
+ "EJV6A04":{lat:-20.722155,lon:-47.752816,km:764217,vel:19,ign:true,sinal:true,end:"Nuporanga/SP — Rua José Stabile",ts:_ts("2026-06-25T13:45:07-03:00")},
+ "FEQ7C43":{lat:-10.554130,lon:-40.261763,km:1177852,vel:20,ign:true,sinal:true,end:"Antônio Gonçalves/BA — Rod BA-131",ts:_ts("2026-06-25T13:38:50-03:00")},
+ "FJV6I54":{lat:-5.351700,lon:-49.114755,km:727728,vel:0,ign:false,sinal:true,end:"Marabá/PA",ts:_ts("2026-06-25T13:44:14-03:00")},
+ "FRY3A93":{lat:-13.850610,lon:-56.094554,km:614432,vel:0,ign:false,sinal:true,end:"Nova Mutum/MT — Estrada Projetada 5",ts:_ts("2026-06-25T13:45:06-03:00")},
+ "FUG0D75":{lat:-23.359693,lon:-47.882445,km:1178180,vel:0,ign:false,sinal:true,end:"Tatuí/SP — R Manoel A. de Almeida Falcão",ts:_ts("2026-06-25T13:43:17-03:00")},
+ "FWB2C61":{lat:-22.245530,lon:-47.817174,km:228443,vel:37,ign:true,sinal:true,end:"Itirapina/SP — Rod Eng Paulo Nilo Romano",ts:_ts("2026-06-25T13:42:52-03:00")},
+ "FWD5456":{lat:-23.053028,lon:-47.961222,km:1063720,vel:0,ign:false,sinal:true,end:"Pereiras/SP — Rod Pref Lauro de Almeida",ts:_ts("2026-06-25T13:44:33-03:00")},
+ "GAH0E84":{lat:-20.568578,lon:-49.432681,km:826722,vel:0,ign:false,sinal:true,end:"Ipiguá/SP",ts:_ts("2026-06-25T13:43:31-03:00")},
+ "QJH8B10":{lat:-20.730555,lon:-47.753667,km:919726,vel:0,ign:false,sinal:true,end:"Nuporanga/SP — R Espírito Santo",ts:_ts("2026-06-25T13:45:05-03:00")},
+ "QJL4A84":{lat:-20.737568,lon:-47.768624,km:1291781,vel:0,ign:false,sinal:true,end:"Nuporanga/SP — Rod Waldir Canevari",ts:_ts("2026-06-25T13:40:24-03:00")},
+ "QSP2D07":{lat:-20.732795,lon:-46.573059,km:51066,vel:0,ign:false,sinal:true,end:"Passos/MG — Rod MG-050",ts:_ts("2026-06-25T13:43:48-03:00")},
+ "QSR1C39":{lat:-20.732654,lon:-46.573123,km:40752,vel:0,ign:false,sinal:true,end:"Passos/MG — Rod MG-050",ts:_ts("2026-06-25T13:45:00-03:00")},
+ "QXT8H13":{lat:-23.332227,lon:-47.847478,km:1240769,vel:0,ign:false,sinal:true,end:"Tatuí/SP — R Profa Romilda Latorre Sobral",ts:_ts("2026-06-25T13:44:05-03:00")},
+ "SUS9B68":{lat:-17.555398,lon:-52.527722,km:439262,vel:52,ign:true,sinal:true,end:"Mineiros/GO — Av Antônio Carlos Paniago",ts:_ts("2026-06-25T13:44:16-03:00")},
+ "SWP7B26":{lat:-20.820510,lon:-46.832054,km:32562,vel:68,ign:true,sinal:true,end:"Pratápolis/MG — Rod MG-050",ts:_ts("2026-06-25T13:35:05-03:00")},
+ "SWW6B06":{lat:-12.064018,lon:-45.585030,km:436105,vel:0,ign:false,sinal:true,end:"Barreiras/BA — Rod BR-020",ts:_ts("2026-06-25T13:41:33-03:00")},
+ "TJB0H74":{lat:-20.690165,lon:-48.463149,km:271343,vel:77,ign:true,sinal:true,end:"Jaborandi/SP — Rod Antônio Bruno",ts:_ts("2026-06-25T13:44:04-03:00")},
+ "TJJ2A70":{lat:-21.926437,lon:-47.629411,km:263054,vel:0,ign:false,sinal:true,end:"Descalvado/SP — Av Antônio Garbuio",ts:_ts("2026-06-25T13:41:18-03:00")},
+ "TJJ6H61":{lat:-20.722877,lon:-47.750811,km:319552,vel:0,ign:false,sinal:false,end:"Nuporanga/SP — Rua José Stabile (parado)",ts:_ts("2026-06-24T19:59:22-03:00")},
+ "TJV5C01":{lat:-20.672733,lon:-49.690464,km:262505,vel:0,ign:false,sinal:true,end:"Monte Aprazível/SP",ts:_ts("2026-06-25T13:40:20-03:00")},
+ "UDX7I09":{lat:-20.772037,lon:-47.095536,km:15712,vel:49,ign:true,sinal:true,end:"São Tomás de Aquino/MG — Rod Pedro Cerize",ts:_ts("2026-06-25T13:44:25-03:00")},
+ "UEV7B22":{lat:-20.650454,lon:-46.857477,km:38095,vel:77,ign:true,sinal:true,end:"Cássia/MG — Rod MG-444",ts:_ts("2026-06-25T13:42:49-03:00")},
+ "UFH3C47":{lat:-20.737502,lon:-46.641974,km:47047,vel:89,ign:true,sinal:true,end:"Passos/MG — Rod MG-050",ts:_ts("2026-06-25T13:43:46-03:00")},
+ "UGU3E16":{lat:-20.679147,lon:-46.959706,km:51669,vel:19,ign:true,sinal:true,end:"Capetinga/MG",ts:_ts("2026-06-25T13:11:02-03:00")},
+ // placas com pequena divergência no cadastro do app vs SASCAR (mesmo veículo) — ver observação:
+ "TKL6I24":{lat:-20.740560,lon:-46.601120,km:59429,vel:0,ign:false,sinal:true,end:"Passos/MG — Av Dr Breno Soares Maia",ts:_ts("2026-06-25T13:44:54-03:00")},
+ "GAY7C39":{lat:-20.969398,lon:-46.953837,km:37392,vel:24,ign:true,sinal:true,end:"São Sebastião do Paraíso/MG",ts:_ts("2026-06-25T13:40:21-03:00")},
+ "UFM2D34":{lat:-20.731613,lon:-46.572166,km:37263,vel:0,ign:false,sinal:true,end:"Passos/MG — Rod MG-050",ts:_ts("2026-06-25T13:41:24-03:00")},
+ "UFN3H70":{lat:-20.733192,lon:-46.572483,km:58247,vel:0,ign:false,sinal:true,end:"Passos/MG — Rod MG-050",ts:_ts("2026-06-25T13:44:57-03:00")}
+};
+function _demoSeed(){TRUCKS.forEach((t,i)=>{const base=vd[t.p]||{};const kmAtual=parseInt(base.km)||parseInt((DADOS_BASE[t.p]||{}).km)||(50000+i*1234);const movel=(i%4!==0);const sinal=(i%11!==0);TELE[t.p]={lat:TELE_BASE[0]+(Math.random()-0.5)*1.6,lon:TELE_BASE[1]+(Math.random()-0.5)*1.6,km:kmAtual,vel:sinal?(movel?Math.floor(20+Math.random()*70):0):0,ign:sinal&&movel,sinal:sinal,ts:Date.now()-Math.floor(Math.random()*(sinal?180000:5400000)),end:ENDERECOS[i%ENDERECOS.length]};});_demoInit=true;}
+function _demoTick(){for(const p in TELE){const v=TELE[p];if(!v.sinal||!v.ign)continue;v.lat+=(Math.random()-0.5)*0.012;v.lon+=(Math.random()-0.5)*0.012;v.vel=Math.max(0,Math.min(95,v.vel+Math.floor((Math.random()-0.45)*14)));v.km+=Math.round(v.vel/120);v.ts=Date.now();}}
+function carregarTelemetria(cb){if(TELE_MODO==='sascar'&&TELE_URL){const old=document.getElementById('__teleScript');if(old)old.remove();window.__cbTele=function(json){try{aplicarTelemetria(json);}catch(e){}if(cb)cb();};const s=document.createElement('script');s.id='__teleScript';s.src=TELE_URL+(TELE_URL.includes('?')?'&':'?')+'_='+Date.now();s.onerror=()=>{if(cb)cb();};document.head.appendChild(s);}else if(TELE_MODO==='snapshot'){if(!_demoInit){for(const p in TELE_REAL){TELE[p]=Object.assign({},TELE_REAL[p]);}_demoInit=true;}if(cb)cb();}else{if(!_demoInit)_demoSeed();else _demoTick();if(cb)cb();}}
+function aplicarTelemetria(json){const arr=(json&&(json.veiculos||json.frota))||[];arr.forEach(r=>{if(!r.placa)return;TELE[r.placa]={lat:+r.lat,lon:+r.lon,km:parseInt(r.km)||0,vel:parseInt(r.vel)||0,ign:!!r.ign,sinal:true,ts:r.ts||Date.now(),end:r.end||r.endereco||'-'};});}
+function mesclarKmTelemetria(){let mudou=false;for(const p in TELE){const v=TELE[p];if(!v||!v.km)continue;if(!vd[p])vd[p]={};if(v.km>(parseInt(vd[p].km)||0)){vd[p].km=v.km;vd[p]._kmSrc='sascar';mudou=true;}}if(mudou)sVd();}
+function fmtTempo(ts){const m=Math.floor((Date.now()-ts)/60000);if(m<1)return'agora';if(m<60)return m+' min';const h=Math.floor(m/60);if(h<24)return h+'h';return Math.floor(h/24)+'d';}
+function _estado(v){if(!v||!v.sinal)return'off';return v.ign&&v.vel>0?'mov':'par';}
+function abrirRastreio(){carregarTelemetria(()=>{mesclarKmTelemetria();if(typeof L==='undefined'){var mp=document.getElementById('mapa');if(mp)mp.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94A3B8;font-size:13px;text-align:center;padding:20px">Mapa indisponível offline — a lista de veículos abaixo continua funcionando.</div>';rRastList();rRastStats();rSt();rTr();return;}if(!_map){_map=L.map('mapa',{zoomControl:true}).setView(TELE_BASE,6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(_map);}setTimeout(()=>{try{_map.invalidateSize();}catch(e){}},150);rRastMapa();rRastList();rRastStats();rSt();rTr();});}
+function _pin(cor,txt){return L.divIcon({className:'',html:'<div class="map-pin" style="background:'+cor+';width:30px;height:30px"><span>'+txt+'</span></div>',iconSize:[30,30],iconAnchor:[15,28]});}
+function rRastMapa(){if(!_map)return;const cores={mov:'#059669',par:'#D97706',off:'#94A3B8'};TRUCKS.forEach(t=>{const v=TELE[t.p];if(!v)return;const st=_estado(v);const html='<b style="color:#1B2A6B;font-size:14px">🚛 '+t.p+'</b><br><span style="font-size:11px;color:#6B7280">'+t.m+'</span><hr style="margin:6px 0;border:none;border-top:1px solid #E2E8F0"><div style="font-size:12px">📍 '+v.end+'<br>🔢 <b>'+v.km.toLocaleString('pt-BR')+' km</b><br>'+(st==='mov'?'🟢 '+v.vel+' km/h':st==='par'?'🟡 Parado':'⚫ Sem sinal')+'<br>🕐 '+fmtTempo(v.ts)+' atras</div>';if(_markers[t.p]){_markers[t.p].setLatLng([v.lat,v.lon]).setIcon(_pin(cores[st],t.p.slice(-3))).setPopupContent(html);}else{_markers[t.p]=L.marker([v.lat,v.lon],{icon:_pin(cores[st],t.p.slice(-3))}).addTo(_map).bindPopup(html);}});}
+function rRastStats(){let tot=0,mov=0,par=0,off=0;TRUCKS.forEach(t=>{const v=TELE[t.p];if(!v)return;tot++;const s=_estado(v);if(s==='mov')mov++;else if(s==='par')par++;else off++;});document.getElementById('rs-tot').textContent=tot;document.getElementById('rs-mov').textContent=mov;document.getElementById('rs-par').textContent=par;document.getElementById('rs-off').textContent=off;document.getElementById('rastUpd').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function rRastList(){const f=(document.getElementById('srchRast').value||'').toLowerCase();const ic={mov:['tel-mov','🚚'],par:['tel-par','🅿️'],off:['tel-off','📡']};const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(f)||t.m.toLowerCase().includes(f));document.getElementById('rastList').innerHTML=list.map(t=>{const v=TELE[t.p];if(!v)return'';const s=_estado(v);const cls=ic[s][0],emo=ic[s][1];return'<div class="tel-card" onclick="OM(\''+t.p+'\')"><div class="tel-ic '+cls+'">'+emo+'</div><div class="tel-info"><div class="tel-pl">'+t.p+' <span class="'+(v.sinal?'live-dot':'live-dot off')+'"></span></div><div class="tel-end">📍 '+v.end+'</div><div class="tel-meta">🕐 '+fmtTempo(v.ts)+' atras · '+t.m+'</div></div><div class="tel-r"><div class="tel-km">'+v.km.toLocaleString('pt-BR')+' km</div><div class="tel-vel" style="color:'+(s==='mov'?'var(--vd)':s==='par'?'var(--lr)':'#94A3B8')+'">'+(s==='mov'?v.vel+' km/h':s==='par'?'Parado':'Sem sinal')+'</div></div></div>';}).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum veiculo.</p>';}
+function tickRastreio(){var el=document.getElementById('tab-rastreio');if(el&&el.style.display==='block'){carregarTelemetria(()=>{mesclarKmTelemetria();rRastMapa();rRastList();rRastStats();rSt();});}}
 function relogio(){const n=new Date();document.getElementById('relogio').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dataHoje').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
 function doLogin(){const u=document.getElementById('lu').value.trim();const s=document.getElementById('lp').value;const f=EQUIPE.find(x=>x.user===u&&x.senha===s);if(f){user=f;sU(f);document.getElementById('loginScreen').style.display='none';eApp();}else{document.getElementById('lerro').style.display='block';}}
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
@@ -470,8 +585,8 @@ function eApp(){
     document.getElementById('r-sup').value=user.nome;
     document.getElementById('r-data').value=new Date().toISOString().split('T')[0];
     document.getElementById('r-placa').innerHTML=TRUCKS.map(t=>`<option value="${t.p}">${t.p} — ${t.m}</option>`).join('');
-    vd=gVd();aplicarDadosBase();rAll();renderEquipe();SP('on');syncNow();
-    setInterval(syncNow,20000);setInterval(relogio,1000);relogio();
+    vd=gVd();aplicarDadosBase();carregarTelemetria(()=>{mesclarKmTelemetria();rAll();});renderEquipe();SP('on');syncNow();
+    setInterval(syncNow,20000);setInterval(relogio,1000);relogio();setInterval(tickRastreio,15000);
   }catch(e){localStorage.clear();location.reload();}
 }
 function gSt(d){
@@ -498,7 +613,7 @@ function rTr(f=''){
   }).join('');
 }
 function fTrucks(){rTr(document.getElementById('srch').value);}
-function rSt(){let ok=0,al=0,lt=0;TRUCKS.forEach(t=>{const s=gSt(vd[t.p]);if(s==='ok')ok++;else if(s==='alert')al++;else if(s==='late')lt++;});document.getElementById('s-ok').textContent=ok;document.getElementById('s-al').textContent=al;document.getElementById('s-late').textContent=lt;}
+function rSt(){let ok=0,al=0,lt=0;TRUCKS.forEach(t=>{const s=gSt(vd[t.p]);if(s==='ok')ok++;else if(s==='alert')al++;else if(s==='late')lt++;});const T=TRUCKS.length;document.getElementById('s-ok').textContent=ok;document.getElementById('s-al').textContent=al;document.getElementById('s-late').textContent=lt;const setb=(id,v)=>{const e=document.getElementById(id);if(e)e.style.width=(v/T*100)+'%';};setb('bar-ok',ok);setb('bar-al',al);setb('bar-lt',lt);const setn=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setn('dn-ok',ok);setn('dn-al',al);setn('dn-lt',lt);const dr=document.getElementById('dashRast');if(dr)dr.textContent='🛰️ '+Object.keys(TELE).length+' rastreados';}
 function rUltimos(){const todos=[];TRUCKS.forEach(t=>{const d=vd[t.p];if(d&&d.hist&&d.hist.length){const u=d.hist[d.hist.length-1];todos.push({placa:t.p,...u});}});todos.sort((a,b)=>new Date(b.dt)-new Date(a.dt));document.getElementById('ultimos').innerHTML=todos.slice(0,5).map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--czm)"><div style="background:#EEF2FF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--az3)">${r.placa}</div><div><div style="font-size:12px;font-weight:700">${r.tp}</div><div style="font-size:11px;color:var(--cz)">👤 ${r.sup||'—'} · 📅 ${r.dt}</div></div></div>`).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p>';}
 function tocarSirene(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,.3,.6].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(880,ctx.currentTime+t);o.frequency.exponentialRampToValueAtTime(440,ctx.currentTime+t+.25);g.gain.setValueAtTime(.3,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.25);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.25);});}catch(e){}}
 function rAl(){
@@ -554,7 +669,7 @@ function OM(placa){
   cp=placa;const t=TRUCKS.find(x=>x.p===placa);const d=vd[placa]||{};
   document.getElementById('mt').textContent='🚛 '+placa;document.getElementById('ms').textContent=t.m+' · '+t.t;
   document.getElementById('m-s').value=d.sup||'Não informado';document.getElementById('m-mot').value=d.motorista||'Não informado';
-  document.getElementById('m-k').value=d.km?Number(d.km).toLocaleString('pt-BR')+' km':'Não informado';
+  document.getElementById('m-k').value=d.km?(Number(d.km).toLocaleString('pt-BR')+' km'+(d._kmSrc==='sascar'?' · 🛰️ SASCAR':'')):'Não informado';
   document.getElementById('m-od').value=d.od||'Não registrado';document.getElementById('m-ot').value=d.ot||'Não informado';
   document.getElementById('m-ld').value=d.ld||'Não registrado';document.getElementById('m-cd').value=d.cd||'Não registrado';
   document.getElementById('m-cp').value=d.cp||'Não informado';document.getElementById('m-rd').value=d.rd||'Não registrado';
@@ -572,7 +687,7 @@ async function excluirRegistro(placa,idx){
   if(d.hist.length>0){const ul=d.hist[d.hist.length-1];d.sup=ul.sup||'';d.motorista=ul.motorista||'';d.km=ul.km||'';d.hist.forEach(h=>{const tp=h.tp||'';if(tp.includes('oleo'))d.od=h.dt;if(tp.includes('lubrificacao'))d.ld=h.dt;if(tp.includes('calibracao'))d.cd=h.dt;if(tp.includes('rodizio'))d.rd=h.dt;});}
   vd[placa]=d;sVd();toast('✅ Registro excluído!','tok');rAll();CM();setTimeout(()=>OM(placa),300);
 }
-function ST(t){['dash','frota','registro','alertas','relatorio','equipe'].forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['dash','frota','registro','alertas','relatorio','equipe'][i]===t));if(t==='alertas')rAl();}
+function ST(t){const TABS=['dash','frota','rastreio','registro','alertas','relatorio','equipe'];TABS.forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',TABS[i]===t));if(t==='alertas')rAl();if(t==='rastreio')abrirRastreio();}
 function toast(msg,cls='tok'){const t=document.getElementById('tst');t.textContent=msg;t.className='toast show '+cls;setTimeout(()=>t.className='toast',3600);}
 async function init(){
   try{vd=gVd();user=gU();}catch(e){localStorage.clear();vd={};user=null;}
