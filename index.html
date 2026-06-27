@@ -1059,7 +1059,7 @@ function rUltimos(){
       </div>
     </div>`;
   }).join('')||'<p style="color:#94A3B8;font-size:13px;text-align:center;padding:20px 0">Nenhum registro ainda.</p>';
-});}});todos.sort((a,b)=>new Date(b.dt)-new Date(a.dt));document.getElementById('ultimos').innerHTML=todos.slice(0,5).map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--czm)"><div style="background:#EEF2FF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--az3)">${r.placa}</div><div><div style="font-size:12px;font-weight:700">${r.tp}</div><div style="font-size:11px;color:var(--cz)">👤 ${r.sup||'—'} · 📅 ${r.dt}</div></div></div>`).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum registro ainda.</p>';}
+}
 function tocarSirene(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,.3,.6].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(880,ctx.currentTime+t);o.frequency.exponentialRampToValueAtTime(440,ctx.currentTime+t+.25);g.gain.setValueAtTime(.3,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.25);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.25);});}catch(e){}}
 function _kmRestanteOleo(d){
   const km=parseInt(d.km)||0;
