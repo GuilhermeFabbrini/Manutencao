@@ -288,6 +288,36 @@ tbody tr:hover td{background:#EEF2FF}
 .clock-date{font-size:12px;opacity:.75;margin-top:4px;text-transform:capitalize}
 .clock-icon{font-size:40px;opacity:.25}
 
+
+/* ═══ OIL STATUS CARDS (v4.4) ═══════════════════════════════════════════ */
+.oil-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:16px}
+.oil-card{background:#fff;border-radius:16px;padding:16px 16px 12px;border:2px solid #E2E8F0;transition:transform .15s,box-shadow .15s;cursor:default}
+.oil-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.10)}
+.oil-card.card-late{background:linear-gradient(160deg,#FFF1F2 0%,#fff 55%);border-color:#F87171;animation:piscaBordaCard 2s infinite}
+.oil-card.card-alert{background:linear-gradient(160deg,#FFFBEB 0%,#fff 55%);border-color:#FBBF24}
+.oil-card.card-ok{background:linear-gradient(160deg,#ECFDF5 0%,#fff 55%);border-color:#34D399}
+.oil-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.oil-card-placa{font-size:20px;font-weight:900;color:#1e293b;letter-spacing:.5px}
+.oil-card-badge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.badge-late{background:#FEE2E2;color:#DC2626}
+.badge-alert{background:#FEF3C7;color:#D97706}
+.badge-ok{background:#D1FAE5;color:#059669}
+.oil-card-service{font-size:12px;color:#64748B;margin-bottom:12px;font-weight:500}
+.oil-card-divider{border:none;border-top:1px solid #F1F5F9;margin:0 0 12px}
+.oil-card-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.oil-col{}
+.oil-col-hdr{font-size:10px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.oil-col-val{font-size:14px;font-weight:800;color:#1e293b}
+.oil-col-val.val-ok{color:#059669}
+.oil-col-val.val-alert{color:#D97706}
+.oil-col-val.val-late{color:#DC2626}
+.oil-col-val.val-meta{color:#1B2A6B}
+.oil-card-footer{margin-top:10px;padding-top:8px;border-top:1px solid #F8FAFC;font-size:11px;color:#94A3B8;display:flex;align-items:center;gap:5px}
+.oil-section-hdr{font-size:13px;font-weight:800;margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+.oil-section-hdr.hdr-late{color:#DC2626}
+.oil-section-hdr.hdr-alert{color:#D97706}
+.oil-section-hdr.hdr-ok{color:#059669}
+.oil-section-hdr-badge{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -529,20 +559,29 @@ tbody tr:hover td{background:#EEF2FF}
       </div>
     </div>
     <div id="tab-alertas" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <h2 style="color:var(--vm);font-size:18px;font-weight:900">🔔 Central de Alertas</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="color:#1e293b;font-size:18px;font-weight:900">🛢️ Status de Óleo — Frota</h2>
         <span id="acnt" style="background:var(--vml);color:var(--vm);padding:5px 13px;border-radius:20px;font-size:11px;font-weight:800"></span>
       </div>
-      <div class="prox-section">
+      <!-- Alertas de data (lubrificação, calibração) -->
+      <div class="prox-section" id="prox-section-wrap">
         <div class="prox-title">🗓️ Próximas Revisões — Chegando em breve</div>
         <div id="proximasList"><p style="color:#0369A1;font-size:13px;font-weight:600">✅ Nenhuma revisão próxima.</p></div>
       </div>
-      <div style="font-size:13px;font-weight:800;color:var(--vm);margin-bottom:10px">🚨 Vencidos e Atrasados</div>
-      <div id="alist"></div>
-      <button class="btn-toggle-ok" id="btnOk" onclick="toggleOkSection()">✅ Ver veículos em dia com o óleo</button>
-      <div id="okSection" style="display:none" class="ok-section-wrap">
-        <div class="ok-section-title">✅ Veículos em dia — km restante até próxima troca</div>
-        <div id="okList"></div>
+      <!-- Cards vencidos -->
+      <div id="late-section" style="display:none">
+        <div class="oil-section-hdr hdr-late">🚨 Vencidos <span class="oil-section-hdr-badge" style="background:#FEE2E2;color:#DC2626" id="cnt-late"></span></div>
+        <div class="oil-cards-grid" id="alist"></div>
+      </div>
+      <!-- Cards atenção -->
+      <div id="alert-section" style="display:none">
+        <div class="oil-section-hdr hdr-alert">⚠️ Atenção <span class="oil-section-hdr-badge" style="background:#FEF3C7;color:#D97706" id="cnt-alert"></span></div>
+        <div class="oil-cards-grid" id="proximaKm"></div>
+      </div>
+      <!-- Cards OK (sempre visíveis) -->
+      <div id="ok-section">
+        <div class="oil-section-hdr hdr-ok">✅ Em Dia <span class="oil-section-hdr-badge" style="background:#D1FAE5;color:#059669" id="cnt-ok"></span></div>
+        <div class="oil-cards-grid" id="okList"></div>
       </div>
     </div>
     <div id="tab-relatorio" style="display:none">
@@ -700,7 +739,7 @@ function sVd(){try{localStorage.setItem('vd6',JSON.stringify(vd));}catch(e){}}
 
 // Aplica DADOS_BASE com versionamento — força atualização em todos os dispositivos
 // Versão: 24/06/2026 — dados importados de gestao-manutencao.vercel.app
-const _BV='20260627v3';
+const _BV='20260627v4';
 function aplicarDadosBase(){
   if(localStorage.getItem('_bv')===_BV) return; // já aplicado
   for(const placa in DADOS_BASE){
@@ -766,6 +805,8 @@ const ENDERECOS=['BR-364 km 102','Rod. Anhanguera km 168','Av. Brasil, 1200','BR
 // === POSICOES REAIS SASCAR — captura 25/06/2026 ~13:45 (BRT) ===
 function _ts(d){return Date.parse(d);}
 const TELE_REAL={
+ "TIV7G01":{lat:-20.566200,lon:-49.424100,km:136044,vel:0,ign:false,sinal:true,end:"Ipiguá/SP — Rua do Comércio, Centro (Incubatório Ipiguá)",ts:_ts("2026-06-27T09:43:00-03:00")},
+ "TJN9H92":{lat:-20.732000,lon:-48.520000,km:170697,vel:74,ign:true,sinal:true,end:"Em rota — A 100km de Andrioni Transportes (Mot: Rafael H. Dourado)",ts:_ts("2026-06-27T10:16:00-03:00")},
  "EAK3B50":{lat:-20.723074,lon:-47.750490,km:1454555,vel:0,ign:false,sinal:true,end:"Nuporanga/SP — Rua João Sabaini Neto",ts:_ts("2026-06-25T13:44:20-03:00")},
  "EJV6A04":{lat:-20.722155,lon:-47.752816,km:764217,vel:19,ign:true,sinal:true,end:"Nuporanga/SP — Rua José Stabile",ts:_ts("2026-06-25T13:45:07-03:00")},
  "FEQ7C43":{lat:-10.554130,lon:-40.261763,km:1177852,vel:20,ign:true,sinal:true,end:"Antônio Gonçalves/BA — Rod BA-131",ts:_ts("2026-06-25T13:38:50-03:00")},
@@ -1075,56 +1116,113 @@ function _progBar(pct,cor){
 }
 function rAl(){
   const today=new Date();
-  let htmlV='',htmlP='',htmlOK='';
-  let cntV=0,cntP=0,cntOK=0,temAtrasado=false;
+  let htmlLate='',htmlAlert='',htmlOK='';
+  let cntLate=0,cntAlert=0,cntOK=0;
+  let htmlDateAlerts='';
+  let temAtrasado=false;
+
   TRUCKS.forEach(t=>{
     const d=vd[t.p]||{};const km=parseInt(d.km)||0;
-    // ── Lubrificação e Calibração (por data) ────────────────────────────
+
+    // ── Alertas por data (lubrificação, calibração) ──────────────────────────
     [['ld','🔧 Lubrificação',20],['cd','🔵 Calibração',20]].forEach(([campo,lb,lim])=>{
       if(!d[campo]) return;
       const dy=Math.round((today-new Date(d[campo]))/86400000);const restam=lim-dy;
-      if(dy>=lim){cntV++;temAtrasado=true;htmlV+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${dy} dias — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}
-      else if(restam<=5){cntP++;htmlP+=`<div class="ac prox"><div class="ai"><h3 style="color:#0369A1">🗓️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:#0369A1">Vence em ${restam} dia${restam===1?'':'s'}!</b></p></div><span class="badge b-prox">⏰ ${restam}d</span></div>`;}
+      if(dy>=lim){temAtrasado=true;htmlDateAlerts+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:var(--vm)">${dy} dias — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}
+      else if(restam<=5){htmlDateAlerts+=`<div class="ac prox"><div class="ai"><h3 style="color:#0369A1">🗓️ ${t.p} — ${lb}</h3><p>${t.m} · <b style="color:#0369A1">Vence em ${restam} dia${restam===1?'':'s'}!</b></p></div><span class="badge b-prox">⏰ ${restam}d</span></div>`;}
     });
-    // ── Troca de Óleo (por km / meta) ───────────────────────────────────
-    const restOleo=_kmRestanteOleo(d);
+
+    // ── Troca de Óleo — card format ─────────────────────────────────────────
     const meta=parseInt(d.meta)||0;
-    if(restOleo!==null){
-      const kmAtual=km?km.toLocaleString('pt-BR'):'—';
-      const metaStr=meta?meta.toLocaleString('pt-BR'):'—';
-      const pctUsado=meta?Math.min(100,Math.round((km/meta)*100)):0;
-      if(restOleo<=0){
-        const overdue=Math.abs(restOleo);
-        cntV++;temAtrasado=true;
-        htmlV+=`<div class="ac late"><div class="ai" style="flex:1"><h3 style="color:var(--vm)">🚨 ${t.p} — 🛢️ Troca de Óleo</h3><p>${t.m} · ${t.t}</p><div style="font-size:11px;color:var(--vm);font-weight:700;margin-top:4px">Atual: <b>${kmAtual} km</b> · Meta: ${metaStr} km</div><div class="oleo-prog"><div class="oleo-prog-fill" style="width:100%;background:var(--vm)"></div></div><div style="font-size:11px;color:var(--vm);font-weight:800">🚨 VENCIDO há ${overdue.toLocaleString('pt-BR')} km acima do limite!</div></div><span class="badge b-late" style="flex-shrink:0;align-self:center">-${overdue.toLocaleString('pt-BR')} km</span></div>`;
-      } else if(restOleo<=5000){
-        cntP++;
-        const pct=Math.min(100,Math.round(((40000-restOleo)/40000)*100));
-        htmlP+=`<div class="ac km"><div class="ai" style="flex:1"><h3 style="color:#6D28D9">⚠️ ${t.p} — 🛢️ Troca de Óleo</h3><p>${t.m} · ${t.t}</p><div style="font-size:11px;color:#6D28D9;font-weight:700;margin-top:4px">Atual: <b>${kmAtual} km</b> · Meta: ${metaStr} km</div><div class="oleo-prog"><div class="oleo-prog-fill" style="width:${pct}%;background:#8B5CF6"></div></div><div style="font-size:11px;color:#6D28D9;font-weight:800">⚡ Faltam ${restOleo.toLocaleString('pt-BR')} km para próxima troca!</div></div><span class="badge b-km" style="flex-shrink:0;align-self:center">${restOleo.toLocaleString('pt-BR')} km</span></div>`;
-      } else {
-        cntOK++;
-        const pct=Math.min(100,Math.round(((40000-restOleo)/40000)*100));
-        htmlOK+=`<div class="ok-item"><div style="flex:1"><div class="ok-item-pl">🚛 ${t.p}</div><div class="ok-item-sub">${t.m} · ${t.t}</div></div><div style="text-align:right;flex-shrink:0"><div class="ok-item-km">+${restOleo.toLocaleString('pt-BR')} km</div><div class="ok-item-bar"><div class="ok-item-bar-f" style="width:${pct}%"></div></div></div></div>`;
-      }
+    const okKm=parseInt(d.ok)||0;
+    if(!meta) return; // sem dados de óleo
+
+    const restOleo=meta-km;
+    const intervalo=okKm>0?(meta-okKm):40000;
+    const kmAtual=km?km.toLocaleString('pt-BR'):'—';
+    const metaStr=meta.toLocaleString('pt-BR');
+    const okStr=okKm?okKm.toLocaleString('pt-BR'):'—';
+    const restStr=restOleo>0?('+'+restOleo.toLocaleString('pt-BR')):restOleo.toLocaleString('pt-BR');
+    const motorista=d.motorista||'';
+    const intStr=intervalo?intervalo.toLocaleString('pt-BR'):'—';
+
+    let cardClass,badgeClass,badgeTxt,valClass;
+    if(restOleo<=0){
+      cardClass='card-late';badgeClass='badge-late';badgeTxt='🔴 VENCIDO';valClass='val-late';
+      cntLate++;temAtrasado=true;
+    } else if(restOleo<=5000){
+      cardClass='card-alert';badgeClass='badge-alert';badgeTxt='⚠️ ATENÇÃO';valClass='val-alert';
+      cntAlert++;
+    } else {
+      cardClass='card-ok';badgeClass='badge-ok';badgeTxt='✅ OK';valClass='val-ok';
+      cntOK++;
     }
-    // ── Rodízio de Pneus (por km) ────────────────────────────────────────
+
+    const card=`<div class="oil-card ${cardClass}">
+      <div class="oil-card-top">
+        <div class="oil-card-placa">${t.p}</div>
+        <span class="oil-card-badge ${badgeClass}">${badgeTxt}</span>
+      </div>
+      <div class="oil-card-service">Troca de Óleo Motor</div>
+      <hr class="oil-card-divider">
+      <div class="oil-card-cols">
+        <div class="oil-col"><div class="oil-col-hdr">Intervalo</div><div class="oil-col-val">${intStr}</div></div>
+        <div class="oil-col"><div class="oil-col-hdr">Meta</div><div class="oil-col-val val-meta">${metaStr}</div></div>
+        <div class="oil-col"><div class="oil-col-hdr">Atual <span style="font-size:9px;cursor:pointer" onclick="openEdit('${t.p}')">✏️</span></div><div class="oil-col-val">${kmAtual}</div></div>
+        <div class="oil-col"><div class="oil-col-hdr">Restante</div><div class="oil-col-val ${valClass}">${restStr}</div></div>
+      </div>
+      ${motorista?`<div class="oil-card-footer">👤 ${motorista}</div>`:''}
+    </div>`;
+
+    if(restOleo<=0) htmlLate+=card;
+    else if(restOleo<=5000) htmlAlert+=card;
+    else htmlOK+=card;
+
+    // Rodízio de pneus
     const kmRod=parseInt(d.rk)||0;
     if(d.rd&&kmRod>0&&km>0){
       const rodados=km-kmRod;const restamKm=40000-rodados;
-      if(rodados>=40000){cntV++;temAtrasado=true;htmlV+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — 🔄 Rodízio de Pneus</h3><p>${t.m} · <b style="color:var(--vm)">${rodados.toLocaleString('pt-BR')} km — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}
-      else if(restamKm<=5000){cntP++;htmlP+=`<div class="ac km"><div class="ai"><h3 style="color:#6D28D9">🗓️ ${t.p} — 🔄 Rodízio de Pneus</h3><p>${t.m} · <b style="color:#6D28D9">Faltam ${restamKm.toLocaleString('pt-BR')} km</b></p></div><span class="badge b-km">⚡ ${restamKm.toLocaleString('pt-BR')}km</span></div>`;}
+      if(rodados>=40000){temAtrasado=true;htmlDateAlerts+=`<div class="ac late"><div class="ai"><h3 style="color:var(--vm)">🚨 ${t.p} — 🔄 Rodízio de Pneus</h3><p>${t.m} · <b style="color:var(--vm)">${rodados.toLocaleString('pt-BR')} km — VENCIDO!</b></p></div><span class="badge b-late">🔴 VENCIDO</span></div>`;}
+      else if(restamKm<=5000){htmlDateAlerts+=`<div class="ac km"><div class="ai"><h3 style="color:#6D28D9">🗓️ ${t.p} — 🔄 Rodízio</h3><p>${t.m} · <b style="color:#6D28D9">Faltam ${restamKm.toLocaleString('pt-BR')} km</b></p></div><span class="badge b-km">⚡ ${restamKm.toLocaleString('pt-BR')}km</span></div>`;}
     }
   });
-  if(temAtrasado)tocarSirene();
-  document.getElementById('alist').innerHTML=htmlV||`<div style="background:var(--vdl);border-radius:18px;padding:32px;text-align:center"><div style="font-size:56px">✅</div><p style="color:var(--vd);font-weight:900;font-size:17px;margin-top:10px">Nenhum vencido!</p></div>`;
-  document.getElementById('proximasList').innerHTML=htmlP||'<p style="color:#0369A1;font-size:13px;font-weight:600">✅ Nenhum veículo próximo do vencimento.</p>';
+
+  if(temAtrasado) tocarSirene();
+
+  // Date alerts section
+  const proxEl=document.getElementById('proximasList');
+  const proxWrap=document.getElementById('prox-section-wrap');
+  if(proxEl) proxEl.innerHTML=htmlDateAlerts||'<p style="color:#0369A1;font-size:13px;font-weight:600">✅ Nenhuma revisão próxima.</p>';
+  if(proxWrap) proxWrap.style.display=htmlDateAlerts?'block':'none';
+
+  // Late section
+  const lateSec=document.getElementById('late-section');
+  const lateEl=document.getElementById('alist');
+  const cntLateEl=document.getElementById('cnt-late');
+  if(lateEl) lateEl.innerHTML=htmlLate;
+  if(lateSec) lateSec.style.display=cntLate>0?'block':'none';
+  if(cntLateEl) cntLateEl.textContent=cntLate;
+
+  // Alert section
+  const alertSec=document.getElementById('alert-section');
+  const alertEl=document.getElementById('proximaKm');
+  const cntAlertEl=document.getElementById('cnt-alert');
+  if(alertEl) alertEl.innerHTML=htmlAlert;
+  if(alertSec) alertSec.style.display=cntAlert>0?'block':'none';
+  if(cntAlertEl) cntAlertEl.textContent=cntAlert;
+
+  // OK section
   const okEl=document.getElementById('okList');
-  const okWrap=document.getElementById('okSection');
-  if(okEl) okEl.innerHTML=htmlOK||'';
-  if(okWrap) okWrap.style.display=cntOK>0?'block':'none';
-  const btnOk=document.getElementById('btnOk');
-  if(btnOk) btnOk.textContent='✅ '+cntOK+' veículos em dia com o óleo — toque para ver detalhes';
-  document.getElementById('acnt').textContent=(cntV+cntP)>0?(cntV+cntP)+' alertas':'';
+  const cntOkEl=document.getElementById('cnt-ok');
+  if(okEl) okEl.innerHTML=htmlOK;
+  if(cntOkEl) cntOkEl.textContent=cntOK;
+
+  // Count badge
+  const total=cntLate+cntAlert;
+  document.getElementById('acnt').textContent=total>0?(total+' alertas'):'';
+
+  // Dashboard oil widget
+  rSt();
 }
 function toggleOkSection(){
   const sec=document.getElementById('okSection');
