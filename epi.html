@@ -228,6 +228,11 @@ textarea.in { min-height: 76px; resize: vertical; }
 .assina span { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-size: 13px; color: var(--ink-3); pointer-events: none; }
 .rubrica { width: 96px; height: 40px; flex: none; color: var(--ink); background: var(--surface-2); border-radius: 6px; }
 .termo { font-size: 14px; color: var(--ink-2); }
+.tam { display: inline-block; padding: 0 7px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: .88em; white-space: nowrap; }
+select.tam-sel { width: auto; max-width: 100%; min-height: 40px; padding: 6px 10px; margin-top: 6px; font-size: 15px; }
+.item-txt span.tam, .ped-cab span.tam, .ped-item span.tam { display: inline-block; font-size: .88em; color: var(--accent); }
+.item-txt span.tams { font-variant-numeric: tabular-nums; margin-top: 2px; }
+.item-txt span.tams b { display: inline; color: var(--ink); }
 
 /* entrada */
 .entrar { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 24px 20px; max-width: 440px; width: 100%; margin: 0 auto; }
@@ -253,6 +258,7 @@ textarea.in { min-height: 76px; resize: vertical; }
   #print svg { width: 80pt; height: 30pt; color: #000; }
   #print .t { font-size: 9pt; margin-top: 8pt; text-align: justify; }
   #print tr { page-break-inside: avoid; }
+  #print .tam { background: none; color: #000; padding: 0; }
 }
 </style>
 </head>
@@ -303,6 +309,8 @@ function dinheiro(v) { return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { m
 function guardar(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
 function ler(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 function ca(n) { return n ? 'C.A. ' + esc(n) : 'sem C.A.'; }
+function rotTam(t) { t = String(t || ''); return t ? (/^\d/.test(t) ? 'nº ' : 'tam. ') + esc(t) : ''; }
+function epiT(x) { return esc(x.epi) + (x.tamanho ? ' <span class="tam">' + rotTam(x.tamanho) + '</span>' : ''); }
 function admin() { return DB && DB.usuario.perfil === 'admin'; }
 
 function toast(msg, ruim) {
@@ -366,7 +374,7 @@ function situacao(e) {
 }
 function indexar() {
   IX = { epi: {}, col: {}, uso: {}, aberto: {} };
-  DB.epis.forEach(function (e) { IX.epi[e.id] = e; });
+  DB.epis.forEach(function (e) { e.tamanhos = e.tamanhos || []; IX.epi[e.id] = e; });
   DB.colaboradores.forEach(function (c) { IX.col[c.id] = c; });
   DB.solicitacoes.forEach(function (s) { if (s.status === 'Pendente' || s.status === 'Aprovada') IX.aberto[s.colaborador_id + '|' + s.epi_id] = s.status; });
   var A = { vencidas: [], chegando: [], ca: [], estoque: [], emdia: 0, livre: 0 };
@@ -468,7 +476,7 @@ function emUso(op) {
   var r = []; Object.keys(IX.uso).forEach(function (k) { IX.uso[k].forEach(function (e) { if (!op || e.operacao === op) r.push(e); }); }); return r;
 }
 function linhaAlertaTroca(e) {
-  return '<div class="item"><span class="ponto ' + e._s.k + '"></span><div class="item-txt"><b>' + esc(e.colaborador) + '</b><span>' + esc(e.epi) + ' · ' + textoPrazo(e) + (admin() ? ' · ' + esc(e.operacao) : '') + '</span></div>' +
+  return '<div class="item"><span class="ponto ' + e._s.k + '"></span><div class="item-txt"><b>' + esc(e.colaborador) + '</b><span>' + epiT(e) + ' · ' + textoPrazo(e) + (admin() ? ' · ' + esc(e.operacao) : '') + '</span></div>' +
     (e._pedido ? '<span class="pilula azul">Troca pedida</span>' : '<button class="btn mini" data-a="novoPedido" data-col="' + esc(e.colaborador_id) + '" data-epi="' + esc(e.epi_id) + '">Pedir troca</button>') + '</div>';
 }
 
@@ -570,14 +578,14 @@ TELAS.pedidos = function () {
 };
 function cartaoPedido(s) {
   var e = IX.epi[s.epi_id], h = '<article class="ped"><div class="ped-cab"><div><b>' + esc(s.colaborador) + '</b><span>' + esc(s.operacao) + ' · pedido por ' + esc(s.supervisor) + ' em ' + dCurta(s.quando) + ' às ' + hora(s.quando) + '</span></div></div>' +
-    '<div class="ped-itens"><div class="ped-item"><span class="q num">' + s.qtd + '×</span><div><b>' + esc(s.epi) + '</b><small>' + ca(s.ca) + ' · ' + esc(s.motivo) + '</small></div></div></div>' +
+    '<div class="ped-itens"><div class="ped-item"><span class="q num">' + s.qtd + '×</span><div><b>' + epiT(s) + '</b><small>' + ca(s.ca) + ' · ' + esc(s.motivo) + '</small></div></div></div>' +
     '<div>' + pilulaStatus(s.status) + '</div>';
   if (s.obs) h += '<div class="nota">' + esc(s.obs) + '</div>';
   if (s.status === 'Recusada' && s.motivo_recusa) h += '<div class="nota bad">Motivo da recusa: ' + esc(s.motivo_recusa) + '</div>';
   if (s.status === 'Entregue') h += '<p class="sub">Entregue em ' + dBR(s.entregue_em) + '</p>';
   if (s.status === 'Pendente') {
     if (admin()) {
-      if (e) h += '<div class="nota ' + (e.estoque < s.qtd ? 'warn' : '') + '">No estoque: ' + e.estoque + (e.estoque < s.qtd ? '. Não cobre este pedido.' : '') + '</div>';
+      if (e) { var nt = s.tamanho && e.porTam ? (e.porTam[String(s.tamanho).toUpperCase()] || 0) : e.estoque; h += '<div class="nota ' + (nt < s.qtd ? 'warn' : '') + '">No estoque' + (s.tamanho && e.porTam ? ' ' + rotTam(s.tamanho) : '') + ': ' + nt + (nt < s.qtd ? '. Não cobre este pedido.' : '') + '</div>'; }
       h += '<div class="linha-btn"><button class="btn per" data-a="recusar" data-id="' + s.id + '">Recusar</button><button class="btn pri" data-a="aprovar" data-id="' + s.id + '">' + IC.check + 'Aprovar</button></div>';
     } else if (s.supervisor === DB.usuario.nome) h += '<div class="linha-btn"><button class="btn mini per" data-a="cancelarPed" data-id="' + s.id + '">Cancelar pedido</button></div>';
   }
@@ -589,7 +597,7 @@ function gruposEntrega(lista) {
   return ordem.map(function (id) {
     var it = g[id];
     return '<article class="ped"><div class="ped-cab"><div><b>' + esc(it[0].colaborador) + '</b><span>' + esc(it[0].operacao) + '</span></div>' + pilulaStatus('Aprovada') + '</div><div class="ped-itens">' +
-      it.map(function (s) { return '<div class="ped-item"><span class="q num">' + s.qtd + '×</span><div><b>' + esc(s.epi) + '</b><small>' + ca(s.ca) + ' · ' + esc(s.motivo) + '</small></div></div>'; }).join('') +
+      it.map(function (s) { return '<div class="ped-item"><span class="q num">' + s.qtd + '×</span><div><b>' + epiT(s) + '</b><small>' + ca(s.ca) + ' · ' + esc(s.motivo) + '</small></div></div>'; }).join('') +
       '</div><div class="linha-btn">' + (admin() ? '<button class="btn per" data-a="cancelarAprov" data-col="' + esc(id) + '">Cancelar</button>' : '') + '<button class="btn pri" data-a="entregar" data-col="' + esc(id) + '">Entregar e colher assinatura</button></div></article>';
   }).join('');
 }
@@ -618,7 +626,7 @@ TELAS.alertas = function () {
     return '<div class="item"><span class="ponto ' + (x.dias < 0 ? 'bad' : 'warn') + '"></span><div class="item-txt"><b>' + esc(x.epi.epi) + '</b><span>' + ca(x.epi.ca) + ' · ' + (x.dias < 0 ? 'venceu em ' + dBR(x.epi.validade_ca) : 'vence em ' + dBR(x.epi.validade_ca) + ' (' + plural(x.dias, 'dia', 'dias') + ')') + '</span></div></div>';
   }));
   h += sec('Estoque baixo', 'Saldo igual ou abaixo do mínimo que você definiu.', A.estoque.map(function (e) {
-    return '<div class="item"><span class="ponto ' + (e.estoque <= 0 ? 'bad' : 'warn') + '"></span><div class="item-txt"><b>' + esc(e.epi) + '</b><span>Saldo ' + e.estoque + ' · mínimo ' + e.minimo + '</span></div><button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '">Lançar entrada</button></div>';
+    return '<div class="item"><span class="ponto ' + (e.estoque <= 0 ? 'bad' : 'warn') + '"></span><div class="item-txt"><b>' + epiT(e) + '</b><span>Saldo ' + e.estoque + ' · mínimo ' + e.minimo + '</span></div><button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '">Lançar entrada</button></div>';
   }));
   return h;
 };
@@ -631,15 +639,22 @@ TELAS.estoque = function () {
   h += '<input class="in" id="busca-epi" type="search" placeholder="Buscar EPI ou C.A." value="' + esc(F.estoqueBusca) + '" data-busca="#lista-epi" aria-label="Buscar EPI">';
   h += '<div class="lista" id="lista-epi">' + epis.map(function (e) {
     var k = e.estoque <= 0 ? 'bad' : e.estoque <= e.minimo && e.minimo > 0 ? 'warn' : 'ok';
-    return '<div class="item" data-txt="' + esc(semAcento(e.epi + ' ' + e.ca)) + '"><div class="item-txt"><b>' + esc(e.epi) + '</b><span>' + ca(e.ca) + ' · mínimo ' + e.minimo + ' · troca a cada ' + (e.vida ? plural(e.vida, 'dia', 'dias') : '—') + '</span></div>' +
-      '<span class="pilula ' + k + ' num" title="Saldo">' + e.estoque + ' un.</span><button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '" aria-label="Lançar entrada de ' + esc(e.epi) + '">' + IC.mais + '</button></div>';
+    return '<div class="item" data-txt="' + esc(semAcento(e.epi + ' ' + e.ca)) + '"><div class="item-txt"><b>' + epiT(e) + '</b><span>' + ca(e.ca) + ' · mínimo ' + e.minimo + ' · troca a cada ' + (e.vida ? plural(e.vida, 'dia', 'dias') : '—') + '</span>' + saldosTam(e) + '</div>' +
+      '<span class="pilula ' + k + ' num" title="Saldo">' + e.estoque + ' un.</span><button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '" aria-label="Lançar entrada de ' + epiT(e) + '">' + IC.mais + '</button></div>';
   }).join('') + '</div>';
   var mov = (DB.movimentacoes || []).slice(-25).reverse();
   h += '<section class="sec"><div class="sec-cab"><h2>Últimas movimentações</h2></div>' + (mov.length ? '<div class="lista">' + mov.map(function (m) {
-    return '<div class="item"><div class="item-txt"><b>' + esc(m.epi) + '</b><span>' + esc(m.tipo) + ' · ' + dCurta(m.quando) + ' ' + hora(m.quando) + ' · ' + esc(m.quem) + (m.doc ? ' · ' + esc(m.doc) : '') + (m.obs ? ' · ' + esc(m.obs) : '') + '</span></div><b class="num" style="color:var(--' + (m.qtd < 0 ? 'ink-2' : 'ok') + ')">' + (m.qtd > 0 ? '+' : '−') + Math.abs(m.qtd) + '</b></div>';
+    return '<div class="item"><div class="item-txt"><b>' + epiT(m) + '</b><span>' + esc(m.tipo) + ' · ' + dCurta(m.quando) + ' ' + hora(m.quando) + ' · ' + esc(m.quem) + (m.doc ? ' · ' + esc(m.doc) : '') + (m.obs ? ' · ' + esc(m.obs) : '') + '</span></div><b class="num" style="color:var(--' + (m.qtd < 0 ? 'ink-2' : 'ok') + ')">' + (m.qtd > 0 ? '+' : '−') + Math.abs(m.qtd) + '</b></div>';
   }).join('') + '</div><p class="sub">O histórico completo fica na aba Movimentacoes da planilha.</p>' : '<div class="vazio"><b>Nenhuma movimentação</b>Lance a primeira entrada com o que você tem hoje no estoque.</div>') + '</section>';
   return h;
 };
+
+function saldosTam(e) {
+  if (!e.tamanhos || !e.tamanhos.length) return '';
+  var p = e.porTam || {}, partes = e.tamanhos.map(function (t) { return rotTam(t).replace('tam. ', '') + ': <b>' + (p[t] || 0) + '</b>'; });
+  if (p['']) partes.push('sem tamanho: <b>' + p[''] + '</b>');
+  return '<span class="tams">' + partes.join(' · ') + '</span>';
+}
 
 /* ---------- cadastros (administrador) ---------- */
 TELAS.cadastros = function () {
@@ -648,7 +663,7 @@ TELAS.cadastros = function () {
   }).join('') + '</div>';
   if (F.cad === 'epis') {
     h += '<button class="btn pri" data-a="editarEpi">' + IC.mais + 'Novo EPI</button><div class="lista">' + (DB.epis.length ? DB.epis.map(function (e) {
-      return '<button class="item" data-a="editarEpi" data-id="' + esc(e.id) + '"><div class="item-txt"><b>' + esc(e.epi) + (e.ativo ? '' : ' (inativo)') + '</b><span>' + ca(e.ca) + (e.validade_ca ? ' até ' + dBR(e.validade_ca) : '') + ' · ' + (e.vida ? 'troca a cada ' + e.vida + ' dias' : 'sem prazo de troca') + ' · ' + esc(e.ops.length ? e.ops.join(', ') : 'todas as operações') + '</span></div>' + IC.seta + '</button>';
+      return '<button class="item" data-a="editarEpi" data-id="' + esc(e.id) + '"><div class="item-txt"><b>' + epiT(e) + (e.ativo ? '' : ' (inativo)') + '</b><span>' + ca(e.ca) + (e.validade_ca ? ' até ' + dBR(e.validade_ca) : '') + ' · ' + (e.vida ? 'troca a cada ' + e.vida + ' dias' : 'sem prazo de troca') + ' · ' + esc(e.ops.length ? e.ops.join(', ') : 'todas as operações') + '</span></div>' + IC.seta + '</button>';
     }).join('') : '<div class="item"><div class="item-txt"><span>Nenhum EPI cadastrado.</span></div></div>') + '</div>';
   } else if (F.cad === 'usuarios') {
     h += '<button class="btn pri" data-a="editarUsuario">' + IC.mais + 'Novo acesso</button><div class="lista">' + (DB.usuarios || []).map(function (u) {
@@ -695,7 +710,7 @@ var PED = null;
 function abrirPedido(colId, epiId) {
   var cols = DB.colaboradores.filter(function (c) { return c.ativo; }).sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
   if (!cols.length) return toast('Cadastre um colaborador antes de pedir EPI.', true);
-  PED = { col: colId || '', q: {}, motivo: epiId ? MOTIVOS[1] : '' };
+  PED = { col: colId || '', q: {}, t: {}, motivo: epiId ? MOTIVOS[1] : '' };
   if (epiId) PED.q[epiId] = 1;
   var porOp = {}; cols.forEach(function (c) { (porOp[c.operacao] = porOp[c.operacao] || []).push(c); });
   var opcoes = Object.keys(porOp).sort().map(function (op) { return '<optgroup label="' + esc(op) + '">' + porOp[op].map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === PED.col ? ' selected' : '') + '>' + esc(c.nome) + '</option>'; }).join('') + '</optgroup>'; }).join('');
@@ -717,7 +732,9 @@ function pintarEpisPedido() {
   alvo.innerHTML = '<div class="sec"><div class="sec-cab"><h2>EPIs de ' + esc(c.operacao) + '</h2></div><div class="bloco" style="gap:0;padding:4px 14px">' + epis.map(function (e) {
     var u = uso[e.id], n = PED.q[e.id] || 0, ab = IX.aberto[c.id + '|' + e.id];
     var dica = ab ? '<span style="color:var(--accent)">Já tem pedido ' + (ab === 'Pendente' ? 'aguardando aprovação' : 'aprovado, falta entregar') + '</span>' : u ? '<span' + (u._s.k === 'bad' ? ' style="color:var(--bad)"' : '') + '>Em uso desde ' + dCurta(u.data) + ' · ' + textoPrazo(u) + '</span>' : '<span>Ainda não recebeu</span>';
-    return '<div class="epi-op"><div class="item-txt"><b>' + esc(e.epi) + '</b><span>' + ca(e.ca) + '</span>' + dica + '</div><div class="passo"><button data-a="menos" data-id="' + esc(e.id) + '" aria-label="Diminuir ' + esc(e.epi) + '">−</button><output class="num ' + (n ? '' : 'zero') + '" id="q-' + esc(e.id) + '">' + n + '</output><button data-a="maisQ" data-id="' + esc(e.id) + '" aria-label="Aumentar ' + esc(e.epi) + '">+</button></div></div>';
+    if (e.tamanhos.length && PED.t[e.id] === undefined) PED.t[e.id] = u && e.tamanhos.indexOf(String(u.tamanho).toUpperCase()) > -1 ? String(u.tamanho).toUpperCase() : '';
+    var seletor = e.tamanhos.length ? '<select class="in tam-sel" id="t-' + esc(e.id) + '" data-tam="' + esc(e.id) + '" aria-label="Tamanho de ' + esc(e.epi) + '"><option value="">Escolha o tamanho</option>' + e.tamanhos.map(function (t) { return '<option value="' + esc(t) + '"' + (PED.t[e.id] === t ? ' selected' : '') + '>' + rotTam(t) + '</option>'; }).join('') + '</select>' : '';
+    return '<div class="epi-op"><div class="item-txt"><b>' + esc(e.epi) + '</b><span>' + ca(e.ca) + '</span>' + dica.replace('Em uso desde', (u && u.tamanho ? rotTam(u.tamanho) + ', em uso desde' : 'Em uso desde')) + seletor + '</div><div class="passo"><button data-a="menos" data-id="' + esc(e.id) + '" aria-label="Diminuir ' + epiT(e) + '">−</button><output class="num ' + (n ? '' : 'zero') + '" id="q-' + esc(e.id) + '">' + n + '</output><button data-a="maisQ" data-id="' + esc(e.id) + '" aria-label="Aumentar ' + epiT(e) + '">+</button></div></div>';
   }).join('') + '</div></div>';
 }
 
@@ -730,7 +747,7 @@ function abrirEntrega(colId) {
   abrir('Entrega de EPI',
     '<div><p class="titulo" style="font-size:24px">' + esc(itens[0].colaborador) + '</p><p class="sub">' + esc(itens[0].operacao) + ' · ' + dBR(DB.hoje) + '</p></div>' +
     '<div class="bloco checks" style="gap:0;padding:6px 14px">' + itens.map(function (s) {
-      return '<label class="check"><input type="checkbox" class="en-item" id="en-' + s.id + '" value="' + s.id + '" checked><span><b>' + s.qtd + '× ' + esc(s.epi) + '</b> <span class="sub">' + ca(s.ca) + '</span></span></label>';
+      return '<label class="check"><input type="checkbox" class="en-item" id="en-' + s.id + '" value="' + s.id + '" checked><span><b>' + s.qtd + '× ' + epiT(s) + '</b> <span class="sub">' + ca(s.ca) + '</span></span></label>';
     }).join('') + '</div>' +
     '<p class="termo">Declaro que recebi da ' + esc(empresa) + ', gratuitamente e em perfeito estado, os EPIs marcados acima, com orientação sobre o uso correto, guarda e conservação. Comprometo-me a usá-los durante o trabalho, a cuidar deles e a avisar quando estiverem danificados ou sem condição de uso, conforme a NR-6.</p>' +
     '<div class="sec"><div class="sec-cab"><h2>Assinatura do colaborador</h2><button class="link" data-a="limparAss">Limpar</button></div><div class="assina"><canvas id="en-canvas" aria-label="Área de assinatura"></canvas><span>Assine com o dedo acima da linha</span></div></div>',
@@ -788,11 +805,11 @@ function abrirFicha(id) {
     var h = '<div><p class="titulo">' + esc(c.nome) + '</p><p class="sub">' + esc([c.funcao, c.operacao, c.matricula ? 'matrícula ' + c.matricula : '', c.admissao ? 'admissão ' + dBR(c.admissao) : ''].filter(Boolean).join(' · ')) + '</p></div>' +
       '<div class="linha-btn"><button class="btn pri" data-a="novoPedido" data-col="' + esc(c.id) + '">' + IC.mais + 'Pedir EPI</button>' + (DEMO ? '' : '<button class="btn" data-a="imprimirFicha">' + IC.imprimir + 'Imprimir</button>') + '<button class="btn" data-a="editarColab" data-id="' + esc(c.id) + '">Editar</button></div>';
     h += '<section class="sec"><div class="sec-cab"><h2>Em uso agora</h2></div>' + (uso.length ? uso.map(function (e) {
-      return '<div class="bloco"><div class="ped-cab"><div><b>' + e.qtd + '× ' + esc(e.epi) + '</b><span>' + ca(e.ca) + '</span></div>' + pilulaPrazo(e) + '</div>' + barraVida(e) +
+      return '<div class="bloco"><div class="ped-cab"><div><b>' + e.qtd + '× ' + epiT(e) + '</b><span>' + ca(e.ca) + '</span></div>' + pilulaPrazo(e) + '</div>' + barraVida(e) +
         '<div class="linha-btn"><button class="btn mini" data-a="novoPedido" data-col="' + esc(c.id) + '" data-epi="' + esc(e.epi_id) + '">Pedir troca</button><button class="btn mini" data-a="baixa" data-id="' + esc(e.id) + '">Dar baixa</button></div></div>';
     }).join('') : '<div class="vazio">Nenhum EPI em uso registrado para este colaborador.</div>') + '</section>';
     h += '<section class="sec"><div class="sec-cab"><h2>Histórico de entregas</h2></div>' + (hist.length ? '<div class="lista">' + hist.map(function (e) {
-      return '<div class="item"><div class="item-txt"><b>' + dBR(e.data) + ' · ' + e.qtd + '× ' + esc(e.epi) + '</b><span>' + ca(e.ca) + ' · ' + esc(e.motivo) + ' · entregue por ' + esc(e.entregue_por) + (e.situacao !== 'Em uso' ? ' · ' + esc(e.situacao.toLowerCase()) + (e.baixa ? ' em ' + dBR(e.baixa) : '') : '') + '</span></div>' + rubrica(e.assinatura) + '</div>';
+      return '<div class="item"><div class="item-txt"><b>' + dBR(e.data) + ' · ' + e.qtd + '× ' + epiT(e) + '</b><span>' + ca(e.ca) + ' · ' + esc(e.motivo) + ' · entregue por ' + esc(e.entregue_por) + (e.situacao !== 'Em uso' ? ' · ' + esc(e.situacao.toLowerCase()) + (e.baixa ? ' em ' + dBR(e.baixa) : '') : '') + '</span></div>' + rubrica(e.assinatura) + '</div>';
     }).join('') + '</div>' : '<div class="vazio">Ainda sem entregas assinadas.</div>') + '</section>';
     var corpo = $('#folha .folha-corpo'); if (corpo) corpo.innerHTML = h;
   }).catch(function (e) { toast(e.message, true); fechar(); });
@@ -804,7 +821,7 @@ function imprimirFicha() {
     '<table class="dados"><tr><td><b>Colaborador:</b> ' + esc(c.nome) + '</td><td><b>Matrícula:</b> ' + esc(c.matricula || '—') + '</td></tr><tr><td><b>Função:</b> ' + esc(c.funcao || '—') + '</td><td><b>Operação:</b> ' + esc(c.operacao) + '</td></tr><tr><td><b>Admissão:</b> ' + (dBR(c.admissao) || '—') + '</td><td><b>Emitida em:</b> ' + dBR(DB.hoje) + '</td></tr></table>' +
     '<p class="t">Declaro que recebi gratuitamente os Equipamentos de Proteção Individual relacionados abaixo, em perfeito estado, com orientação sobre uso, guarda e conservação, e me comprometo a utilizá-los durante o trabalho e a comunicar qualquer dano ou extravio, conforme a NR-6. As assinaturas foram colhidas em meio eletrônico no ato de cada entrega.</p>' +
     '<table><thead><tr><th>Data</th><th>Qtd</th><th>EPI</th><th>C.A.</th><th>Motivo</th><th>Trocar até</th><th>Baixa</th><th>Entregue por</th><th>Assinatura</th></tr></thead><tbody>' +
-    FICHA.entregas.map(function (e) { return '<tr><td>' + dBR(e.data) + '</td><td>' + e.qtd + '</td><td>' + esc(e.epi) + '</td><td>' + esc(e.ca) + '</td><td>' + esc(e.motivo) + '</td><td>' + (dBR(e.proxima) || '—') + '</td><td>' + (dBR(e.baixa) || '') + '</td><td>' + esc(e.entregue_por) + '</td><td>' + rubrica(e.assinatura, 'r') + '</td></tr>'; }).join('') + '</tbody></table>';
+    FICHA.entregas.map(function (e) { return '<tr><td>' + dBR(e.data) + '</td><td>' + e.qtd + '</td><td>' + epiT(e) + '</td><td>' + esc(e.ca) + '</td><td>' + esc(e.motivo) + '</td><td>' + (dBR(e.proxima) || '—') + '</td><td>' + (dBR(e.baixa) || '') + '</td><td>' + esc(e.entregue_por) + '</td><td>' + rubrica(e.assinatura, 'r') + '</td></tr>'; }).join('') + '</tbody></table>';
   window.print();
 }
 
@@ -822,6 +839,7 @@ function formEpi(id) {
     campo('Nome do EPI', 'epi', e.epi, 'text', 'required placeholder="Ex.: Botina de segurança nº 41"') +
     '<div class="dupla">' + campo('Número do C.A.', 'ca', e.ca, 'text', 'inputmode="numeric"', 'Em branco = sem C.A.') + campo('Validade do C.A.', 'validade_ca', e.validade_ca, 'date', '', 'Se tiver.') + '</div>' +
     '<div class="dupla">' + campo('Vida útil (dias)', 'vida', e.vida, 'number', 'min="0" inputmode="numeric"', 'Tempo até a troca. 0 = sem prazo.') + campo('Estoque mínimo', 'minimo', e.minimo, 'number', 'min="0" inputmode="numeric"', 'Abaixo disso, avisa.') + '</div>' +
+    campo('Tamanhos ou numerações', 'tamanhos', (e.tamanhos || []).join(', '), 'text', 'placeholder="Ex.: 38, 39, 40 ou P, M, G" autocapitalize="characters"', 'Separados por vírgula. Em branco = tamanho único.') +
     campo('Custo por unidade (R$)', 'custo', e.custo || '', 'text', 'inputmode="decimal"', 'Opcional. Usado no painel.') +
     '<div class="campo">Operações que usam<small>Nenhuma marcada = todas usam.</small>' + checksOps(e.ops, nomesOps()) + '</div>' +
     '<label class="check"><input type="checkbox" id="fm-ativo" name="ativo"' + (e.ativo ? ' checked' : '') + '>EPI em uso na empresa</label></form>',
@@ -858,14 +876,15 @@ function formOp(nome) {
 function formEntrada(id) {
   var e = IX.epi[id]; if (!e) return;
   abrir(e.epi, '<p class="sub">' + ca(e.ca) + ' · saldo no sistema: <b style="color:var(--ink)">' + e.estoque + '</b></p><div class="seg"><button class="on" data-a="tipoMov" data-f="Entrada">Entrada (compra)</button><button data-a="tipoMov" data-f="Ajuste">Ajuste de contagem</button></div>' +
-    '<form class="form" id="fm" data-form="mov" data-epi="' + esc(e.id) + '" data-tipo="Entrada"><div id="mv-campos"></div></form>', '<button class="btn pri" data-a="salvarMov">Lançar</button>');
+    '<form class="form" id="fm" data-form="mov" data-epi="' + esc(e.id) + '" data-tipo="Entrada"><div id="mv-campos" class="form"></div></form>', '<button class="btn pri" data-a="salvarMov">Lançar</button>');
   pintarMov('Entrada', e);
 }
 function pintarMov(tipo, e) {
   $('#fm').dataset.tipo = tipo;
-  $('#mv-campos').innerHTML = tipo === 'Entrada'
+  var pt = e.porTam || {}, selTam = e.tamanhos && e.tamanhos.length ? '<label class="campo">Tamanho<select class="in" id="fm-tamanho" name="tamanho" required><option value="">Escolha o tamanho</option>' + e.tamanhos.map(function (t) { return '<option value="' + esc(t) + '">' + rotTam(t) + ' (saldo ' + (pt[t] || 0) + ')</option>'; }).join('') + '</select></label>' : '';
+  $('#mv-campos').innerHTML = selTam + (tipo === 'Entrada'
     ? '<div class="form"><div class="dupla">' + campo('Quantidade que entrou', 'quantidade', '', 'number', 'min="1" inputmode="numeric" required') + campo('Custo por unidade (R$)', 'custo_unitario', e.custo || '', 'text', 'inputmode="decimal"') + '</div>' + campo('Nota fiscal ou fornecedor', 'documento', '') + campo('Observação', 'observacao', '') + '</div>'
-    : '<div class="form">' + campo('Quantas unidades você contou', 'contagem', '', 'number', 'min="0" inputmode="numeric" required', 'O sistema lança a diferença para o saldo bater com a contagem.') + campo('Motivo do ajuste', 'observacao', '', 'text', 'required placeholder="Ex.: inventário de outubro"') + '</div>';
+    : '<div class="form">' + campo('Quantas unidades você contou', 'contagem', '', 'number', 'min="0" inputmode="numeric" required', 'O sistema lança a diferença para o saldo bater com a contagem.') + campo('Motivo do ajuste', 'observacao', '', 'text', 'required placeholder="Ex.: inventário de outubro"') + '</div>');
 }
 function lerForm(f) {
   var o = { ops: [] };
@@ -892,9 +911,11 @@ var ACT = {
   maisQ: function (d) { PED.q[d.id] = Math.min(20, (PED.q[d.id] || 0) + 1); pintarQ(d.id); },
   menos: function (d) { PED.q[d.id] = Math.max(0, (PED.q[d.id] || 0) - 1); pintarQ(d.id); },
   enviarPedido: function (d, el) {
-    var itens = Object.keys(PED.q).filter(function (k) { return PED.q[k] > 0; }).map(function (k) { return { epi_id: k, quantidade: PED.q[k] }; });
+    var itens = Object.keys(PED.q).filter(function (k) { return PED.q[k] > 0; }).map(function (k) { return { epi_id: k, quantidade: PED.q[k], tamanho: PED.t[k] || '' }; });
     if (!PED.col) return toast('Escolha o colaborador.', true);
     if (!itens.length) return toast('Use o + para escolher pelo menos um EPI.', true);
+    var semTam = itens.filter(function (i) { return IX.epi[i.epi_id].tamanhos.length && !i.tamanho; })[0];
+    if (semTam) { var st = document.getElementById('t-' + semTam.epi_id); if (st) st.focus(); return toast('Escolha o tamanho de ' + IX.epi[semTam.epi_id].epi + '.', true); }
     if (!$('#pd-motivo').value) return toast('Escolha o motivo do pedido.', true);
     var repetido = itens.filter(function (i) { return IX.aberto[PED.col + '|' + i.epi_id]; });
     var segue = repetido.length ? perguntar('Já existe pedido aberto', 'Este colaborador já tem pedido em andamento de ' + repetido.map(function (i) { return IX.epi[i.epi_id].epi; }).join(', ') + '. Enviar outro mesmo assim?', 'Enviar mesmo assim') : Promise.resolve(true);
@@ -907,7 +928,7 @@ var ACT = {
   aprovar: function (d, el) {
     executar(el, 'decidir', { id: d.id, aprovar: true }).then(function (r) {
       if (!r.faltaEstoque) return toast('Pedido aprovado. Saiu do estoque.');
-      perguntar('Estoque não cobre', 'O sistema mostra saldo ' + r.saldo + ' e o pedido é de ' + r.qtd + '. Se o EPI existe fisicamente, aprove e depois ajuste a contagem no Estoque.', 'Aprovar mesmo assim').then(function (ok) {
+      perguntar('Estoque não cobre', 'O sistema mostra saldo ' + r.saldo + (r.tamanho ? ' do tamanho ' + r.tamanho : '') + ' e o pedido é de ' + r.qtd + '. Se o EPI existe fisicamente, aprove e depois ajuste a contagem no Estoque.', 'Aprovar mesmo assim').then(function (ok) {
         if (ok) executar(null, 'decidir', { id: d.id, aprovar: true, forcar: true }, 'Pedido aprovado. Saldo ficou negativo: ajuste o estoque.').catch(function () {});
       });
     }).catch(function () {});
@@ -948,6 +969,7 @@ var ACT = {
   tipoMov: function (d, el) { $$('button', el.parentNode).forEach(function (b) { b.classList.toggle('on', b === el); }); pintarMov(d.f, IX.epi[$('#fm').dataset.epi]); },
   salvarMov: function (d, el) {
     var f = $('#fm'), o = lerForm(f); o.epi_id = f.dataset.epi; o.tipo = f.dataset.tipo;
+    if (!f.reportValidity()) return;
     executar(el, 'movimentar', o, o.tipo === 'Entrada' ? 'Entrada lançada.' : 'Estoque ajustado.').then(fechar).catch(function () {});
   },
   salvarForm: function (d, el) {
@@ -964,7 +986,8 @@ document.addEventListener('click', function (ev) {
 });
 document.addEventListener('change', function (ev) {
   var el = ev.target;
-  if (el.id === 'pd-col') { PED.col = el.value; PED.q = {}; pintarEpisPedido(); }
+  if (el.id === 'pd-col') { PED.col = el.value; PED.q = {}; PED.t = {}; pintarEpisPedido(); }
+  if (el.dataset.tam && PED) { PED.t[el.dataset.tam] = el.value; if (el.value && !PED.q[el.dataset.tam]) { PED.q[el.dataset.tam] = 1; pintarQ(el.dataset.tam); } }
   if (el.dataset.m) { F[el.dataset.m] = el.value; desenhar(); }
 });
 document.addEventListener('input', function (ev) {
