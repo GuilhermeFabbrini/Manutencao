@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B4F9E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="robots" content="noindex">
+<title>EPI em Dia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: aplicativo de uma tela só no celular — faixa azul de sinalização no topo, conteúdo rolando no meio, abas embaixo. */
+:root {
+  --bg: #EEF1F5; --surface: #FFFFFF; --surface-2: #F5F7FA; --line: #D8DEE8;
+  --ink: #14213A; --ink-2: #4A5670; --ink-3: #6F7A90;
+  --accent: #0B4F9E; --accent-ink: #FFFFFF; --accent-soft: #E3EDF9;
+  --head: #0B4F9E; --head-ink: #FFFFFF; --head-ink-2: #C9DCF3;
+  --sinal: #F6B700;
+  --ok: #1B7F47; --ok-soft: #E1F3E8; --ok-fill: #2E9E5E;
+  --warn: #7A5200; --warn-soft: #FFF1C2; --warn-fill: #E9A800;
+  --bad: #B3261E; --bad-soft: #FBE4E1; --bad-fill: #D1463C;
+  --s1: #2a78d6; --s2: #eb6834;
+  --display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --body: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --r: 12px; --r-sm: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1522; --surface: #172133; --surface-2: #1D2940; --line: #2C3A54;
+    --ink: #EEF2F8; --ink-2: #B7C2D6; --ink-3: #8A97AE;
+    --accent: #6AA6EE; --accent-ink: #0B1524; --accent-soft: #1B2F4D;
+    --head: #132A4A; --head-ink: #EEF2F8; --head-ink-2: #9FB6D6;
+    --sinal: #F6B700;
+    --ok: #63CF91; --ok-soft: #153324; --ok-fill: #2E9E5E;
+    --warn: #F2C144; --warn-soft: #3A2F0E; --warn-fill: #D99C00;
+    --bad: #F28B82; --bad-soft: #3D1B18; --bad-fill: #D1463C;
+    --s1: #3987e5; --s2: #d95926;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1522; --surface: #172133; --surface-2: #1D2940; --line: #2C3A54;
+  --ink: #EEF2F8; --ink-2: #B7C2D6; --ink-3: #8A97AE;
+  --accent: #6AA6EE; --accent-ink: #0B1524; --accent-soft: #1B2F4D;
+  --head: #132A4A; --head-ink: #EEF2F8; --head-ink-2: #9FB6D6;
+  --sinal: #F6B700;
+  --ok: #63CF91; --ok-soft: #153324; --ok-fill: #2E9E5E;
+  --warn: #F2C144; --warn-soft: #3A2F0E; --warn-fill: #D99C00;
+  --bad: #F28B82; --bad-soft: #3D1B18; --bad-fill: #D1463C;
+  --s1: #3987e5; --s2: #d95926;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.4 var(--body); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--sinal); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* estrutura */
+#app { height: 100%; display: flex; flex-direction: column; max-width: 720px; margin: 0 auto; background: var(--bg); }
+.topo { background: var(--head); color: var(--head-ink); padding: 10px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 4px solid var(--sinal); }
+.marca { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+.selo { width: 34px; height: 34px; flex: none; border-radius: 50%; border: 2.5px solid currentColor; display: grid; place-items: center; }
+.selo svg { width: 18px; height: 18px; }
+.marca-txt { min-width: 0; }
+.marca-txt b { display: block; font: 700 22px/1 var(--display); letter-spacing: .01em; }
+.marca-txt span { display: block; font-size: 13px; color: var(--head-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topo-btn { background: none; border: 0; color: var(--head-ink); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+.topo-btn svg { width: 22px; height: 22px; }
+.sinc { background: none; border: 0; color: var(--head-ink-2); font-size: 12px; text-align: right; line-height: 1.2; padding: 6px 0; flex: none; }
+.sinc i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #5BD08A; margin-right: 5px; }
+.sinc.off i { background: var(--sinal); }
+.sinc.busca i { animation: pisca 1s infinite; }
+@keyframes pisca { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+main > *, .folha-corpo > * { flex-shrink: 0; }
+main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px 96px; display: flex; flex-direction: column; gap: 16px; }
+.abas { display: flex; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.aba { flex: 1; min-width: 0; background: none; border: 0; padding: 8px 2px 9px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; font-weight: 500; color: var(--ink-3); position: relative; }
+.aba svg { width: 23px; height: 23px; }
+.aba.on { color: var(--accent); font-weight: 600; }
+.aba.on::before { content: ''; position: absolute; top: -1px; left: 22%; right: 22%; height: 3px; background: var(--accent); border-radius: 0 0 3px 3px; }
+.aba em { position: absolute; top: 3px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bad-fill); color: #fff; font: 600 11px/18px var(--body); font-style: normal; }
+.fab { position: absolute; right: 16px; bottom: 16px; }
+.palco { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+/* tipografia de seção */
+.titulo { font: 700 26px/1.1 var(--display); text-wrap: balance; }
+.sub { color: var(--ink-2); font-size: 14px; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sec-cab h2 { font: 700 19px/1.15 var(--display); }
+.link { background: none; border: 0; padding: 4px 0; color: var(--accent); font-weight: 600; font-size: 14px; }
+
+/* botões e campos */
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); min-height: 46px; padding: 0 16px; border-radius: var(--r-sm); font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn svg { width: 19px; height: 19px; flex: none; }
+.btn.pri { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.per { color: var(--bad); }
+.btn.mini { min-height: 38px; padding: 0 12px; font-size: 14px; }
+.btn.cheio { width: 100%; }
+.btn.grande { min-height: 54px; font-size: 17px; border-radius: 27px; padding: 0 22px; box-shadow: 0 6px 18px rgba(11, 79, 158, .35); }
+.btn:disabled { opacity: .55; cursor: default; }
+.linha-btn { display: flex; gap: 8px; flex-wrap: wrap; }
+.linha-btn > .btn { flex: 1; }
+.campo { display: flex; flex-direction: column; gap: 5px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.campo small { font-weight: 400; color: var(--ink-3); }
+input.in, select.in, textarea.in { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font-weight: 400; font-size: 16px; }
+textarea.in { min-height: 76px; resize: vertical; }
+.form { display: flex; flex-direction: column; gap: 14px; }
+.dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.checks { display: flex; flex-direction: column; gap: 2px; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 42px; font-weight: 400; color: var(--ink); font-size: 15px; }
+.check input { width: 22px; height: 22px; flex: none; accent-color: var(--accent); }
+.seg { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 3px; gap: 3px; }
+.seg button { flex: 1; min-width: 0; border: 0; background: none; min-height: 40px; border-radius: 6px; font-weight: 600; font-size: 14px; color: var(--ink-2); padding: 0 4px; }
+.seg button.on { background: var(--accent); color: var(--accent-ink); }
+.seg button b { font-weight: 600; opacity: .8; }
+
+/* blocos */
+.bloco { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.lista { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; }
+.item:first-child { border-top: 0; }
+.item-txt { flex: 1; min-width: 0; }
+.item-txt b { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.item-txt span { display: block; font-size: 14px; color: var(--ink-2); overflow-wrap: anywhere; }
+.item > svg { width: 18px; height: 18px; color: var(--ink-3); flex: none; }
+.vazio { text-align: center; color: var(--ink-2); padding: 26px 16px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); font-size: 15px; }
+.vazio b { display: block; color: var(--ink); font: 700 19px/1.2 var(--display); margin-bottom: 4px; }
+.pilula { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; background: var(--surface-2); color: var(--ink-2); }
+.pilula svg { width: 13px; height: 13px; }
+.pilula.ok { background: var(--ok-soft); color: var(--ok); }
+.pilula.warn { background: var(--warn-soft); color: var(--warn); }
+.pilula.bad { background: var(--bad-soft); color: var(--bad); }
+.pilula.azul { background: var(--accent-soft); color: var(--accent); }
+.ponto { width: 12px; height: 12px; border-radius: 50%; flex: none; background: var(--line); }
+.ponto.ok { background: var(--ok-fill); } .ponto.warn { background: var(--warn-fill); } .ponto.bad { background: var(--bad-fill); }
+
+/* indicadores */
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.kpi b { font: 700 38px/1 var(--display); }
+.kpi span { font-size: 14px; color: var(--ink-2); }
+.kpi.bad b { color: var(--bad); } .kpi.warn b { color: var(--warn); } .kpi.azul b { color: var(--accent); }
+.regua { display: flex; gap: 2px; height: 18px; border-radius: 5px; overflow: hidden; background: var(--surface-2); }
+.regua i { display: block; min-width: 4px; }
+.regua .ok { background: var(--ok-fill); } .regua .warn { background: var(--warn-fill); } .regua .bad { background: var(--bad-fill); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--ink-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.destaque { display: flex; align-items: baseline; gap: 10px; }
+.destaque b { font: 700 46px/1 var(--display); }
+.destaque span { color: var(--ink-2); font-size: 15px; }
+
+/* vida útil */
+.vida { display: flex; flex-direction: column; gap: 5px; }
+.vida-trilho { height: 8px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+.vida-trilho i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--ok-fill); }
+.vida.warn .vida-trilho i { background: var(--warn-fill); } .vida.bad .vida-trilho i { background: var(--bad-fill); }
+.vida-txt { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--ink-2); }
+
+/* gráficos */
+.barras { display: flex; flex-direction: column; gap: 10px; }
+.barra-l { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.barra-l span { min-width: 0; overflow-wrap: anywhere; }
+.barra-l b { font-weight: 600; }
+.barra-t { height: 10px; margin-top: 4px; }
+.barra-t i { display: block; height: 100%; min-width: 3px; background: var(--s1); border-radius: 0 4px 4px 0; }
+.meses { display: flex; align-items: flex-end; gap: 6px; height: 132px; border-bottom: 1px solid var(--line); position: relative; padding-top: 16px; }
+.meses::before { content: attr(data-max); position: absolute; top: 0; left: 0; right: 0; border-top: 1px dashed var(--line); font-size: 11px; color: var(--ink-3); padding-top: 1px; line-height: 1; pointer-events: none; }
+.mes { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; background: none; border: 0; padding: 0 2px; border-radius: 6px 6px 0 0; }
+.mes.on { background: var(--surface-2); }
+.mes i { display: block; width: 42%; max-width: 22px; min-height: 2px; border-radius: 4px 4px 0 0; }
+.mes .e { background: var(--s1); } .mes .s { background: var(--s2); }
+.meses-r { display: flex; gap: 6px; }
+.meses-r span { flex: 1; text-align: center; font-size: 12px; color: var(--ink-3); }
+.meses-r span.on { color: var(--ink); font-weight: 600; }
+.leitura { font-size: 14px; color: var(--ink-2); }
+.leitura b { color: var(--ink); }
+
+/* cartão de pedido */
+.ped { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.ped-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.ped-cab b { font-weight: 600; font-size: 17px; overflow-wrap: anywhere; }
+.ped-cab span { display: block; font-size: 13px; color: var(--ink-2); }
+.ped-itens { display: flex; flex-direction: column; gap: 6px; }
+.ped-item { display: flex; gap: 10px; align-items: baseline; }
+.ped-item .q { font: 700 20px/1 var(--display); min-width: 28px; }
+.ped-item div { min-width: 0; }
+.ped-item small { display: block; color: var(--ink-2); font-size: 13px; }
+.nota { font-size: 14px; color: var(--ink-2); background: var(--surface-2); border-radius: var(--r-sm); padding: 8px 10px; overflow-wrap: anywhere; }
+.nota.bad { background: var(--bad-soft); color: var(--bad); } .nota.warn { background: var(--warn-soft); color: var(--warn); }
+
+/* escolha de EPI no pedido */
+.epi-op { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.epi-op:first-child { border-top: 0; }
+.epi-op .item-txt b { font-size: 16px; }
+.passo { display: flex; align-items: center; gap: 4px; flex: none; }
+.passo button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 22px; line-height: 1; font-weight: 600; color: var(--accent); }
+.passo output { width: 30px; text-align: center; font: 700 22px/1 var(--display); }
+.passo output.zero { color: var(--ink-3); }
+
+/* folhas (telas que sobem) */
+.folha-fundo { position: fixed; inset: 0; background: rgba(8, 15, 28, .55); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.folha { background: var(--bg); width: 100%; max-width: 720px; max-height: 94%; border-radius: 18px 18px 0 0; display: flex; flex-direction: column; overflow: hidden; }
+.folha.cheia { height: 100%; max-height: 100%; border-radius: 0; }
+.folha-cab { display: flex; align-items: center; gap: 8px; padding: 10px 8px 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+.folha-cab h2 { flex: 1; min-width: 0; font: 700 21px/1.15 var(--display); }
+.folha-x { width: 44px; height: 44px; border: 0; background: none; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); flex: none; }
+.folha-x svg { width: 22px; height: 22px; }
+.folha-corpo { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; -webkit-overflow-scrolling: touch; }
+.folha-pe { padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); display: flex; gap: 8px; }
+.folha-pe .btn { flex: 1; }
+#dlg .folha-fundo { z-index: 40; align-items: center; padding: 16px; }
+#dlg .folha { border-radius: 16px; max-width: 420px; }
+
+/* assinatura */
+.assina { position: relative; background: var(--surface); border: 1.5px dashed var(--ink-3); border-radius: var(--r); height: 180px; touch-action: none; }
+.assina canvas { width: 100%; height: 100%; display: block; touch-action: none; border-radius: var(--r); }
+.assina::after { content: ''; position: absolute; left: 18px; right: 18px; bottom: 44px; border-bottom: 1px solid var(--ink-3); pointer-events: none; }
+.assina span { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-size: 13px; color: var(--ink-3); pointer-events: none; }
+.rubrica { width: 96px; height: 40px; flex: none; color: var(--ink); background: var(--surface-2); border-radius: 6px; }
+.termo { font-size: 14px; color: var(--ink-2); }
+
+/* entrada */
+.entrar { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 24px 20px; max-width: 440px; width: 100%; margin: 0 auto; }
+.entrar .selo { width: 56px; height: 56px; color: var(--accent); border-width: 4px; }
+.entrar .selo svg { width: 30px; height: 30px; }
+.entrar h1 { font: 700 44px/1 var(--display); }
+.faixa { height: 8px; background: repeating-linear-gradient(-45deg, var(--sinal) 0 12px, var(--ink) 12px 24px); border-radius: 2px; width: 96px; }
+.aviso-demo { background: var(--warn-soft); color: var(--warn); font-size: 14px; padding: 8px 16px; text-align: center; font-weight: 500; }
+
+#toast { position: fixed; left: 16px; right: 16px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 60; display: flex; justify-content: center; pointer-events: none; }
+#toast div { background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 10px; font-weight: 500; max-width: 480px; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
+#toast div.bad { background: var(--bad-fill); color: #fff; }
+#print { display: none; }
+
+@media print {
+  html, body { height: auto; background: #fff; }
+  #app, #folha, #dlg, #toast { display: none !important; }
+  #print { display: block; color: #000; font: 11pt/1.35 Arial, sans-serif; padding: 0; }
+  #print h1 { font: bold 15pt Arial, sans-serif; margin: 0 0 2pt; }
+  #print table { width: 100%; border-collapse: collapse; margin-top: 8pt; }
+  #print th, #print td { border: 1px solid #000; padding: 3pt 4pt; font-size: 9pt; text-align: left; vertical-align: middle; }
+  #print .dados td { border: 0; padding: 1pt 12pt 1pt 0; font-size: 10pt; }
+  #print svg { width: 80pt; height: 30pt; color: #000; }
+  #print .t { font-size: 9pt; margin-top: 8pt; text-align: justify; }
+  #print tr { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="folha"></div>
+<div id="dlg"></div>
+<div id="toast"></div>
+<div id="print"></div>
+
+<script>
+/* ============================== base ============================== */
+var DEMO = !!window.EPI_DEMO;
+var TOKEN = null, DB = null, TELA = 'inicio', F = { ped: 'aguardando', periodo: 90, opPainel: '', busca: '', mes: null, cad: 'epis', estoqueBusca: '' };
+var SINC = { estado: 'ok', hora: '', n: 0 };
+var IX = {};
+var MOTIVOS = ['Primeira entrega', 'Troca por fim da vida útil', 'Desgaste ou dano', 'Perda ou extravio', 'Tamanho não serviu', 'Outro'];
+
+var IC = {
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  inicio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>',
+  painel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>',
+  pedidos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></svg>',
+  estoque: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>',
+  equipe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.7 2.500 3 5.200"/></svg>',
+  alertas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.500 2h-15zM10 21h4"/></svg>',
+  ajustes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',
+  sair: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M15 8l4 4-4 4M19 12H9"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  seta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  mais: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.600" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3zM12 10v4M12 17v.5"/></svg>',
+  relogio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"><circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/></svg>',
+  imprimir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2M7 14h10v6H7z"/></svg>'
+};
+
+function $(s, r) { return (r || document).querySelector(s); }
+function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+function esc(s) { return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function semAcento(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function dBR(iso) { var p = String(iso || '').slice(0, 10).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : ''; }
+function dCurta(iso) { var p = String(iso || '').slice(0, 10).split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
+function hora(iso) { return String(iso || '').slice(11, 16); }
+function dias(de, ate) { var a = de.split('-'), b = ate.split('-'); return Math.round((Date.UTC(b[0], b[1] - 1, b[2]) - Date.UTC(a[0], a[1] - 1, a[2])) / 864e5); }
+function menosDias(iso, n) { var p = iso.split('-'); return new Date(Date.UTC(p[0], p[1] - 1, p[2] - n)).toISOString().slice(0, 10); }
+function plural(n, um, varios) { return n + ' ' + (n === 1 ? um : varios); }
+function dinheiro(v) { return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function guardar(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+function ler(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function ca(n) { return n ? 'C.A. ' + esc(n) : 'sem C.A.'; }
+function admin() { return DB && DB.usuario.perfil === 'admin'; }
+
+function toast(msg, ruim) {
+  var t = $('#toast'); t.innerHTML = '<div class="' + (ruim ? 'bad' : '') + '" role="status">' + esc(msg) + '</div>';
+  clearTimeout(toast.t); toast.t = setTimeout(function () { t.innerHTML = ''; }, ruim ? 5200 : 2800);
+}
+
+/** Conversa com a planilha. Dentro do Google usa google.script.run; fora dele, chama o endereço do aplicativo sem levar a conta Google do celular. */
+var API_URL = 'https://script.google.com/macros/s/AKfycbzIf_kXqsBXgVmB3w1_QlR7Wwl9XeL_4Uvv4YghKgDh7Yrke4UaY4fNbmx9tX7X_ZE5Vw/exec';
+function chamar(acao, dados) {
+  return new Promise(function (ok, erro) {
+    var chegou = function (txt) {
+      var r; try { r = JSON.parse(txt); } catch (e) { return erro(new Error('Resposta inesperada do servidor.')); }
+      if (r.ok) return ok(r.dados);
+      if (r.erro === 'SESSAO') { sair(true); }
+      erro(new Error(r.msg || 'Não deu certo. Tente de novo.'));
+    };
+    var falhou = function () { var x = new Error('Sem conexão com a planilha. Confira a internet e tente de novo.'); x.rede = true; erro(x); };
+    if (window.google && google.script && google.script.run) {
+      google.script.run.withSuccessHandler(chegou).withFailureHandler(falhou).api(acao, TOKEN, dados || {});
+    } else {
+      fetch(API_URL, { method: 'POST', credentials: 'omit', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: acao, token: TOKEN, dados: dados || {} }) })
+        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); }).then(chegou, falhou);
+    }
+  });
+}
+/** Roda uma ação de botão: trava o botão, mostra o erro e atualiza a tela. */
+function executar(botao, acao, dados, msgOk) {
+  if (botao) botao.disabled = true;
+  return chamar(acao, dados).then(function (r) {
+    if (msgOk) toast(msgOk);
+    return sincronizar(true).then(function () { return r; });
+  }).catch(function (e) { if (botao) botao.disabled = false; toast(e.message, true); throw e; });
+}
+
+/* ============================== sincronização ============================== */
+function sincronizar(completo) {
+  if (!TOKEN) return Promise.resolve();
+  SINC.estado = 'busca'; pintarSinc();
+  SINC.n++;
+  return chamar('dados', { ver: completo || SINC.n % 15 === 0 || !DB ? '' : DB.ver }).then(function (d) {
+    SINC.estado = 'ok'; SINC.hora = new Date().toTimeString().slice(0, 5);
+    if (d.igual) { if (DB && DB.hoje !== d.hoje) { DB.hoje = d.hoje; indexar(); desenhar(); } pintarSinc(); return; }
+    DB = d; indexar(); desenhar();
+  }).catch(function (e) { SINC.estado = 'off'; pintarSinc(); if (!DB && TOKEN) throw e; });
+}
+function pintarSinc() {
+  var el = $('.sinc'); if (!el) return;
+  el.className = 'sinc ' + (SINC.estado === 'off' ? 'off' : SINC.estado === 'busca' ? 'busca' : '');
+  el.innerHTML = '<i></i>' + (SINC.estado === 'off' ? 'Sem conexão' : 'Atualizado') + '<br>' + (SINC.hora || '');
+}
+setInterval(function () { if (TOKEN && DB && !document.hidden) sincronizar(false).catch(function () {}); }, 20000);
+document.addEventListener('visibilitychange', function () { if (!document.hidden && TOKEN && DB) sincronizar(false).catch(function () {}); });
+
+/* ============================== preparo dos dados ============================== */
+function situacao(e) {
+  if (e.situacao !== 'Em uso') return { k: 'fim', dias: null };
+  if (!e.proxima) return { k: 'livre', dias: null };
+  var d = dias(DB.hoje, e.proxima);
+  return { k: d < 0 ? 'bad' : d <= DB.config.dias_aviso_troca ? 'warn' : 'ok', dias: d };
+}
+function indexar() {
+  IX = { epi: {}, col: {}, uso: {}, aberto: {} };
+  DB.epis.forEach(function (e) { IX.epi[e.id] = e; });
+  DB.colaboradores.forEach(function (c) { IX.col[c.id] = c; });
+  DB.solicitacoes.forEach(function (s) { if (s.status === 'Pendente' || s.status === 'Aprovada') IX.aberto[s.colaborador_id + '|' + s.epi_id] = s.status; });
+  var A = { vencidas: [], chegando: [], ca: [], estoque: [], emdia: 0, livre: 0 };
+  DB.entregas.forEach(function (e) {
+    if (e.situacao !== 'Em uso') return;
+    var c = IX.col[e.colaborador_id]; if (c && !c.ativo) return;
+    (IX.uso[e.colaborador_id] = IX.uso[e.colaborador_id] || []).push(e);
+    var s = situacao(e); e._s = s;
+    e._pedido = IX.aberto[e.colaborador_id + '|' + e.epi_id] || '';
+    if (s.k === 'bad') A.vencidas.push(e); else if (s.k === 'warn') A.chegando.push(e); else if (s.k === 'ok') A.emdia++; else A.livre++;
+  });
+  var ord = function (a, b) { return a._s.dias - b._s.dias; };
+  A.vencidas.sort(ord); A.chegando.sort(ord);
+  DB.epis.forEach(function (e) {
+    if (!e.ativo) return;
+    if (e.validade_ca) { var d = dias(DB.hoje, e.validade_ca); if (d <= DB.config.dias_aviso_ca) A.ca.push({ epi: e, dias: d }); }
+    if (admin() && e.estoque <= e.minimo && (e.minimo > 0 || e.estoque < 0)) A.estoque.push(e);
+  });
+  A.ca.sort(function (a, b) { return a.dias - b.dias; });
+  A.total = A.vencidas.length + A.chegando.length + A.ca.length + A.estoque.length;
+  IX.A = A;
+  IX.pend = DB.solicitacoes.filter(function (s) { return s.status === 'Pendente'; });
+  IX.aprov = DB.solicitacoes.filter(function (s) { return s.status === 'Aprovada'; });
+}
+function piorDoColab(id) {
+  var u = IX.uso[id] || [], k = '';
+  u.forEach(function (e) { if (e._s.k === 'bad') k = 'bad'; else if (e._s.k === 'warn' && k !== 'bad') k = 'warn'; else if (!k) k = 'ok'; });
+  return k;
+}
+function textoPrazo(e) {
+  var s = e._s || situacao(e);
+  if (s.k === 'bad') return 'Venceu há ' + plural(-s.dias, 'dia', 'dias');
+  if (s.k === 'warn') return s.dias === 0 ? 'Vence hoje' : 'Faltam ' + plural(s.dias, 'dia', 'dias');
+  if (s.k === 'ok') return 'Troca em ' + dBR(e.proxima);
+  return 'Sem prazo de troca';
+}
+function pilulaPrazo(e) {
+  var s = e._s || situacao(e);
+  if (s.k === 'bad') return '<span class="pilula bad">' + IC.alerta + 'Vencido</span>';
+  if (s.k === 'warn') return '<span class="pilula warn">' + IC.relogio + 'Troca chegando</span>';
+  if (s.k === 'ok') return '<span class="pilula ok">' + IC.check + 'Em dia</span>';
+  if (s.k === 'livre') return '<span class="pilula">Sem prazo</span>';
+  return '<span class="pilula">' + esc(e.situacao) + '</span>';
+}
+function barraVida(e) {
+  var s = e._s || situacao(e); if (!e.proxima || !e.vida) return '';
+  var pct = Math.max(3, Math.min(100, Math.round(dias(e.data, DB.hoje) / e.vida * 100)));
+  return '<div class="vida ' + s.k + '"><div class="vida-trilho"><i style="width:' + pct + '%"></i></div>' +
+    '<div class="vida-txt"><span>Entregue em ' + dBR(e.data) + '</span><span>' + textoPrazo(e) + '</span></div></div>';
+}
+function pilulaStatus(st) {
+  var m = { Pendente: ['warn', IC.relogio, 'Aguardando aprovação'], Aprovada: ['azul', IC.check, 'Aprovado, falta entregar'], Entregue: ['ok', IC.check, 'Entregue'], Recusada: ['bad', IC.x, 'Recusado'], Cancelada: ['', IC.x, 'Cancelado'] }[st] || ['', '', st];
+  return '<span class="pilula ' + m[0] + '">' + m[1] + esc(m[2]) + '</span>';
+}
+
+/* ============================== moldura ============================== */
+function desenhar() {
+  var app = $('#app');
+  if (!TOKEN || !DB) return;
+  var abas = admin()
+    ? [['inicio', 'Painel', IC.painel, 0], ['pedidos', 'Pedidos', IC.pedidos, IX.pend.length], ['estoque', 'Estoque', IC.estoque, IX.A.estoque.length], ['equipe', 'Fichas', IC.equipe, 0], ['alertas', 'Alertas', IC.alertas, IX.A.vencidas.length]]
+    : [['inicio', 'Início', IC.inicio, 0], ['pedidos', 'Pedidos', IC.pedidos, IX.aprov.length], ['equipe', 'Fichas', IC.equipe, 0], ['alertas', 'Alertas', IC.alertas, IX.A.vencidas.length]];
+  var rolagem = $('main') ? $('main').scrollTop : 0, mesmaTela = app.dataset.tela === TELA;
+  var foco = document.activeElement && document.activeElement.id && app.contains(document.activeElement) ? document.activeElement.id : '';
+  var quem = admin() ? 'administrador' : (DB.usuario.ops.join(', ') || 'sem operação');
+  app.dataset.tela = TELA;
+  app.innerHTML =
+    (DEMO ? '<div class="aviso-demo">Demonstração com dados de exemplo. Para ver como supervisor, saia e entre com a senha 1234.</div>' : '') +
+    '<header class="topo"><div class="marca"><div class="selo">' + IC.check + '</div><div class="marca-txt"><b>EPI em Dia</b><span>' + esc(DB.usuario.nome.split(' ')[0]) + ', ' + esc(quem) + '</span></div></div>' +
+    '<button class="sinc" data-a="sinc" aria-label="Atualizar agora"></button>' +
+    (admin() ? '<button class="topo-btn" data-a="ir" data-t="cadastros" aria-label="Cadastros e ajustes">' + IC.ajustes + '</button>' : '') +
+    '<button class="topo-btn" data-a="sair" aria-label="Sair">' + IC.sair + '</button></header>' +
+    '<div class="palco"><main>' + (TELAS[TELA] || TELAS.inicio)() + '</main>' +
+    (TELA === 'inicio' || TELA === 'pedidos' ? '<div class="fab"><button class="btn pri grande" data-a="novoPedido">' + IC.mais + 'Pedir EPI</button></div>' : '') + '</div>' +
+    '<nav class="abas">' + abas.map(function (a) {
+      return '<button class="aba ' + (TELA === a[0] ? 'on' : '') + '" data-a="ir" data-t="' + a[0] + '"' + (TELA === a[0] ? ' aria-current="page"' : '') + '>' + a[2] + '<span>' + a[1] + '</span>' + (a[3] ? '<em>' + a[3] + '</em>' : '') + '</button>';
+    }).join('') + '</nav>';
+  pintarSinc();
+  if (mesmaTela) $('main').scrollTop = rolagem;
+  if (foco && $('#' + foco)) { var el = $('#' + foco); el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} }
+}
+
+var TELAS = {};
+
+/* ---------- régua de conformidade (usada no painel e no início) ---------- */
+function blocoConformidade(ents, titulo) {
+  var c = { ok: 0, warn: 0, bad: 0 };
+  ents.forEach(function (e) { if (e._s && c[e._s.k] !== undefined) c[e._s.k]++; });
+  var tot = c.ok + c.warn + c.bad;
+  if (!tot) return '<div class="bloco"><div class="sec-cab"><h2>' + titulo + '</h2></div><p class="sub">Ainda não há EPI entregue com prazo de troca. Assim que as primeiras entregas forem assinadas, a situação aparece aqui.</p></div>';
+  var pct = Math.round((c.ok + c.warn) / tot * 100);
+  var seg = function (k) { return c[k] ? '<i class="' + k + '" style="flex:' + c[k] + '" title="' + c[k] + '"></i>' : ''; };
+  return '<div class="bloco"><div class="sec-cab"><h2>' + titulo + '</h2></div>' +
+    '<div class="destaque"><b class="num">' + pct + '%</b><span>dos EPIs em uso estão dentro da vida útil</span></div>' +
+    '<div class="regua" role="img" aria-label="' + c.ok + ' em dia, ' + c.warn + ' com troca chegando, ' + c.bad + ' vencidos">' + seg('ok') + seg('warn') + seg('bad') + '</div>' +
+    '<div class="legenda"><span><i style="background:var(--ok-fill)"></i>' + c.ok + ' em dia</span><span><i style="background:var(--warn-fill)"></i>' + c.warn + ' troca chegando</span><span><i style="background:var(--bad-fill)"></i>' + plural(c.bad, 'vencido', 'vencidos') + '</span></div></div>';
+}
+function emUso(op) {
+  var r = []; Object.keys(IX.uso).forEach(function (k) { IX.uso[k].forEach(function (e) { if (!op || e.operacao === op) r.push(e); }); }); return r;
+}
+function linhaAlertaTroca(e) {
+  return '<div class="item"><span class="ponto ' + e._s.k + '"></span><div class="item-txt"><b>' + esc(e.colaborador) + '</b><span>' + esc(e.epi) + ' · ' + textoPrazo(e) + (admin() ? ' · ' + esc(e.operacao) : '') + '</span></div>' +
+    (e._pedido ? '<span class="pilula azul">Troca pedida</span>' : '<button class="btn mini" data-a="novoPedido" data-col="' + esc(e.colaborador_id) + '" data-epi="' + esc(e.epi_id) + '">Pedir troca</button>') + '</div>';
+}
+
+/* ---------- início / painel ---------- */
+TELAS.inicio = function () { return admin() ? telaPainel() : telaInicio(); };
+
+function telaInicio() {
+  var A = IX.A, h = '';
+  h += '<div><h1 class="titulo">Olá, ' + esc(DB.usuario.nome.split(' ')[0]) + '</h1><p class="sub">' + esc(DB.usuario.ops.join(' e ') || 'Nenhuma operação ligada ao seu acesso') + '</p></div>';
+  h += '<div class="kpis">' +
+    kpi(IX.aprov.length, 'para entregar', 'azul', 'pedidos', 'entregar') + kpi(IX.pend.length, 'aguardando aprovação', '', 'pedidos', 'aguardando') +
+    kpi(A.vencidas.length, A.vencidas.length === 1 ? 'troca vencida' : 'trocas vencidas', A.vencidas.length ? 'bad' : '', 'alertas') + kpi(A.chegando.length, 'trocas chegando', A.chegando.length ? 'warn' : '', 'alertas') + '</div>';
+  if (IX.aprov.length) h += '<section class="sec"><div class="sec-cab"><h2>Prontos para entregar</h2></div>' + gruposEntrega(IX.aprov) + '</section>';
+  h += blocoConformidade(emUso(''), 'Situação da equipe');
+  var urg = A.vencidas.concat(A.chegando).slice(0, 5);
+  if (urg.length) h += '<section class="sec"><div class="sec-cab"><h2>Trocas para resolver</h2><button class="link" data-a="ir" data-t="alertas">Ver todos</button></div><div class="lista">' + urg.map(linhaAlertaTroca).join('') + '</div></section>';
+  return h;
+}
+function kpi(n, rotulo, cor, tela, filtro) {
+  return '<button class="kpi ' + cor + '" data-a="ir" data-t="' + tela + '"' + (filtro ? ' data-f="' + filtro + '"' : '') + '><b class="num">' + n + '</b><span>' + rotulo + '</span></button>';
+}
+
+function telaPainel() {
+  var A = IX.A, op = F.opPainel, de = menosDias(DB.hoje, F.periodo);
+  var ents = DB.entregas.filter(function (e) { return e.data >= de && (!op || e.operacao === op); });
+  var h = '<div><h1 class="titulo">Painel de EPIs</h1><p class="sub">' + esc(DB.config.empresa) + '</p></div>';
+  h += '<div class="kpis">' +
+    kpi(IX.pend.length, IX.pend.length === 1 ? 'pedido para aprovar' : 'pedidos para aprovar', IX.pend.length ? 'azul' : '', 'pedidos', 'aguardando') +
+    kpi(A.vencidas.length, A.vencidas.length === 1 ? 'troca vencida' : 'trocas vencidas', A.vencidas.length ? 'bad' : '', 'alertas') +
+    kpi(A.chegando.length, 'trocas nos próximos ' + DB.config.dias_aviso_troca + ' dias', A.chegando.length ? 'warn' : '', 'alertas') +
+    kpi(A.estoque.length, A.estoque.length === 1 ? 'EPI com estoque baixo' : 'EPIs com estoque baixo', A.estoque.length ? 'bad' : '', 'estoque') + '</div>';
+
+  h += '<div class="dupla"><label class="campo">Operação<select class="in" id="f-op" data-m="opPainel"><option value="">Todas</option>' +
+    DB.operacoes.map(function (o) { return '<option' + (o.operacao === op ? ' selected' : '') + '>' + esc(o.operacao) + '</option>'; }).join('') + '</select></label>' +
+    '<label class="campo">Período<select class="in" id="f-per" data-m="periodo">' + [[30, 'Últimos 30 dias'], [90, 'Últimos 90 dias'], [180, 'Últimos 6 meses'], [365, 'Últimos 12 meses']].map(function (p) { return '<option value="' + p[0] + '"' + (p[0] === Number(F.periodo) ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select></label></div>';
+
+  h += blocoConformidade(emUso(op), 'Conformidade hoje');
+
+  var total = 0, valor = 0, temCusto = false;
+  ents.forEach(function (e) { total += e.qtd; var c = IX.epi[e.epi_id] && IX.epi[e.epi_id].custo || 0; if (c) temCusto = true; valor += e.qtd * c; });
+  var pessoas = {}; ents.forEach(function (e) { pessoas[e.colaborador_id] = 1; });
+  h += '<div class="bloco"><div class="sec-cab"><h2>Entregas no período</h2></div><div class="destaque"><b class="num">' + total + '</b><span>' + (total === 1 ? 'unidade entregue' : 'unidades entregues') + ' a ' + plural(Object.keys(pessoas).length, 'colaborador', 'colaboradores') + '</span></div>' +
+    (temCusto ? '<p class="sub">Valor entregue pelo custo atual: <b style="color:var(--ink)">' + dinheiro(valor) + '</b></p>' : '') + '</div>';
+
+  h += graficoMeses();
+  h += graficoBarras('EPIs mais entregues', agrupar(ents, 'epi'), 8);
+  if (!op) h += graficoBarras('Entregas por operação', agrupar(ents, 'operacao'), 10);
+  h += graficoBarras('Por que os EPIs foram pedidos', agrupar(ents, 'motivo'), 8);
+  return h;
+}
+function agrupar(lista, campo) {
+  var m = {}; lista.forEach(function (e) { var k = e[campo] || 'Não informado'; m[k] = (m[k] || 0) + e.qtd; });
+  return Object.keys(m).map(function (k) { return [k, m[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+}
+function graficoBarras(titulo, pares, limite) {
+  if (!pares.length) return '<div class="bloco"><div class="sec-cab"><h2>' + titulo + '</h2></div><p class="sub">Sem entregas neste período.</p></div>';
+  var resto = pares.slice(limite), top = pares.slice(0, limite);
+  if (resto.length) top.push(['Outros (' + resto.length + ')', resto.reduce(function (s, p) { return s + p[1]; }, 0)]);
+  var max = Math.max.apply(null, top.map(function (p) { return p[1]; }));
+  return '<div class="bloco"><div class="sec-cab"><h2>' + titulo + '</h2><span class="sub">unidades</span></div><div class="barras">' + top.map(function (p) {
+    return '<div title="' + esc(p[0]) + ': ' + p[1] + '"><div class="barra-l"><span>' + esc(p[0]) + '</span><b class="num">' + p[1] + '</b></div><div class="barra-t"><i style="width:' + (p[1] / max * 100).toFixed(1) + '%"></i></div></div>';
+  }).join('') + '</div></div>';
+}
+function graficoMeses() {
+  var nomes = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'], ms = [], y = Number(DB.hoje.slice(0, 4)), m = Number(DB.hoje.slice(5, 7));
+  for (var i = 5; i >= 0; i--) { var d = new Date(Date.UTC(y, m - 1 - i, 1)); ms.push({ k: d.toISOString().slice(0, 7), n: nomes[d.getUTCMonth()], e: 0, s: 0 }); }
+  var ix = {}; ms.forEach(function (x) { ix[x.k] = x; });
+  (DB.movimentacoes || []).forEach(function (mv) {
+    var x = ix[mv.quando.slice(0, 7)]; if (!x) return;
+    if (mv.tipo === 'Entrada') x.e += mv.qtd; else if (mv.tipo === 'Saída') x.s += -mv.qtd; else if (mv.tipo === 'Estorno') x.s -= mv.qtd;
+  });
+  var max = Math.max(1, Math.max.apply(null, ms.map(function (x) { return Math.max(x.e, x.s); })));
+  var sel = F.mes && ix[F.mes] ? F.mes : ms[5].k, atual = ix[sel];
+  return '<div class="bloco"><div class="sec-cab"><h2>Entradas e saídas do estoque</h2><span class="sub">unidades por mês</span></div>' +
+    '<div class="legenda"><span><i style="background:var(--s1)"></i>Entradas (compras)</span><span><i style="background:var(--s2)"></i>Saídas (pedidos aprovados)</span></div>' +
+    '<div class="meses" data-max="' + max + '">' + ms.map(function (x) {
+      return '<button class="mes ' + (x.k === sel ? 'on' : '') + '" data-a="mes" data-k="' + x.k + '" aria-label="' + x.n + ': ' + x.e + ' entradas, ' + x.s + ' saídas"><i class="e" style="height:' + (x.e / max * 100).toFixed(1) + '%"></i><i class="s" style="height:' + (Math.max(0, x.s) / max * 100).toFixed(1) + '%"></i></button>';
+    }).join('') + '</div><div class="meses-r">' + ms.map(function (x) { return '<span class="' + (x.k === sel ? 'on' : '') + '">' + x.n + '</span>'; }).join('') + '</div>' +
+    '<p class="leitura">Em <b>' + atual.n + '/' + sel.slice(0, 4) + '</b>: entraram <b class="num">' + atual.e + '</b> e saíram <b class="num">' + atual.s + '</b>. Toque num mês para ver os números.</p></div>';
+}
+
+/* ---------- pedidos ---------- */
+TELAS.pedidos = function () {
+  var abertos = IX.pend, aprov = IX.aprov, hist = DB.solicitacoes.filter(function (s) { return s.status !== 'Pendente' && s.status !== 'Aprovada'; });
+  var h = '<h1 class="titulo">Pedidos</h1><div class="seg" role="tablist">' +
+    [['aguardando', admin() ? 'Para aprovar' : 'Aguardando', abertos.length], ['entregar', 'Para entregar', aprov.length], ['historico', 'Histórico', '']].map(function (t) {
+      return '<button role="tab" aria-selected="' + (F.ped === t[0]) + '" class="' + (F.ped === t[0] ? 'on' : '') + '" data-a="filtroPed" data-f="' + t[0] + '">' + t[1] + (t[2] !== '' ? ' <b class="num">' + t[2] + '</b>' : '') + '</button>';
+    }).join('') + '</div>';
+  if (F.ped === 'aguardando') {
+    h += abertos.length ? abertos.slice().reverse().map(cartaoPedido).join('') :
+      '<div class="vazio"><b>Nenhum pedido esperando</b>' + (admin() ? 'Quando um supervisor pedir um EPI, o pedido aparece aqui e na aba Solicitacoes da planilha.' : 'Para pedir um EPI para alguém da equipe, toque em Pedir EPI.') + '</div>';
+  } else if (F.ped === 'entregar') {
+    h += aprov.length ? gruposEntrega(aprov) : '<div class="vazio"><b>Nada para entregar agora</b>Os pedidos aprovados ficam aqui até o colaborador assinar o recebimento.</div>';
+  } else {
+    var ult = hist.slice(-60).reverse();
+    h += ult.length ? ult.map(cartaoPedido).join('') + (hist.length > 60 ? '<p class="sub">Mostrando os 60 mais recentes. O histórico completo está na aba Solicitacoes da planilha.</p>' : '') : '<div class="vazio"><b>Sem histórico ainda</b>Pedidos entregues, recusados e cancelados aparecem aqui.</div>';
+  }
+  return h;
+};
+function cartaoPedido(s) {
+  var e = IX.epi[s.epi_id], h = '<article class="ped"><div class="ped-cab"><div><b>' + esc(s.colaborador) + '</b><span>' + esc(s.operacao) + ' · pedido por ' + esc(s.supervisor) + ' em ' + dCurta(s.quando) + ' às ' + hora(s.quando) + '</span></div></div>' +
+    '<div class="ped-itens"><div class="ped-item"><span class="q num">' + s.qtd + '×</span><div><b>' + esc(s.epi) + '</b><small>' + ca(s.ca) + ' · ' + esc(s.motivo) + '</small></div></div></div>' +
+    '<div>' + pilulaStatus(s.status) + '</div>';
+  if (s.obs) h += '<div class="nota">' + esc(s.obs) + '</div>';
+  if (s.status === 'Recusada' && s.motivo_recusa) h += '<div class="nota bad">Motivo da recusa: ' + esc(s.motivo_recusa) + '</div>';
+  if (s.status === 'Entregue') h += '<p class="sub">Entregue em ' + dBR(s.entregue_em) + '</p>';
+  if (s.status === 'Pendente') {
+    if (admin()) {
+      if (e) h += '<div class="nota ' + (e.estoque < s.qtd ? 'warn' : '') + '">No estoque: ' + e.estoque + (e.estoque < s.qtd ? '. Não cobre este pedido.' : '') + '</div>';
+      h += '<div class="linha-btn"><button class="btn per" data-a="recusar" data-id="' + s.id + '">Recusar</button><button class="btn pri" data-a="aprovar" data-id="' + s.id + '">' + IC.check + 'Aprovar</button></div>';
+    } else if (s.supervisor === DB.usuario.nome) h += '<div class="linha-btn"><button class="btn mini per" data-a="cancelarPed" data-id="' + s.id + '">Cancelar pedido</button></div>';
+  }
+  return h + '</article>';
+}
+function gruposEntrega(lista) {
+  var g = {}, ordem = [];
+  lista.forEach(function (s) { if (!g[s.colaborador_id]) { g[s.colaborador_id] = []; ordem.push(s.colaborador_id); } g[s.colaborador_id].push(s); });
+  return ordem.map(function (id) {
+    var it = g[id];
+    return '<article class="ped"><div class="ped-cab"><div><b>' + esc(it[0].colaborador) + '</b><span>' + esc(it[0].operacao) + '</span></div>' + pilulaStatus('Aprovada') + '</div><div class="ped-itens">' +
+      it.map(function (s) { return '<div class="ped-item"><span class="q num">' + s.qtd + '×</span><div><b>' + esc(s.epi) + '</b><small>' + ca(s.ca) + ' · ' + esc(s.motivo) + '</small></div></div>'; }).join('') +
+      '</div><div class="linha-btn">' + (admin() ? '<button class="btn per" data-a="cancelarAprov" data-col="' + esc(id) + '">Cancelar</button>' : '') + '<button class="btn pri" data-a="entregar" data-col="' + esc(id) + '">Entregar e colher assinatura</button></div></article>';
+  }).join('');
+}
+
+/* ---------- fichas ---------- */
+TELAS.equipe = function () {
+  var lista = DB.colaboradores.filter(function (c) { return c.ativo; }).sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
+  var h = '<div class="sec-cab"><h1 class="titulo">Fichas de EPI</h1><button class="link" data-a="editarColab">Novo colaborador</button></div>' +
+    '<input class="in" id="busca-col" type="search" placeholder="Buscar por nome, função ou operação" value="' + esc(F.busca) + '" data-busca="#lista-col" aria-label="Buscar colaborador">';
+  if (!lista.length) return h + '<div class="vazio"><b>Nenhum colaborador cadastrado</b>Toque em Novo colaborador ou cole a lista na aba Colaboradores da planilha.</div>';
+  h += '<div class="lista" id="lista-col">' + lista.map(function (c) {
+    var u = IX.uso[c.id] || [], k = piorDoColab(c.id);
+    return '<button class="item" data-a="ficha" data-id="' + esc(c.id) + '" data-txt="' + esc(semAcento(c.nome + ' ' + c.funcao + ' ' + c.operacao + ' ' + c.matricula)) + '"><span class="ponto ' + k + '"></span><div class="item-txt"><b>' + esc(c.nome) + '</b><span>' + esc([c.funcao, c.operacao].filter(Boolean).join(' · ')) + ' · ' + (u.length ? plural(u.length, 'EPI em uso', 'EPIs em uso') : 'nenhum EPI em uso') + '</span></div>' + IC.seta + '</button>';
+  }).join('') + '</div><p class="sub" id="lista-col-vazia" hidden>Ninguém encontrado com esse texto.</p>';
+  return h;
+};
+
+/* ---------- alertas ---------- */
+TELAS.alertas = function () {
+  var A = IX.A, h = '<h1 class="titulo">Alertas</h1>';
+  if (!A.total) return h + '<div class="vazio"><b>Tudo em dia</b>Nenhuma troca vencida ou chegando, nenhum C.A. perto de vencer' + (admin() ? ' e nenhum estoque baixo.' : '.') + '</div>';
+  var sec = function (titulo, sub, itens) { return itens.length ? '<section class="sec"><div class="sec-cab"><h2>' + titulo + ' (' + itens.length + ')</h2></div>' + (sub ? '<p class="sub">' + sub + '</p>' : '') + '<div class="lista">' + itens.join('') + '</div></section>' : ''; };
+  h += sec('Trocas vencidas', 'A vida útil acabou. O colaborador está usando EPI fora do prazo.', A.vencidas.map(linhaAlertaTroca));
+  h += sec('Trocas chegando', 'Vencem nos próximos ' + DB.config.dias_aviso_troca + ' dias. Peça agora para chegar a tempo.', A.chegando.map(linhaAlertaTroca));
+  h += sec('C.A. vencido ou perto de vencer', 'Confira com o fornecedor antes da próxima compra.', A.ca.map(function (x) {
+    return '<div class="item"><span class="ponto ' + (x.dias < 0 ? 'bad' : 'warn') + '"></span><div class="item-txt"><b>' + esc(x.epi.epi) + '</b><span>' + ca(x.epi.ca) + ' · ' + (x.dias < 0 ? 'venceu em ' + dBR(x.epi.validade_ca) : 'vence em ' + dBR(x.epi.validade_ca) + ' (' + plural(x.dias, 'dia', 'dias') + ')') + '</span></div></div>';
+  }));
+  h += sec('Estoque baixo', 'Saldo igual ou abaixo do mínimo que você definiu.', A.estoque.map(function (e) {
+    return '<div class="item"><span class="ponto ' + (e.estoque <= 0 ? 'bad' : 'warn') + '"></span><div class="item-txt"><b>' + esc(e.epi) + '</b><span>Saldo ' + e.estoque + ' · mínimo ' + e.minimo + '</span></div><button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '">Lançar entrada</button></div>';
+  }));
+  return h;
+};
+
+/* ---------- estoque (administrador) ---------- */
+TELAS.estoque = function () {
+  var epis = DB.epis.filter(function (e) { return e.ativo; }).sort(function (a, b) { return a.epi.localeCompare(b.epi, 'pt-BR'); });
+  var h = '<div class="sec-cab"><h1 class="titulo">Estoque central</h1><button class="link" data-a="editarEpi">Novo EPI</button></div>';
+  if (!epis.length) return h + '<div class="vazio"><b>Nenhum EPI cadastrado</b>Toque em Novo EPI ou cole a lista na aba EPIs da planilha (nome, C.A., validade e vida útil).</div>';
+  h += '<input class="in" id="busca-epi" type="search" placeholder="Buscar EPI ou C.A." value="' + esc(F.estoqueBusca) + '" data-busca="#lista-epi" aria-label="Buscar EPI">';
+  h += '<div class="lista" id="lista-epi">' + epis.map(function (e) {
+    var k = e.estoque <= 0 ? 'bad' : e.estoque <= e.minimo && e.minimo > 0 ? 'warn' : 'ok';
+    return '<div class="item" data-txt="' + esc(semAcento(e.epi + ' ' + e.ca)) + '"><div class="item-txt"><b>' + esc(e.epi) + '</b><span>' + ca(e.ca) + ' · mínimo ' + e.minimo + ' · troca a cada ' + (e.vida ? plural(e.vida, 'dia', 'dias') : '—') + '</span></div>' +
+      '<span class="pilula ' + k + ' num" title="Saldo">' + e.estoque + ' un.</span><button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '" aria-label="Lançar entrada de ' + esc(e.epi) + '">' + IC.mais + '</button></div>';
+  }).join('') + '</div>';
+  var mov = (DB.movimentacoes || []).slice(-25).reverse();
+  h += '<section class="sec"><div class="sec-cab"><h2>Últimas movimentações</h2></div>' + (mov.length ? '<div class="lista">' + mov.map(function (m) {
+    return '<div class="item"><div class="item-txt"><b>' + esc(m.epi) + '</b><span>' + esc(m.tipo) + ' · ' + dCurta(m.quando) + ' ' + hora(m.quando) + ' · ' + esc(m.quem) + (m.doc ? ' · ' + esc(m.doc) : '') + (m.obs ? ' · ' + esc(m.obs) : '') + '</span></div><b class="num" style="color:var(--' + (m.qtd < 0 ? 'ink-2' : 'ok') + ')">' + (m.qtd > 0 ? '+' : '−') + Math.abs(m.qtd) + '</b></div>';
+  }).join('') + '</div><p class="sub">O histórico completo fica na aba Movimentacoes da planilha.</p>' : '<div class="vazio"><b>Nenhuma movimentação</b>Lance a primeira entrada com o que você tem hoje no estoque.</div>') + '</section>';
+  return h;
+};
+
+/* ---------- cadastros (administrador) ---------- */
+TELAS.cadastros = function () {
+  var h = '<h1 class="titulo">Cadastros e ajustes</h1><div class="seg">' + [['epis', 'EPIs'], ['usuarios', 'Acessos'], ['operacoes', 'Operações'], ['ajustes', 'Avisos']].map(function (t) {
+    return '<button class="' + (F.cad === t[0] ? 'on' : '') + '" data-a="filtroCad" data-f="' + t[0] + '">' + t[1] + '</button>';
+  }).join('') + '</div>';
+  if (F.cad === 'epis') {
+    h += '<button class="btn pri" data-a="editarEpi">' + IC.mais + 'Novo EPI</button><div class="lista">' + (DB.epis.length ? DB.epis.map(function (e) {
+      return '<button class="item" data-a="editarEpi" data-id="' + esc(e.id) + '"><div class="item-txt"><b>' + esc(e.epi) + (e.ativo ? '' : ' (inativo)') + '</b><span>' + ca(e.ca) + (e.validade_ca ? ' até ' + dBR(e.validade_ca) : '') + ' · ' + (e.vida ? 'troca a cada ' + e.vida + ' dias' : 'sem prazo de troca') + ' · ' + esc(e.ops.length ? e.ops.join(', ') : 'todas as operações') + '</span></div>' + IC.seta + '</button>';
+    }).join('') : '<div class="item"><div class="item-txt"><span>Nenhum EPI cadastrado.</span></div></div>') + '</div>';
+  } else if (F.cad === 'usuarios') {
+    h += '<button class="btn pri" data-a="editarUsuario">' + IC.mais + 'Novo acesso</button><div class="lista">' + (DB.usuarios || []).map(function (u) {
+      return '<button class="item" data-a="editarUsuario" data-id="' + esc(u.id) + '"><div class="item-txt"><b>' + esc(u.nome) + (u.ativo ? '' : ' (bloqueado)') + '</b><span>' + (u.perfil === 'admin' ? 'Administrador, vê tudo' : 'Supervisor · ' + esc(u.operacoes || 'sem operação')) + '</span></div>' + IC.seta + '</button>';
+    }).join('') + '</div>';
+  } else if (F.cad === 'operacoes') {
+    h += '<button class="btn pri" data-a="editarOp">' + IC.mais + 'Nova operação</button><div class="lista">' + (DB.todasOperacoes || []).map(function (o) {
+      return '<button class="item" data-a="editarOp" data-id="' + esc(o.operacao) + '"><div class="item-txt"><b>' + esc(o.operacao) + (o.ativo ? '' : ' (inativa)') + '</b><span>Unidade ' + esc(o.unidade || '—') + '</span></div>' + IC.seta + '</button>';
+    }).join('') + '</div>';
+  } else {
+    var c = DB.config;
+    h += '<form class="bloco form" data-form="config"><label class="campo">Nome da empresa<input class="in" id="cf-empresa" name="empresa" value="' + esc(c.empresa) + '"></label>' +
+      '<label class="campo">E-mail que recebe os avisos<small>Em branco, vai para o e-mail dono da planilha.</small><input class="in" id="cf-email" name="email_alertas" type="email" value="' + esc(c.email_alertas) + '"></label>' +
+      '<div class="dupla"><label class="campo">Avisar troca com quantos dias<input class="in" id="cf-dt" name="dias_aviso_troca" type="number" inputmode="numeric" min="1" value="' + esc(c.dias_aviso_troca) + '"></label>' +
+      '<label class="campo">Avisar C.A. com quantos dias<input class="in" id="cf-dc" name="dias_aviso_ca" type="number" inputmode="numeric" min="1" value="' + esc(c.dias_aviso_ca) + '"></label></div>' +
+      '<label class="check"><input type="checkbox" id="cf-np" name="avisar_novo_pedido"' + (semAcento(c.avisar_novo_pedido) !== 'nao' ? ' checked' : '') + '>Mandar e-mail a cada pedido novo de supervisor</label>' +
+      '<button class="btn pri" type="submit">Salvar ajustes</button></form>' +
+      '<p class="sub">O resumo diário por e-mail é ligado na planilha, no menu EPI.</p>';
+  }
+  return h;
+};
+
+/* ============================== folhas ============================== */
+function abrir(titulo, corpo, pe, cheia) {
+  $('#folha').innerHTML = '<div class="folha-fundo" data-a="fundo"><div class="folha ' + (cheia ? 'cheia' : '') + '" role="dialog" aria-modal="true" aria-label="' + esc(titulo) + '"><div class="folha-cab"><h2>' + esc(titulo) + '</h2><button class="folha-x" data-a="fechar" aria-label="Fechar">' + IC.x + '</button></div><div class="folha-corpo">' + corpo + '</div>' + (pe ? '<div class="folha-pe">' + pe + '</div>' : '') + '</div></div>';
+}
+function fechar() { $('#folha').innerHTML = ''; PED = null; ASS = null; }
+function perguntar(titulo, texto, rotulo, perigo, campo) {
+  return new Promise(function (ok) {
+    $('#dlg').innerHTML = '<div class="folha-fundo"><div class="folha" role="alertdialog" aria-modal="true"><div class="folha-corpo"><h2 style="font:700 22px/1.15 var(--display)">' + esc(titulo) + '</h2>' + (texto ? '<p class="sub" style="font-size:15px">' + esc(texto) + '</p>' : '') +
+      (campo ? '<label class="campo">' + esc(campo) + '<textarea class="in" id="dlg-campo"></textarea></label>' : '') + '</div><div class="folha-pe"><button class="btn" id="dlg-nao">Voltar</button><button class="btn ' + (perigo ? 'per' : 'pri') + '" id="dlg-sim">' + esc(rotulo) + '</button></div></div></div>';
+    $('#dlg-nao').onclick = function () { $('#dlg').innerHTML = ''; ok(false); };
+    $('#dlg-sim').onclick = function () {
+      var v = campo ? $('#dlg-campo').value.trim() : true;
+      if (campo && !v) { $('#dlg-campo').focus(); return toast('Escreva o motivo.', true); }
+      $('#dlg').innerHTML = ''; ok(v);
+    };
+    (campo ? $('#dlg-campo') : $('#dlg-sim')).focus();
+  });
+}
+
+/* ---------- novo pedido ---------- */
+var PED = null;
+function abrirPedido(colId, epiId) {
+  var cols = DB.colaboradores.filter(function (c) { return c.ativo; }).sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
+  if (!cols.length) return toast('Cadastre um colaborador antes de pedir EPI.', true);
+  PED = { col: colId || '', q: {}, motivo: epiId ? MOTIVOS[1] : '' };
+  if (epiId) PED.q[epiId] = 1;
+  var porOp = {}; cols.forEach(function (c) { (porOp[c.operacao] = porOp[c.operacao] || []).push(c); });
+  var opcoes = Object.keys(porOp).sort().map(function (op) { return '<optgroup label="' + esc(op) + '">' + porOp[op].map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === PED.col ? ' selected' : '') + '>' + esc(c.nome) + '</option>'; }).join('') + '</optgroup>'; }).join('');
+  abrir('Pedir EPI',
+    '<label class="campo">Para quem é<select class="in" id="pd-col"><option value="">Escolha o colaborador</option>' + opcoes + '</select></label>' +
+    '<div id="pd-epis"></div>' +
+    '<label class="campo">Motivo<select class="in" id="pd-motivo"><option value="">Escolha o motivo</option>' + MOTIVOS.map(function (m) { return '<option' + (m === PED.motivo ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select></label>' +
+    '<label class="campo">Observação <small>Tamanho, numeração ou o que aconteceu com o EPI anterior.</small><textarea class="in" id="pd-obs" maxlength="500"></textarea></label>',
+    '<button class="btn pri" data-a="enviarPedido" id="pd-enviar">Enviar pedido</button>', true);
+  pintarEpisPedido();
+}
+function pintarEpisPedido() {
+  var alvo = $('#pd-epis'); if (!alvo) return;
+  var c = IX.col[PED.col];
+  if (!c) { alvo.innerHTML = '<div class="vazio">Escolha o colaborador para ver os EPIs da operação dele.</div>'; return; }
+  var epis = DB.epis.filter(function (e) { return e.ativo && (!e.ops.length || e.ops.map(semAcento).indexOf(semAcento(c.operacao)) > -1); }).sort(function (a, b) { return a.epi.localeCompare(b.epi, 'pt-BR'); });
+  if (!epis.length) { alvo.innerHTML = '<div class="vazio"><b>Nenhum EPI ligado a ' + esc(c.operacao) + '</b>Peça ao administrador para cadastrar os EPIs desta operação.</div>'; return; }
+  var uso = {}; (IX.uso[c.id] || []).forEach(function (e) { uso[e.epi_id] = e; });
+  alvo.innerHTML = '<div class="sec"><div class="sec-cab"><h2>EPIs de ' + esc(c.operacao) + '</h2></div><div class="bloco" style="gap:0;padding:4px 14px">' + epis.map(function (e) {
+    var u = uso[e.id], n = PED.q[e.id] || 0, ab = IX.aberto[c.id + '|' + e.id];
+    var dica = ab ? '<span style="color:var(--accent)">Já tem pedido ' + (ab === 'Pendente' ? 'aguardando aprovação' : 'aprovado, falta entregar') + '</span>' : u ? '<span' + (u._s.k === 'bad' ? ' style="color:var(--bad)"' : '') + '>Em uso desde ' + dCurta(u.data) + ' · ' + textoPrazo(u) + '</span>' : '<span>Ainda não recebeu</span>';
+    return '<div class="epi-op"><div class="item-txt"><b>' + esc(e.epi) + '</b><span>' + ca(e.ca) + '</span>' + dica + '</div><div class="passo"><button data-a="menos" data-id="' + esc(e.id) + '" aria-label="Diminuir ' + esc(e.epi) + '">−</button><output class="num ' + (n ? '' : 'zero') + '" id="q-' + esc(e.id) + '">' + n + '</output><button data-a="maisQ" data-id="' + esc(e.id) + '" aria-label="Aumentar ' + esc(e.epi) + '">+</button></div></div>';
+  }).join('') + '</div></div>';
+}
+
+/* ---------- entrega com assinatura ---------- */
+var ASS = null;
+function abrirEntrega(colId) {
+  var itens = IX.aprov.filter(function (s) { return s.colaborador_id === colId; });
+  if (!itens.length) return;
+  var empresa = DB.config.empresa;
+  abrir('Entrega de EPI',
+    '<div><p class="titulo" style="font-size:24px">' + esc(itens[0].colaborador) + '</p><p class="sub">' + esc(itens[0].operacao) + ' · ' + dBR(DB.hoje) + '</p></div>' +
+    '<div class="bloco checks" style="gap:0;padding:6px 14px">' + itens.map(function (s) {
+      return '<label class="check"><input type="checkbox" class="en-item" id="en-' + s.id + '" value="' + s.id + '" checked><span><b>' + s.qtd + '× ' + esc(s.epi) + '</b> <span class="sub">' + ca(s.ca) + '</span></span></label>';
+    }).join('') + '</div>' +
+    '<p class="termo">Declaro que recebi da ' + esc(empresa) + ', gratuitamente e em perfeito estado, os EPIs marcados acima, com orientação sobre o uso correto, guarda e conservação. Comprometo-me a usá-los durante o trabalho, a cuidar deles e a avisar quando estiverem danificados ou sem condição de uso, conforme a NR-6.</p>' +
+    '<div class="sec"><div class="sec-cab"><h2>Assinatura do colaborador</h2><button class="link" data-a="limparAss">Limpar</button></div><div class="assina"><canvas id="en-canvas" aria-label="Área de assinatura"></canvas><span>Assine com o dedo acima da linha</span></div></div>',
+    '<button class="btn pri" data-a="confirmarEntrega">' + IC.check + 'Confirmar entrega</button>', true);
+  iniciarAssinatura();
+}
+function iniciarAssinatura() {
+  var cv = $('#en-canvas'), r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  var cx = cv.getContext('2d'); cx.scale(dpr, dpr); cx.lineWidth = 2.4; cx.lineCap = 'round'; cx.lineJoin = 'round';
+  cx.strokeStyle = getComputedStyle(document.body).color;
+  ASS = { w: r.width, h: r.height, tracos: [], cx: cx, cv: cv };
+  var atual = null;
+  var pos = function (e) { var b = cv.getBoundingClientRect(); return [Math.max(0, Math.min(b.width, e.clientX - b.left)), Math.max(0, Math.min(b.height, e.clientY - b.top))]; };
+  cv.onpointerdown = function (e) { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (x) {} atual = [pos(e)]; ASS.tracos.push(atual); cx.beginPath(); cx.moveTo(atual[0][0], atual[0][1]); cx.lineTo(atual[0][0] + .1, atual[0][1] + .1); cx.stroke(); };
+  cv.onpointermove = function (e) {
+    if (!atual) return; e.preventDefault();
+    var p = pos(e), u = atual[atual.length - 1];
+    if (Math.abs(p[0] - u[0]) + Math.abs(p[1] - u[1]) < 2) return;
+    cx.beginPath(); cx.moveTo(u[0], u[1]); cx.lineTo(p[0], p[1]); cx.stroke(); atual.push(p);
+  };
+  cv.onpointerup = cv.onpointercancel = function () { atual = null; };
+}
+/** A assinatura vira um desenho leve (traços), que cabe numa célula da planilha. */
+function assinaturaTexto() {
+  if (!ASS) return '';
+  var pontos = ASS.tracos.reduce(function (s, t) { return s + t.length; }, 0);
+  if (pontos < 8) return '';
+  var W = 320, f = W / ASS.w, H = Math.round(ASS.h * f), passo = 1, txt = '';
+  do {
+    txt = W + 'x' + H + '|' + ASS.tracos.map(function (t) {
+      var pts = t.filter(function (p, i) { return i % passo === 0 || i === t.length - 1; }).map(function (p) { return Math.round(p[0] * f) + ',' + Math.round(p[1] * f); });
+      if (pts.length === 1) pts.push(pts[0]);
+      return 'M' + pts.join('L');
+    }).join(' ');
+    passo++;
+  } while (txt.length > 40000 && passo < 12);
+  return txt;
+}
+function rubrica(txt, classe) {
+  var m = /^(\d{2,4})x(\d{2,4})\|([ML\d ,]+)$/.exec(txt || '');
+  if (!m) return '';
+  return '<svg class="' + (classe || 'rubrica') + '" viewBox="0 0 ' + m[1] + ' ' + m[2] + '" role="img" aria-label="Assinatura"><path d="' + m[3] + '" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+/* ---------- ficha do colaborador ---------- */
+var FICHA = null;
+function abrirFicha(id) {
+  var c = IX.col[id]; if (!c) return;
+  abrir('Ficha de EPI', '<p class="sub">Carregando a ficha…</p>', '', true);
+  chamar('ficha', { colaborador_id: id }).then(function (f) {
+    FICHA = f;
+    f.entregas.forEach(function (e) { e._s = situacao(e); });
+    var uso = f.entregas.filter(function (e) { return e.situacao === 'Em uso'; }), hist = f.entregas.slice().reverse();
+    var h = '<div><p class="titulo">' + esc(c.nome) + '</p><p class="sub">' + esc([c.funcao, c.operacao, c.matricula ? 'matrícula ' + c.matricula : '', c.admissao ? 'admissão ' + dBR(c.admissao) : ''].filter(Boolean).join(' · ')) + '</p></div>' +
+      '<div class="linha-btn"><button class="btn pri" data-a="novoPedido" data-col="' + esc(c.id) + '">' + IC.mais + 'Pedir EPI</button>' + (DEMO ? '' : '<button class="btn" data-a="imprimirFicha">' + IC.imprimir + 'Imprimir</button>') + '<button class="btn" data-a="editarColab" data-id="' + esc(c.id) + '">Editar</button></div>';
+    h += '<section class="sec"><div class="sec-cab"><h2>Em uso agora</h2></div>' + (uso.length ? uso.map(function (e) {
+      return '<div class="bloco"><div class="ped-cab"><div><b>' + e.qtd + '× ' + esc(e.epi) + '</b><span>' + ca(e.ca) + '</span></div>' + pilulaPrazo(e) + '</div>' + barraVida(e) +
+        '<div class="linha-btn"><button class="btn mini" data-a="novoPedido" data-col="' + esc(c.id) + '" data-epi="' + esc(e.epi_id) + '">Pedir troca</button><button class="btn mini" data-a="baixa" data-id="' + esc(e.id) + '">Dar baixa</button></div></div>';
+    }).join('') : '<div class="vazio">Nenhum EPI em uso registrado para este colaborador.</div>') + '</section>';
+    h += '<section class="sec"><div class="sec-cab"><h2>Histórico de entregas</h2></div>' + (hist.length ? '<div class="lista">' + hist.map(function (e) {
+      return '<div class="item"><div class="item-txt"><b>' + dBR(e.data) + ' · ' + e.qtd + '× ' + esc(e.epi) + '</b><span>' + ca(e.ca) + ' · ' + esc(e.motivo) + ' · entregue por ' + esc(e.entregue_por) + (e.situacao !== 'Em uso' ? ' · ' + esc(e.situacao.toLowerCase()) + (e.baixa ? ' em ' + dBR(e.baixa) : '') : '') + '</span></div>' + rubrica(e.assinatura) + '</div>';
+    }).join('') + '</div>' : '<div class="vazio">Ainda sem entregas assinadas.</div>') + '</section>';
+    var corpo = $('#folha .folha-corpo'); if (corpo) corpo.innerHTML = h;
+  }).catch(function (e) { toast(e.message, true); fechar(); });
+}
+function imprimirFicha() {
+  if (!FICHA) return;
+  var c = FICHA.colaborador;
+  $('#print').innerHTML = '<h1>Ficha de controle de EPI</h1><div>' + esc(DB.config.empresa) + (c.cnpj ? ' · CNPJ ' + esc(c.cnpj) : '') + '</div>' +
+    '<table class="dados"><tr><td><b>Colaborador:</b> ' + esc(c.nome) + '</td><td><b>Matrícula:</b> ' + esc(c.matricula || '—') + '</td></tr><tr><td><b>Função:</b> ' + esc(c.funcao || '—') + '</td><td><b>Operação:</b> ' + esc(c.operacao) + '</td></tr><tr><td><b>Admissão:</b> ' + (dBR(c.admissao) || '—') + '</td><td><b>Emitida em:</b> ' + dBR(DB.hoje) + '</td></tr></table>' +
+    '<p class="t">Declaro que recebi gratuitamente os Equipamentos de Proteção Individual relacionados abaixo, em perfeito estado, com orientação sobre uso, guarda e conservação, e me comprometo a utilizá-los durante o trabalho e a comunicar qualquer dano ou extravio, conforme a NR-6. As assinaturas foram colhidas em meio eletrônico no ato de cada entrega.</p>' +
+    '<table><thead><tr><th>Data</th><th>Qtd</th><th>EPI</th><th>C.A.</th><th>Motivo</th><th>Trocar até</th><th>Baixa</th><th>Entregue por</th><th>Assinatura</th></tr></thead><tbody>' +
+    FICHA.entregas.map(function (e) { return '<tr><td>' + dBR(e.data) + '</td><td>' + e.qtd + '</td><td>' + esc(e.epi) + '</td><td>' + esc(e.ca) + '</td><td>' + esc(e.motivo) + '</td><td>' + (dBR(e.proxima) || '—') + '</td><td>' + (dBR(e.baixa) || '') + '</td><td>' + esc(e.entregue_por) + '</td><td>' + rubrica(e.assinatura, 'r') + '</td></tr>'; }).join('') + '</tbody></table>';
+  window.print();
+}
+
+/* ---------- formulários de cadastro ---------- */
+function campo(rotulo, nome, valor, tipo, extra, dica) {
+  return '<label class="campo">' + rotulo + (dica ? '<small>' + dica + '</small>' : '') + '<input class="in" id="fm-' + nome + '" name="' + nome + '" type="' + (tipo || 'text') + '" value="' + esc(valor === undefined || valor === null ? '' : valor) + '" ' + (extra || '') + '></label>';
+}
+function checksOps(marcadas, todas) {
+  return '<div class="checks">' + todas.map(function (o, i) { return '<label class="check"><input type="checkbox" id="fm-op-' + i + '" name="ops" value="' + esc(o) + '"' + (marcadas.map(semAcento).indexOf(semAcento(o)) > -1 ? ' checked' : '') + '>' + esc(o) + '</label>'; }).join('') + '</div>';
+}
+function nomesOps() { return (DB.todasOperacoes || DB.operacoes).filter(function (o) { return o.ativo !== false; }).map(function (o) { return o.operacao; }); }
+function formEpi(id) {
+  var e = id ? IX.epi[id] : null; e = e || { ops: [], ativo: true };
+  abrir(id ? 'Editar EPI' : 'Novo EPI', '<form class="form" data-form="EPIs" id="fm"><input type="hidden" name="id" value="' + esc(e.id || '') + '">' +
+    campo('Nome do EPI', 'epi', e.epi, 'text', 'required placeholder="Ex.: Botina de segurança nº 41"') +
+    '<div class="dupla">' + campo('Número do C.A.', 'ca', e.ca, 'text', 'inputmode="numeric"', 'Em branco = sem C.A.') + campo('Validade do C.A.', 'validade_ca', e.validade_ca, 'date', '', 'Se tiver.') + '</div>' +
+    '<div class="dupla">' + campo('Vida útil (dias)', 'vida', e.vida, 'number', 'min="0" inputmode="numeric"', 'Tempo até a troca. 0 = sem prazo.') + campo('Estoque mínimo', 'minimo', e.minimo, 'number', 'min="0" inputmode="numeric"', 'Abaixo disso, avisa.') + '</div>' +
+    campo('Custo por unidade (R$)', 'custo', e.custo || '', 'text', 'inputmode="decimal"', 'Opcional. Usado no painel.') +
+    '<div class="campo">Operações que usam<small>Nenhuma marcada = todas usam.</small>' + checksOps(e.ops, nomesOps()) + '</div>' +
+    '<label class="check"><input type="checkbox" id="fm-ativo" name="ativo"' + (e.ativo ? ' checked' : '') + '>EPI em uso na empresa</label></form>',
+    '<button class="btn pri" data-a="salvarForm">Salvar EPI</button>', true);
+}
+function formColab(id) {
+  var c = id ? IX.col[id] : null; c = c || { ativo: true, operacao: DB.usuario.ops.length === 1 ? DB.usuario.ops[0] : '' };
+  var ops = admin() ? nomesOps() : DB.usuario.ops;
+  abrir(id ? 'Editar colaborador' : 'Novo colaborador', '<form class="form" data-form="Colaboradores" id="fm"><input type="hidden" name="id" value="' + esc(c.id || '') + '">' +
+    campo('Nome completo', 'nome', c.nome, 'text', 'required') + campo('Função', 'funcao', c.funcao, 'text', 'placeholder="Ex.: Motorista"') +
+    '<label class="campo">Operação<select class="in" id="fm-operacao" name="operacao"><option value="">Escolha</option>' + ops.map(function (o) { return '<option' + (semAcento(o) === semAcento(c.operacao) ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>' +
+    '<div class="dupla">' + campo('Matrícula', 'matricula', c.matricula) + campo('Admissão', 'admissao', c.admissao, 'date') + '</div>' +
+    campo('CNPJ do empregador', 'cnpj', c.cnpj, 'text', 'inputmode="numeric"', 'Opcional. Sai na ficha impressa.') +
+    '<label class="check"><input type="checkbox" id="fm-ativo" name="ativo"' + (c.ativo ? ' checked' : '') + '>Colaborador ativo</label></form>',
+    '<button class="btn pri" data-a="salvarForm">Salvar colaborador</button>', true);
+}
+function formUsuario(id) {
+  var u = (DB.usuarios || []).filter(function (x) { return x.id === id; })[0] || { ativo: true, perfil: 'supervisor', operacoes: '' };
+  abrir(id ? 'Editar acesso' : 'Novo acesso', '<form class="form" data-form="Usuarios" id="fm"><input type="hidden" name="id" value="' + esc(u.id || '') + '">' +
+    campo('Nome', 'nome', u.nome, 'text', 'required') +
+    '<label class="campo">Tipo de acesso<select class="in" id="fm-perfil" name="perfil"><option value="supervisor"' + (u.perfil !== 'admin' ? ' selected' : '') + '>Supervisor: pede e entrega na operação dele</option><option value="admin"' + (u.perfil === 'admin' ? ' selected' : '') + '>Administrador: aprova e vê tudo</option></select></label>' +
+    campo('Senha (4 a 6 números)', 'pin', u.pin, 'text', 'required inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" autocomplete="off"', 'Trocar a senha desconecta o celular da pessoa.') +
+    '<div class="campo">Operações do supervisor' + checksOps(String(u.operacoes || '').split(/[;,]/).map(function (x) { return x.trim(); }).filter(Boolean), nomesOps()) + '</div>' +
+    '<label class="check"><input type="checkbox" id="fm-ativo" name="ativo"' + (u.ativo ? ' checked' : '') + '>Acesso liberado</label></form>',
+    '<button class="btn pri" data-a="salvarForm">Salvar acesso</button>', true);
+}
+function formOp(nome) {
+  var o = (DB.todasOperacoes || []).filter(function (x) { return x.operacao === nome; })[0] || { ativo: true };
+  abrir(nome ? 'Editar operação' : 'Nova operação', '<form class="form" data-form="Operacoes" id="fm"><input type="hidden" name="original" value="' + esc(o.operacao || '') + '">' +
+    campo('Nome da operação', 'operacao', o.operacao, 'text', 'required ' + (nome ? 'readonly' : 'placeholder="Ex.: Passos - Frango"'), nome ? 'O nome não muda depois de criado, porque os registros antigos usam ele.' : '') + campo('Unidade', 'unidade', o.unidade, 'text', 'placeholder="Ex.: Passos"') +
+    '<label class="check"><input type="checkbox" id="fm-ativo" name="ativo"' + (o.ativo ? ' checked' : '') + '>Operação ativa</label></form>',
+    '<button class="btn pri" data-a="salvarForm">Salvar operação</button>');
+}
+function formEntrada(id) {
+  var e = IX.epi[id]; if (!e) return;
+  abrir(e.epi, '<p class="sub">' + ca(e.ca) + ' · saldo no sistema: <b style="color:var(--ink)">' + e.estoque + '</b></p><div class="seg"><button class="on" data-a="tipoMov" data-f="Entrada">Entrada (compra)</button><button data-a="tipoMov" data-f="Ajuste">Ajuste de contagem</button></div>' +
+    '<form class="form" id="fm" data-form="mov" data-epi="' + esc(e.id) + '" data-tipo="Entrada"><div id="mv-campos"></div></form>', '<button class="btn pri" data-a="salvarMov">Lançar</button>');
+  pintarMov('Entrada', e);
+}
+function pintarMov(tipo, e) {
+  $('#fm').dataset.tipo = tipo;
+  $('#mv-campos').innerHTML = tipo === 'Entrada'
+    ? '<div class="form"><div class="dupla">' + campo('Quantidade que entrou', 'quantidade', '', 'number', 'min="1" inputmode="numeric" required') + campo('Custo por unidade (R$)', 'custo_unitario', e.custo || '', 'text', 'inputmode="decimal"') + '</div>' + campo('Nota fiscal ou fornecedor', 'documento', '') + campo('Observação', 'observacao', '') + '</div>'
+    : '<div class="form">' + campo('Quantas unidades você contou', 'contagem', '', 'number', 'min="0" inputmode="numeric" required', 'O sistema lança a diferença para o saldo bater com a contagem.') + campo('Motivo do ajuste', 'observacao', '', 'text', 'required placeholder="Ex.: inventário de outubro"') + '</div>';
+}
+function lerForm(f) {
+  var o = { ops: [] };
+  $$('input, select, textarea', f).forEach(function (el) {
+    if (!el.name) return;
+    if (el.name === 'ops') { if (el.checked) o.ops.push(el.value); }
+    else if (el.type === 'checkbox') o[el.name] = el.checked;
+    else o[el.name] = el.value.trim();
+  });
+  return o;
+}
+
+/* ============================== ações ============================== */
+var ACT = {
+  ir: function (d) { TELA = d.t; if (d.f) F.ped = d.f; desenhar(); $('main').scrollTop = 0; },
+  sinc: function () { sincronizar(true).then(function () { if (SINC.estado === 'ok') toast('Tudo atualizado.'); }).catch(function () {}); },
+  sair: function () { perguntar('Sair do aplicativo?', 'Você vai precisar da senha para entrar de novo.', 'Sair').then(function (s) { if (s) sair(); }); },
+  fechar: fechar,
+  fundo: function (d, el, ev) { if (ev.target === el && !el.querySelector('.cheia')) fechar(); },
+  filtroPed: function (d) { F.ped = d.f; desenhar(); },
+  filtroCad: function (d) { F.cad = d.f; desenhar(); },
+  mes: function (d) { F.mes = d.k; desenhar(); },
+  novoPedido: function (d) { abrirPedido(d.col, d.epi); },
+  maisQ: function (d) { PED.q[d.id] = Math.min(20, (PED.q[d.id] || 0) + 1); pintarQ(d.id); },
+  menos: function (d) { PED.q[d.id] = Math.max(0, (PED.q[d.id] || 0) - 1); pintarQ(d.id); },
+  enviarPedido: function (d, el) {
+    var itens = Object.keys(PED.q).filter(function (k) { return PED.q[k] > 0; }).map(function (k) { return { epi_id: k, quantidade: PED.q[k] }; });
+    if (!PED.col) return toast('Escolha o colaborador.', true);
+    if (!itens.length) return toast('Use o + para escolher pelo menos um EPI.', true);
+    if (!$('#pd-motivo').value) return toast('Escolha o motivo do pedido.', true);
+    var repetido = itens.filter(function (i) { return IX.aberto[PED.col + '|' + i.epi_id]; });
+    var segue = repetido.length ? perguntar('Já existe pedido aberto', 'Este colaborador já tem pedido em andamento de ' + repetido.map(function (i) { return IX.epi[i.epi_id].epi; }).join(', ') + '. Enviar outro mesmo assim?', 'Enviar mesmo assim') : Promise.resolve(true);
+    segue.then(function (ok) {
+      if (!ok) return;
+      executar(el, 'pedir', { colaborador_id: PED.col, itens: itens, motivo: $('#pd-motivo').value, observacao: $('#pd-obs').value }, admin() ? 'Pedido registrado.' : 'Pedido enviado para aprovação.')
+        .then(function () { fechar(); F.ped = 'aguardando'; TELA = 'pedidos'; desenhar(); }).catch(function () {});
+    });
+  },
+  aprovar: function (d, el) {
+    executar(el, 'decidir', { id: d.id, aprovar: true }).then(function (r) {
+      if (!r.faltaEstoque) return toast('Pedido aprovado. Saiu do estoque.');
+      perguntar('Estoque não cobre', 'O sistema mostra saldo ' + r.saldo + ' e o pedido é de ' + r.qtd + '. Se o EPI existe fisicamente, aprove e depois ajuste a contagem no Estoque.', 'Aprovar mesmo assim').then(function (ok) {
+        if (ok) executar(null, 'decidir', { id: d.id, aprovar: true, forcar: true }, 'Pedido aprovado. Saldo ficou negativo: ajuste o estoque.').catch(function () {});
+      });
+    }).catch(function () {});
+  },
+  recusar: function (d) {
+    perguntar('Recusar pedido', 'O supervisor vai ver o motivo.', 'Recusar', true, 'Motivo da recusa').then(function (m) { if (m) executar(null, 'decidir', { id: d.id, aprovar: false, motivo_recusa: m }, 'Pedido recusado.').catch(function () {}); });
+  },
+  cancelarPed: function (d) { perguntar('Cancelar este pedido?', '', 'Cancelar pedido', true).then(function (s) { if (s) executar(null, 'cancelar', { id: d.id }, 'Pedido cancelado.').catch(function () {}); }); },
+  cancelarAprov: function (d) {
+    var itens = IX.aprov.filter(function (s) { return s.colaborador_id === d.col; });
+    perguntar('Cancelar ' + plural(itens.length, 'pedido aprovado', 'pedidos aprovados') + '?', 'As unidades voltam para o estoque.', 'Cancelar e devolver ao estoque', true).then(function (s) {
+      if (!s) return;
+      itens.reduce(function (p, it) { return p.then(function () { return chamar('cancelar', { id: it.id }); }); }, Promise.resolve())
+        .then(function () { toast('Cancelado. Estoque devolvido.'); }).catch(function (e) { toast(e.message, true); }).then(function () { sincronizar(true); });
+    });
+  },
+  entregar: function (d) { abrirEntrega(d.col); },
+  limparAss: function () { if (ASS) { ASS.tracos = []; ASS.cx.clearRect(0, 0, ASS.w, ASS.h); } },
+  confirmarEntrega: function (d, el) {
+    var ids = $$('.en-item').filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+    if (!ids.length) return toast('Marque pelo menos um EPI.', true);
+    var ass = assinaturaTexto();
+    if (!ass) return toast('Falta a assinatura do colaborador.', true);
+    executar(el, 'entregar', { ids: ids, assinatura: ass }, 'Entrega registrada na ficha.').then(function () { fechar(); desenhar(); }).catch(function () {});
+  },
+  ficha: function (d) { abrirFicha(d.id); },
+  imprimirFicha: imprimirFicha,
+  baixa: function (d) {
+    perguntar('Dar baixa neste EPI', 'Use quando o colaborador devolveu, perdeu ou saiu da empresa. O EPI sai da lista de em uso.', 'Dar baixa', true, 'Motivo da baixa').then(function (m) {
+      if (m) executar(null, 'baixa', { entrega_id: d.id, motivo: m }, 'Baixa registrada.').then(function () { if (FICHA) abrirFicha(FICHA.colaborador.id); }).catch(function () {});
+    });
+  },
+  editarEpi: function (d) { formEpi(d.id); },
+  editarColab: function (d) { formColab(d.id); },
+  editarUsuario: function (d) { formUsuario(d.id); },
+  editarOp: function (d) { formOp(d.id); },
+  entrada: function (d) { formEntrada(d.id); },
+  tipoMov: function (d, el) { $$('button', el.parentNode).forEach(function (b) { b.classList.toggle('on', b === el); }); pintarMov(d.f, IX.epi[$('#fm').dataset.epi]); },
+  salvarMov: function (d, el) {
+    var f = $('#fm'), o = lerForm(f); o.epi_id = f.dataset.epi; o.tipo = f.dataset.tipo;
+    executar(el, 'movimentar', o, o.tipo === 'Entrada' ? 'Entrada lançada.' : 'Estoque ajustado.').then(fechar).catch(function () {});
+  },
+  salvarForm: function (d, el) {
+    var f = $('#fm'), aba = f.dataset.form, o = lerForm(f);
+    if (!f.reportValidity()) return;
+    executar(el, 'salvar', { aba: aba, registro: o }, 'Salvo.').then(function () { fechar(); if (aba === 'Colaboradores' && FICHA && o.id) FICHA = null; }).catch(function () {});
+  }
+};
+function pintarQ(id) { var o = document.getElementById('q-' + id); if (o) { o.textContent = PED.q[id]; o.classList.toggle('zero', !PED.q[id]); } }
+
+document.addEventListener('click', function (ev) {
+  var el = ev.target.closest('[data-a]'); if (!el || el.disabled) return;
+  var fn = ACT[el.dataset.a]; if (fn) fn(el.dataset, el, ev);
+});
+document.addEventListener('change', function (ev) {
+  var el = ev.target;
+  if (el.id === 'pd-col') { PED.col = el.value; PED.q = {}; pintarEpisPedido(); }
+  if (el.dataset.m) { F[el.dataset.m] = el.value; desenhar(); }
+});
+document.addEventListener('input', function (ev) {
+  var el = ev.target; if (!el.dataset.busca) return;
+  if (el.id === 'busca-col') F.busca = el.value; else F.estoqueBusca = el.value;
+  filtrarLista(el);
+});
+function filtrarLista(el) {
+  var q = semAcento(el.value.trim()), n = 0;
+  $$(el.dataset.busca + ' [data-txt]').forEach(function (i) { var v = !q || i.dataset.txt.indexOf(q) > -1; i.hidden = !v; if (v) n++; });
+  var vazio = $(el.dataset.busca + '-vazia'); if (vazio) vazio.hidden = n > 0;
+}
+document.addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  var f = ev.target;
+  if (f.dataset.form === 'config') {
+    var o = lerForm(f); delete o.ops; o.avisar_novo_pedido = o.avisar_novo_pedido ? 'SIM' : 'NÃO';
+    executar(f.querySelector('button[type=submit]'), 'config', o, 'Ajustes salvos.').catch(function () {});
+  } else if (f.id === 'login') entrar(f);
+});
+var desenharOriginal = desenhar;
+desenhar = function () { desenharOriginal(); $$('[data-busca]').forEach(function (el) { if (el.value) filtrarLista(el); }); };
+
+/* ============================== entrada e saída ============================== */
+function telaLogin(lista, erro) {
+  var ultimo = ler('epi_usuario');
+  $('#app').dataset.tela = 'login';
+  $('#app').innerHTML = (DEMO ? '<div class="aviso-demo">Demonstração com dados de exemplo. Senha de todos: 1234.</div>' : '') +
+    '<form class="entrar" id="login"><div class="selo">' + IC.check + '</div><div><h1>EPI em Dia</h1><p class="sub" style="font-size:16px">' + esc(lista ? lista.empresa : '') + '</p></div><div class="faixa" aria-hidden="true"></div>' +
+    (erro ? '<div class="nota bad">' + esc(erro) + '</div><button class="btn" type="button" id="lg-de-novo">Tentar de novo</button>' :
+      !lista ? '<p class="sub">Carregando…</p>' :
+        !lista.usuarios.length ? '<div class="nota warn">Nenhum acesso cadastrado. Na planilha, use o menu EPI &gt; Instalar ou reparar planilha.</div>' :
+          '<label class="campo">Quem é você<select class="in" id="lg-quem" required><option value="">Escolha seu nome</option>' + lista.usuarios.map(function (u) { return '<option value="' + esc(u.id) + '"' + (u.id === ultimo ? ' selected' : '') + '>' + esc(u.nome) + (u.perfil === 'admin' ? ' (administrador)' : '') + '</option>'; }).join('') + '</select></label>' +
+          '<label class="campo">Senha<input class="in" id="lg-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" required placeholder="4 a 6 números"></label>' +
+          '<button class="btn pri" type="submit" id="lg-ok" style="min-height:52px;font-size:17px">Entrar</button>') + '</form>';
+  var dn = $('#lg-de-novo'); if (dn) dn.onclick = iniciar;
+}
+function entrar(f) {
+  var b = $('#lg-ok'); b.disabled = true; b.textContent = 'Entrando…';
+  var id = $('#lg-quem').value;
+  chamar('entrar', { id: id, pin: $('#lg-pin').value }).then(function (r) {
+    TOKEN = r.token; guardar('epi_token', TOKEN); guardar('epi_usuario', id); SINC.n = 0;
+    return sincronizar(true);
+  }).catch(function (e) { TOKEN = null; b.disabled = false; b.textContent = 'Entrar'; toast(e.message, true); if ($('#lg-pin')) { $('#lg-pin').value = ''; $('#lg-pin').focus(); } });
+}
+function sair(expirou) {
+  TOKEN = null; DB = null; TELA = 'inicio'; guardar('epi_token', null); window.EPI_TOKEN_INICIAL = null; $('#folha').innerHTML = ''; $('#dlg').innerHTML = '';
+  if (expirou) toast('Sua sessão terminou. Entre de novo.', true);
+  iniciar();
+}
+function iniciar() {
+  TOKEN = ler('epi_token') || window.EPI_TOKEN_INICIAL || null;
+  if (TOKEN) {
+    telaLogin(null);
+    return sincronizar(true).catch(function (e) { if (TOKEN) telaLogin(null, e.message); });
+  }
+  telaLogin(null);
+  chamar('loginLista').then(function (l) { if (!TOKEN) telaLogin(l); }).catch(function (e) { telaLogin(null, e.message); });
+}
+iniciar();
+</script>
+</body>
+</html>
