@@ -885,7 +885,7 @@ function formEntrada(id) {
 }
 function pintarMov(tipo, e) {
   $('#fm').dataset.tipo = tipo;
-  var pt = e.porTam || {}, selTam = e.tamanhos && e.tamanhos.length ? '<label class="campo">Tamanho<select class="in" id="fm-tamanho" name="tamanho" required><option value="">Escolha o tamanho</option>' + e.tamanhos.map(function (t) { return '<option value="' + esc(t) + '">' + rotTam(t) + ' (saldo ' + (pt[t] || 0) + ')</option>'; }).join('') + '</select></label>' : '';
+  var pt = e.porTam || {}, selTam = e.tamanhos && e.tamanhos.length ? '<label class="campo">Tamanho<select class="in" id="fm-tamanho" name="tamanho" required><option value="">Escolha o tamanho</option>' + e.tamanhos.map(function (t) { return '<option value="' + esc(t) + '">' + rotTam(t) + ' (saldo ' + (pt[t] || 0) + ')</option>'; }).join('') + '<option value="SEM_TAMANHO"> Sem tamanho (saldo ' + (pt[''] || 0) + ')</option></select></label>' : '';
   $('#mv-campos').innerHTML = selTam + (tipo === 'Entrada'
     ? '<div class="form"><div class="dupla">' + campo('Quantidade que entrou', 'quantidade', '', 'number', 'min="1" inputmode="numeric" required') + campo('Custo por unidade (R$)', 'custo_unitario', e.custo || '', 'text', 'inputmode="decimal"') + '</div>' + campo('Nota fiscal ou fornecedor', 'documento', '') + campo('Observação', 'observacao', '') + '</div>'
     : '<div class="form">' + campo('Quantas unidades você contou', 'contagem', '', 'number', 'min="0" inputmode="numeric" required', 'O sistema lança a diferença para o saldo bater com a contagem.') + campo('Motivo do ajuste', 'observacao', '', 'text', 'required placeholder="Ex.: inventário de outubro"') + '</div>');
