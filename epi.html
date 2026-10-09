@@ -311,6 +311,7 @@ function ler(k) { try { return localStorage.getItem(k); } catch (e) { return nul
 function ca(n) { return n ? 'C.A. ' + esc(n) : 'sem C.A.'; }
 function rotTam(t) { t = String(t || ''); return t ? (/^\d/.test(t) ? 'nº ' : 'tam. ') + esc(t) : ''; }
 function epiT(x) { return esc(x.epi) + (x.tamanho ? ' <span class="tam">' + rotTam(x.tamanho) + '</span>' : ''); }
+function vEst() { return !!DB && (DB.usuario.perfil === 'admin' || !!DB.usuario.verEstoque); }
 function admin() { return DB && DB.usuario.perfil === 'admin'; }
 
 function toast(msg, ruim) {
@@ -436,7 +437,7 @@ function desenhar() {
   if (!TOKEN || !DB) return;
   var abas = admin()
     ? [['inicio', 'Painel', IC.painel, 0], ['pedidos', 'Pedidos', IC.pedidos, IX.pend.length], ['estoque', 'Estoque', IC.estoque, IX.A.estoque.length], ['equipe', 'Fichas', IC.equipe, 0], ['alertas', 'Alertas', IC.alertas, IX.A.vencidas.length]]
-    : [['inicio', 'Início', IC.inicio, 0], ['pedidos', 'Pedidos', IC.pedidos, IX.aprov.length], ['equipe', 'Fichas', IC.equipe, 0], ['alertas', 'Alertas', IC.alertas, IX.A.vencidas.length]];
+    : [['inicio', 'Início', IC.inicio, 0], ['pedidos', 'Pedidos', IC.pedidos, IX.aprov.length]].concat(vEst() ? [['estoque', 'Estoque', IC.estoque, 0]] : [], [['equipe', 'Fichas', IC.equipe, 0], ['alertas', 'Alertas', IC.alertas, IX.A.vencidas.length]]);
   var rolagem = $('main') ? $('main').scrollTop : 0, mesmaTela = app.dataset.tela === TELA;
   var foco = document.activeElement && document.activeElement.id && app.contains(document.activeElement) ? document.activeElement.id : '';
   var quem = admin() ? 'administrador' : (DB.usuario.ops.join(', ') || 'sem operação');
@@ -634,13 +635,14 @@ TELAS.alertas = function () {
 /* ---------- estoque (administrador) ---------- */
 TELAS.estoque = function () {
   var epis = DB.epis.filter(function (e) { return e.ativo; }).sort(function (a, b) { return a.epi.localeCompare(b.epi, 'pt-BR'); });
-  var h = '<div class="sec-cab"><h1 class="titulo">Estoque central</h1><button class="link" data-a="editarEpi">Novo EPI</button></div>';
-  if (!epis.length) return h + '<div class="vazio"><b>Nenhum EPI cadastrado</b>Toque em Novo EPI ou cole a lista na aba EPIs da planilha (nome, C.A., validade e vida útil).</div>';
+  if (!vEst()) return TELAS.inicio();
+  var h = '<div class="sec-cab"><h1 class="titulo">Estoque central</h1>' + (admin() ? '<button class="link" data-a="editarEpi">Novo EPI</button>' : '<span class="sub">só consulta</span>') + '</div>';
+  if (!epis.length) return h + '<div class="vazio"><b>Nenhum EPI cadastrado</b>' + (admin() ? 'Toque em Novo EPI ou cole a lista na aba EPIs da planilha (nome, C.A., validade e vida útil).' : 'O administrador ainda não cadastrou os EPIs.') + '</div>';
   h += '<input class="in" id="busca-epi" type="search" placeholder="Buscar EPI ou C.A." value="' + esc(F.estoqueBusca) + '" data-busca="#lista-epi" aria-label="Buscar EPI">';
   h += '<div class="lista" id="lista-epi">' + epis.map(function (e) {
     var k = e.estoque <= 0 ? 'bad' : e.estoque <= e.minimo && e.minimo > 0 ? 'warn' : 'ok';
     return '<div class="item" data-txt="' + esc(semAcento(e.epi + ' ' + e.ca)) + '"><div class="item-txt"><b>' + epiT(e) + '</b><span>' + ca(e.ca) + ' · mínimo ' + e.minimo + ' · troca a cada ' + (e.vida ? plural(e.vida, 'dia', 'dias') : '—') + '</span>' + saldosTam(e) + '</div>' +
-      '<span class="pilula ' + k + ' num" title="Saldo">' + e.estoque + ' un.</span><button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '" aria-label="Lançar entrada de ' + epiT(e) + '">' + IC.mais + '</button></div>';
+      '<span class="pilula ' + k + ' num" title="Saldo">' + e.estoque + ' un.</span>' + (admin() ? '<button class="btn mini" data-a="entrada" data-id="' + esc(e.id) + '" aria-label="Lançar entrada de ' + esc(e.epi) + '">' + IC.mais + '</button>' : '') + '</div>';
   }).join('') + '</div>';
   var mov = (DB.movimentacoes || []).slice(-25).reverse();
   h += '<section class="sec"><div class="sec-cab"><h2>Últimas movimentações</h2></div>' + (mov.length ? '<div class="lista">' + mov.map(function (m) {
@@ -667,7 +669,7 @@ TELAS.cadastros = function () {
     }).join('') : '<div class="item"><div class="item-txt"><span>Nenhum EPI cadastrado.</span></div></div>') + '</div>';
   } else if (F.cad === 'usuarios') {
     h += '<button class="btn pri" data-a="editarUsuario">' + IC.mais + 'Novo acesso</button><div class="lista">' + (DB.usuarios || []).map(function (u) {
-      return '<button class="item" data-a="editarUsuario" data-id="' + esc(u.id) + '"><div class="item-txt"><b>' + esc(u.nome) + (u.ativo ? '' : ' (bloqueado)') + '</b><span>' + (u.perfil === 'admin' ? 'Administrador, vê tudo' : 'Supervisor · ' + esc(u.operacoes || 'sem operação')) + '</span></div>' + IC.seta + '</button>';
+      return '<button class="item" data-a="editarUsuario" data-id="' + esc(u.id) + '"><div class="item-txt"><b>' + esc(u.nome) + (u.ativo ? '' : ' (bloqueado)') + '</b><span>' + (u.perfil === 'admin' ? 'Administrador, vê tudo' : esc(u.cargo && semAcento(u.cargo) !== 'supervisor' ? u.cargo : 'Supervisor') + ' · ' + esc(u.operacoes || 'sem operação') + (u.estoque ? ' · acompanha o estoque' : '')) + '</span></div>' + IC.seta + '</button>';
     }).join('') + '</div>';
   } else if (F.cad === 'operacoes') {
     h += '<button class="btn pri" data-a="editarOp">' + IC.mais + 'Nova operação</button><div class="lista">' + (DB.todasOperacoes || []).map(function (o) {
@@ -863,7 +865,8 @@ function formUsuario(id) {
     '<label class="campo">Tipo de acesso<select class="in" id="fm-perfil" name="perfil"><option value="supervisor"' + (u.perfil !== 'admin' ? ' selected' : '') + '>Supervisor: pede e entrega na operação dele</option><option value="admin"' + (u.perfil === 'admin' ? ' selected' : '') + '>Administrador: aprova e vê tudo</option></select></label>' +
     campo('Senha (4 a 6 números)', 'pin', u.pin, 'text', 'required inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" autocomplete="off"', 'Trocar a senha desconecta o celular da pessoa.') +
     '<div class="campo">Operações do supervisor' + checksOps(String(u.operacoes || '').split(/[;,]/).map(function (x) { return x.trim(); }).filter(Boolean), nomesOps()) + '</div>' +
-    '<label class="check"><input type="checkbox" id="fm-ativo" name="ativo"' + (u.ativo ? ' checked' : '') + '>Acesso liberado</label></form>',
+    '<label class="check"><input type="checkbox" id="fm-ativo" name="ativo"' + (u.ativo ? ' checked' : '') + '>Acesso liberado</label>' +
+    '<label class="check"><input type="checkbox" id="fm-estoque" name="estoque"' + (u.estoque ? ' checked' : '') + '>Acompanha o estoque (só consulta)</label></form>',
     '<button class="btn pri" data-a="salvarForm">Salvar acesso</button>', true);
 }
 function formOp(nome) {
