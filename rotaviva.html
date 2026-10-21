@@ -1051,6 +1051,7 @@ TELAS.viagem = function (r) {
       (e.tecnico ? '<div>' + ic('pessoa') + ' Técnico: ' + esc(e.tecnico) + (e.telefone_tecnico ? ' ' + esc(e.telefone_tecnico) : '') + '</div>' : '') +
       '<div>' + (e.nota_fiscal ? 'NF ' + esc(e.nota_fiscal) : 'Sem nota fiscal') + (e.km_chegada !== '' ? ' | KM na chegada ' + fmt(e.km_chegada) : '') + (ok && e.entregue_em ? ' | entregue ' + esc(quando(e.entregue_em)) : '') + '</div>' +
       (e.obs ? '<div>' + esc(e.obs) + '</div>' : '') + '</div></div><span class="qt num">' + pinto(18) + fmt(e.qtd_pintinhos) + '</span></div><div class="botoes">' +
+      (function () { var rg = rotaDaGranja(e.integrado); if (!rg) return ''; return '<a class="mini" style="background:#E3EEFF;color:#0F4F9C" target="_blank" rel="noopener" href="' + esc(linkRota(rg)) + '">' + ic('mapa') + 'Ir até a granja</a>' + (temGps(rg) ? '<a class="mini" target="_blank" rel="noopener" href="' + esc(linkWaze(rg.latitude, rg.longitude)) + '">' + ic('rota') + 'Waze</a>' : ''); })() +
       (v.status !== 'Cancelada' ? (ok ? '<button class="mini" data-desfaz="' + esc(e.id) + '">' + ic('x') + 'Desfazer entrega</button>' : '<button class="mini ok" data-entrega="' + esc(e.id) + '">' + ic('ok') + 'Marcar entregue</button>') : '') +
       (e.telefone_tecnico ? '<a class="mini" href="tel:' + esc(String(e.telefone_tecnico).replace(/\D/g, '')) + '">' + ic('fone') + 'Ligar</a><a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(e.telefone_tecnico, 'Olá ' + primeiro(e.tecnico) + ', aqui é da Andrioni Transportes sobre a entrega de pintinhos em ' + e.cidade + (e.integrado ? ' (' + e.integrado + ')' : '') + '.')) + '">' + ic('zap') + 'WhatsApp</a>' : '') +
       '</div></div>';
@@ -1148,7 +1149,13 @@ TELAS.editar.depois = TELAS.nova.depois;
 function aplicarRota(rt) {
   FORM.v.rota_id = rt.id; FORM.v.regiao = rt.regiao || FORM.v.regiao; FORM.v.origem = rt.origem || FORM.v.origem;
   var vazias = FORM.e.every(function (e) { return !e.cidade && !e.integrado && !e.qtd_pintinhos; });
-  if (vazias) FORM.e = String(rt.cidades || '').split(/[;,]/).map(function (c) { return c.trim(); }).filter(Boolean).map(function (c) { var e = novaEntrega(); e.cidade = c; return e; });
+  if (vazias) {
+    var e = novaEntrega(), i = DB.integrados.find(function (x) { return chave(x.nome) === chave(rt.nome); });
+    e.integrado = i ? i.nome : rt.nome;
+    e.cidade = cidadesRota(rt)[0] || (i ? i.cidade : '');
+    if (i) { e.tecnico = i.tecnico || ''; e.telefone_tecnico = i.telefone || ''; }
+    FORM.e = [e];
+  }
   if (!FORM.e.length) FORM.e.push(novaEntrega());
 }
 
@@ -1291,11 +1298,26 @@ function preencherIntegrado(bl, e, escolhido) {
 
 /* ---------- Rotas ---------- */
 TELAS.rotas = function () {
-  var rs = DB.rotas.filter(ativo);
-  var s = '<div class="form-cab"><h2>Rotas</h2><a class="btn pri peq" href="#novarota">' + ic('mais') + 'Nova rota</a></div><p class="mudo" style="margin:4px 0 14px">Trajetos que se repetem, com o link do mapa para o motorista abrir no celular.</p>';
-  if (!rs.length) return s + '<div class="vazio"><b>Nenhuma rota cadastrada</b>Cadastre a primeira rota com o link do Google Maps. Depois é só escolher a rota ao programar a viagem.</div>';
-  return s + rs.map(cartaoRota).join('');
+  var rs = DB.rotas.filter(ativo).slice().sort(function (a, b) { return chave(a.nome).localeCompare(chave(b.nome)); });
+  var s = '<div class="form-cab"><h2>Rotas</h2><a class="btn pri peq" href="#novarota">' + ic('mais') + 'Nova rota</a></div><p class="mudo" style="margin:4px 0 14px">O caminho até cada granja, para abrir no Google Maps ou no Waze.</p>';
+  if (!rs.length) return s + '<div class="vazio"><b>Nenhuma rota cadastrada</b>Quando estiver na granja, toque em Nova rota e use "Pegar a localização onde estou".</div>';
+  if (rs.length > 5) s += '<div class="busca">' + ic('busca', '') + '<input class="inp" id="br" placeholder="Buscar fazenda ou cidade"></div>';
+  return s + '<div id="lr">' + rs.map(cartaoRota).join('') + '</div>';
 };
+TELAS.rotas.depois = function (r, el) {
+  var b = el.querySelector('#br'); if (!b) return;
+  b.oninput = function () {
+    var q = chave(b.value);
+    el.querySelectorAll('#lr .rota').forEach(function (c) { c.style.display = !q || chave(c.dataset.busca).indexOf(q) >= 0 ? '' : 'none'; });
+  };
+};
+function temGps(r) { return String(r.latitude === undefined || r.latitude === null ? '' : r.latitude) !== '' && String(r.longitude === undefined || r.longitude === null ? '' : r.longitude) !== ''; }
+function linkWaze(lat, lng) { return 'https://waze.com/ul?ll=' + lat + ',' + lng + '&navigate=yes'; }
+function linkRota(r) { return temGps(r) ? 'https://www.google.com/maps/dir/?api=1&destination=' + r.latitude + ',' + r.longitude : (r.link || ''); }
+function rotaDaGranja(integrado) {
+  var k = chave(integrado); if (!k) return null;
+  return DB.rotas.filter(ativo).find(function (r) { return chave(r.nome) === k && (temGps(r) || r.link); }) || null;
+}
 function mapinha(n) {
   var pts = [[14, 60]], w = 300;
   for (var i = 1; i <= n; i++) pts.push([14 + (w - 28) * i / n, 60 - 38 * Math.abs(Math.sin(i * 1.7)) - (i === n ? 6 : 0)]);
@@ -1306,14 +1328,17 @@ function mapinha(n) {
 function cidadesRota(r) { return String(r.cidades || '').split(/[;,]/).map(function (c) { return c.trim(); }).filter(Boolean); }
 function cartaoRota(r) {
   var cs = cidadesRota(r);
-  var usos = DB.viagens.filter(function (v) { return v.rota_id === r.id; });
-  var reais = usos.filter(function (v) { return v.km_rodado !== ''; });
-  var media = reais.length ? Math.round(reais.reduce(function (a, v) { return a + Number(v.km_rodado); }, 0) / reais.length) : '';
-  return '<div class="rota"><div class="mapa">' + mapinha(cs.length) + '</div><div class="rc"><h3>' + esc(r.nome) + '</h3>' +
-    '<div class="trajeto"><span class="o">' + esc(origemCurta(r.origem)) + '</span>' + cs.map(function (c) { return '<span>' + esc(c) + '</span>'; }).join('') + '</div>' +
-    '<div class="dados">' + (r.regiao ? '<span>Região <b>' + esc(r.regiao) + '</b></span>' : '') + (r.km_estimado !== '' ? '<span>Previsto <b>' + fmt(r.km_estimado) + ' km</b></span>' : '') + (r.tempo_estimado ? '<span>Tempo <b>' + esc(r.tempo_estimado) + '</b></span>' : '') + (media !== '' ? '<span>Média real <b>' + fmt(media) + ' km</b></span>' : '') + '<span>Usada <b>' + usos.length + 'x</b></span></div>' +
-    '<div class="linha-btns">' + (r.link ? '<a class="btn peq" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Abrir mapa</a>' : '<a class="btn peq" href="' + esc(linkMaps(r.origem, cs)) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Ver no mapa</a>') +
-    (gestor() ? '<a class="btn peq" href="#nova/' + somaDias(hojeISO(), 1) + '/' + esc(r.id) + '">' + ic('mais') + 'Programar</a>' : '') + '<a class="btn peq" href="#rota/' + esc(r.id) + '">' + ic('lapis') + 'Editar</a></div></div></div>';
+  var usos = DB.viagens.filter(function (v) { return v.rota_id === r.id || v.entregas.some(function (e) { return chave(e.integrado) === chave(r.nome); }); });
+  var link = linkRota(r);
+  return '<div class="rota" data-busca="' + esc(r.nome + ' ' + r.cidades + ' ' + r.regiao) + '"><div class="mapa">' + mapinha(1) + '</div><div class="rc"><h3>' + esc(r.nome) + '</h3>' +
+    '<div class="dados" style="margin:6px 0 10px">' + (cs.length ? '<span>' + ic('pin') + ' <b>' + esc(cs.join(', ')) + '</b>' + (r.regiao ? ' (' + esc(r.regiao) + ')' : '') + '</span>' : '') +
+    (temGps(r) ? '<span>GPS <b class="num">' + esc(r.latitude) + ', ' + esc(r.longitude) + '</b></span>' : '') +
+    (r.km_estimado !== '' ? '<span>Previsto <b>' + fmt(r.km_estimado) + ' km</b></span>' : '') + (usos.length ? '<span>Viagens <b>' + usos.length + '</b></span>' : '') + '</div>' +
+    (r.obs ? '<p class="fraco" style="margin:-4px 0 10px">' + esc(r.obs) + '</p>' : '') +
+    '<div class="linha-btns">' + (link ? '<a class="btn pri peq" href="' + esc(link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Google Maps</a>' : '') +
+    (temGps(r) ? '<a class="btn peq" href="' + esc(linkWaze(r.latitude, r.longitude)) + '" target="_blank" rel="noopener">' + ic('rota') + 'Waze</a>' : '') +
+    (gestor() ? '<a class="btn peq" href="#nova/' + somaDias(hojeISO(), 1) + '/' + esc(r.id) + '">' + ic('mais') + 'Programar</a>' : '') +
+    '<a class="btn peq" href="#rota/' + esc(r.id) + '">' + ic('lapis') + 'Editar</a></div></div></div>';
 }
 TELAS.rota = function (r) {
   var x = rotaDe(r.id);
@@ -1322,34 +1347,96 @@ TELAS.rota = function (r) {
   return formRota('Editar rota');
 };
 TELAS.novarota = function () {
-  if (!FORM || FORM.tela !== 'novarota') FORM = { tela: 'novarota', chave: '', r: { id: '', nome: '', origem: DB.config.origens[0], regiao: '', cidades: '', link: '', km_estimado: '', tempo_estimado: '', obs: '' } };
+  if (!FORM || FORM.tela !== 'novarota') FORM = { tela: 'novarota', chave: '', r: { id: '', nome: '', regiao: '', cidades: '', link: '', latitude: '', longitude: '', km_estimado: '', tempo_estimado: '', obs: '' } };
   return formRota('Nova rota');
 };
 function formRota(titulo) {
   var r = FORM.r;
   var regs = DB.regioes.map(function (x) { return x.nome; });
+  var linkSolto = r.link && !temGps(r);
   return '<button class="voltar" onclick="history.back()">' + ic('esq') + 'Voltar</button><h2>' + esc(titulo) + '</h2>' +
-    '<label class="campo"><span>Nome da rota</span><input class="inp" data-r="nome" value="' + esc(r.nome) + '" placeholder="Ex.: Passos e São Sebastião do Paraíso"></label>' +
-    '<div class="campo"><span>Onde carrega</span><div class="seg">' + DB.config.origens.map(function (o) { return '<button type="button" class="' + (o === r.origem ? 'on' : '') + '" data-origem="' + esc(o) + '">' + esc(o) + '</button>'; }).join('') + '</div></div>' +
-    '<label class="campo"><span>Região</span><select class="inp" data-r="regiao">' + opcoes(regs, r.regiao, 'Escolha a região') + '</select></label>' +
-    '<label class="campo"><span>Cidades de destino, na ordem <em>(separe por ponto e vírgula)</em></span><input class="inp" list="dl-cid" data-r="cidades" value="' + esc(r.cidades) + '" placeholder="Passos; São Sebastião do Paraíso"></label>' +
-    '<label class="campo"><span>Link do mapa <em>(cole o link do Google Maps ou Waze)</em></span><input class="inp" type="url" data-r="link" value="' + esc(r.link) + '" placeholder="https://maps.app.goo.gl/..."></label>' +
-    '<button type="button" class="btn fino" id="gerar-link">' + ic('mapa') + 'Montar link automático pelas cidades</button>' +
+    '<label class="campo"><span>Nome do integrado (fazenda)</span><input class="inp" list="dl-int" data-r="nome" value="' + esc(r.nome) + '" placeholder="Digite o nome do integrado" autocomplete="off"></label><div class="achado oculto" id="achado-r"></div>' +
+    '<div class="duas"><label class="campo"><span>Cidade</span><input class="inp" list="dl-cid" data-r="cidades" value="' + esc(r.cidades) + '" autocomplete="off"></label>' +
+    '<label class="campo"><span>Região</span><select class="inp" data-r="regiao">' + opcoes(regs, r.regiao, 'Escolha') + '</select></label></div>' +
+    '<div class="bloco-entrega" style="margin-top:16px"><div class="bc"><b>' + ic('pin') + 'Localização da granja</b></div>' +
+    '<button type="button" class="btn amarelo cheio" id="gps" style="margin-top:10px">' + ic('pin') + 'Pegar a localização onde estou</button>' +
+    '<p class="fraco" style="margin:6px 0 0">Use quando estiver na porteira da granja. Ou digite abaixo.</p>' +
+    '<div class="duas"><label class="campo"><span>Latitude</span><input class="inp num" inputmode="decimal" data-r="latitude" value="' + esc(r.latitude) + '" placeholder="-21.904512" autocomplete="off"></label>' +
+    '<label class="campo"><span>Longitude</span><input class="inp num" inputmode="decimal" data-r="longitude" value="' + esc(r.longitude) + '" placeholder="-47.654321" autocomplete="off"></label></div>' +
+    '<div class="achado oculto" id="gps-ok"></div>' +
+    '<details class="mais-campos" style="margin-top:12px"' + (linkSolto ? ' open' : '') + '><summary>' + ic('link') + 'Prefiro colar o link do mapa</summary><label class="campo"><span>Link do Google Maps ou Waze</span><input class="inp" type="url" data-r="link" value="' + esc(linkSolto ? r.link : '') + '" placeholder="https://maps.app.goo.gl/..."></label></details></div>' +
+    '<details class="mais-campos"' + (r.km_estimado !== '' || r.tempo_estimado || r.obs ? ' open' : '') + '><summary>' + ic('mais') + 'Mais detalhes (opcional)</summary>' +
     '<div class="duas"><label class="campo"><span>KM previsto</span><input class="inp num" inputmode="numeric" data-r="km_estimado" data-num value="' + (r.km_estimado !== '' ? fmt(r.km_estimado) : '') + '"></label>' +
     '<label class="campo"><span>Tempo previsto</span><input class="inp" data-r="tempo_estimado" value="' + esc(r.tempo_estimado) + '" placeholder="Ex.: 4h30"></label></div>' +
-    '<label class="campo"><span>Observações <em>(pedágio, estrada de terra, ponto de apoio)</em></span><textarea class="inp" data-r="obs">' + esc(r.obs) + '</textarea></label>' +
+    '<label class="campo"><span>Observações <em>(estrada de terra, ponte, ponto de apoio)</em></span><textarea class="inp" data-r="obs">' + esc(r.obs) + '</textarea></label></details>' +
+    '<datalist id="dl-int">' + DB.integrados.map(function (i) { return '<option value="' + esc(i.nome) + '">' + esc(i.cidade) + '</option>'; }).join('') + '</datalist>' +
     '<datalist id="dl-cid">' + Object.keys(DB.integrados.reduce(function (a, i) { if (i.cidade) a[i.cidade] = 1; return a; }, {})).sort().map(function (c) { return '<option value="' + esc(c) + '">'; }).join('') + '</datalist>' +
     '<div class="rodape-form"><button class="btn pri cheio" id="salvar-r">' + ic('ok') + 'Salvar rota</button>' + (r.id && gestor() ? '<button class="btn fino cheio" id="arq-r" style="margin-top:4px">Arquivar rota</button>' : '') + '</div>';
 }
+
+/** Acha latitude e longitude num texto: "-21.9045, -47.6543", "-21,9045 -47,6543" ou um link do Google Maps. */
+function lerCoordenadas(txt) {
+  txt = String(txt || '');
+  var m = txt.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || txt.match(/[?&](?:q|ll|destination|query)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/i) || txt.match(/(-?\d{1,2}[.,]\d{3,})\s*[,;\s]\s*(-?\d{1,3}[.,]\d{3,})/);
+  if (!m) return null;
+  var la = Number(m[1].replace(',', '.')), lo = Number(m[2].replace(',', '.'));
+  if (isNaN(la) || isNaN(lo) || Math.abs(la) > 90 || Math.abs(lo) > 180) return null;
+  return [la.toFixed(6), lo.toFixed(6)];
+}
 TELAS.rota.depois = TELAS.novarota.depois = function (rr, el) {
   var r = FORM.r;
-  el.querySelectorAll('[data-r]').forEach(function (i) { i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', function () { if (i.dataset.num !== undefined) { r[i.dataset.r] = numero(i.value); if (r[i.dataset.r] !== '') i.value = fmt(r[i.dataset.r]); } else r[i.dataset.r] = i.value; }); });
-  el.querySelectorAll('[data-origem]').forEach(function (b) { b.onclick = function () { r.origem = b.dataset.origem; el.querySelectorAll('[data-origem]').forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
-  el.querySelector('#gerar-link').onclick = function () {
-    var cs = cidadesRota(r); if (!cs.length) return toast('Escreva as cidades primeiro.', true);
-    r.link = linkMaps(r.origem, cs); el.querySelector('[data-r=link]').value = r.link; toast('Link montado. Confira no mapa antes de salvar.');
+  var inLat = el.querySelector('[data-r=latitude]'), inLng = el.querySelector('[data-r=longitude]'), okGps = el.querySelector('#gps-ok');
+  var mostrarGps = function (extra) {
+    if (temGps(r)) {
+      okGps.innerHTML = ic('ok') + '<span>Localização pronta' + (extra || '') + '. <a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(r.latitude + ',' + r.longitude) + '" target="_blank" rel="noopener">Conferir no mapa</a></span>';
+      okGps.classList.remove('oculto');
+    } else okGps.classList.add('oculto');
   };
-  el.querySelector('#salvar-r').onclick = function () { gravar('salvarRota', { rota: r }, 'Rota salva').then(function () { FORM = null; ir('rotas'); }, function () {}); };
+  var porCoord = function (c, extra) { r.latitude = c[0]; r.longitude = c[1]; inLat.value = c[0]; inLng.value = c[1]; mostrarGps(extra); };
+  var achado = function () {
+    var i = DB.integrados.find(function (x) { return chave(x.nome) === chave(r.nome); }), msg = el.querySelector('#achado-r');
+    if (!i) { msg.classList.add('oculto'); return; }
+    if (i.cidade && !r.cidades) { r.cidades = i.cidade; el.querySelector('[data-r=cidades]').value = i.cidade; }
+    if (i.regiao && !r.regiao && DB.regioes.some(function (g) { return g.nome === i.regiao; })) { r.regiao = i.regiao; el.querySelector('[data-r=regiao]').value = i.regiao; }
+    msg.innerHTML = ic('ok') + 'Integrado cadastrado em ' + esc(i.cidade || '-') + (i.tecnico ? ', técnico ' + esc(i.tecnico) : '') + '.';
+    msg.classList.remove('oculto');
+  };
+  el.querySelectorAll('[data-r]').forEach(function (i) {
+    i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', function () {
+      var k = i.dataset.r;
+      if (i.dataset.num !== undefined) { r[k] = numero(i.value); if (r[k] !== '') i.value = fmt(r[k]); return; }
+      r[k] = i.value;
+      if (k === 'nome') achado();
+      if (k === 'link' || ((k === 'latitude' || k === 'longitude') && /\d[\s,;]+-?\d/.test(i.value.trim()) && (i.value.match(/\d+[.,]\d+/g) || []).length >= 2)) {
+        var c = lerCoordenadas(i.value);
+        if (c) { porCoord(c); return; }
+      }
+      if (k === 'latitude' || k === 'longitude') { r[k] = i.value.trim(); mostrarGps(); }
+    });
+  });
+  el.querySelector('#gps').onclick = function () {
+    var b = this;
+    if (!navigator.geolocation) return toast('Este celular não deixa pegar a localização. Digite a latitude e a longitude.', true);
+    b.disabled = true; b.innerHTML = '<span class="roda" style="width:20px;height:20px;border-width:3px"></span>Buscando o GPS...';
+    navigator.geolocation.getCurrentPosition(function (p) {
+      b.disabled = false; b.innerHTML = ic('pin') + 'Pegar a localização onde estou';
+      porCoord([p.coords.latitude.toFixed(6), p.coords.longitude.toFixed(6)], ' (precisão de ' + Math.round(p.coords.accuracy) + ' m)');
+    }, function (e) {
+      b.disabled = false; b.innerHTML = ic('pin') + 'Pegar a localização onde estou';
+      toast(e.code === 1 ? 'O celular não liberou a localização. Toque no cadeado ao lado do endereço e permita "Local".' : 'Não achei o GPS. Vá para céu aberto e tente de novo, ou digite a latitude e a longitude.', true);
+    }, { enableHighAccuracy: true, timeout: 25000, maximumAge: 0 });
+  };
+  if (r.nome) achado();
+  mostrarGps();
+  el.querySelector('#salvar-r').onclick = function () {
+    if (!String(r.nome).trim()) return toast('Escreva o nome do integrado (fazenda).', true);
+    var temLat = String(r.latitude || '') !== '', temLng = String(r.longitude || '') !== '';
+    if (temLat !== temLng) return toast('Preencha a latitude e a longitude, as duas.', true);
+    if (!temLat && !String(r.link || '').trim()) return toast('Pegue a localização da granja ou cole o link do mapa.', true);
+    var envio = Object.assign({}, r);
+    if (temLat) envio.link = '';
+    gravar('salvarRota', { rota: envio }, 'Rota salva').then(function () { FORM = null; ir('rotas'); }, function () {});
+  };
   var a = el.querySelector('#arq-r'); if (a) a.onclick = function () { confirmarFolha('Arquivar rota', 'Ela some da lista, mas as viagens antigas continuam com ela.', 'Arquivar').then(function (s) { if (s) gravar('excluirRota', { id: r.id }, 'Rota arquivada').then(function () { FORM = null; ir('rotas'); }, function () {}); }); };
 };
 
