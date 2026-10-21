@@ -901,8 +901,9 @@ TELAS.hoje = function () {
   var als = alertas();
   if (als.length) s += '<div class="secao"><h2>Precisa de atenção</h2></div><div class="lista">' + als.map(alertaHtml).join('') + '</div>';
   var vh = doDia(h), va = doDia(am);
-  s += '<div class="secao"><h2>Hoje</h2><a href="#agenda/' + h + '">Ver semana</a></div>' + (vh.length ? listaViagens(vh) : '<div class="vazio"><b>Nenhuma viagem hoje</b>' + (gestor() ? 'Toque em Nova viagem para programar.' : 'Quando a viagem for programada, aparece aqui.') + '</div>');
-  s += '<div class="secao"><h2>Amanhã</h2><a href="#agenda/' + am + '">' + esc(DIAS[dataDe(am).getDay()]) + '</a></div>' + (va.length ? listaViagens(va) : '<div class="vazio"><b>Nada programado para amanhã</b>' + (gestor() ? 'Quando a unidade mandar a programação, lance aqui.' : 'Quando a viagem for programada, aparece aqui.') + '</div>');
+  var btnZap = function (d, n) { return gestor() && n ? '<button class="link" onclick="enviarDia(\'' + d + '\')">' + ic('zap') + ' WhatsApp</button>' : ''; };
+  s += '<div class="secao"><h2>Hoje</h2><span style="display:flex;gap:16px">' + btnZap(h, vivas(vh).length) + '<a href="#agenda/' + h + '">Ver semana</a></span></div>' + (vh.length ? listaViagens(vh) : '<div class="vazio"><b>Nenhuma viagem hoje</b>' + (gestor() ? 'Toque em Nova viagem para programar.' : 'Quando a viagem for programada, aparece aqui.') + '</div>');
+  s += '<div class="secao"><h2>Amanhã</h2><span style="display:flex;gap:16px">' + btnZap(am, vivas(va).length) + '<a href="#agenda/' + am + '">' + esc(DIAS[dataDe(am).getDay()]) + '</a></span></div>' + (va.length ? listaViagens(va) : '<div class="vazio"><b>Nada programado para amanhã</b>' + (gestor() ? 'Quando a unidade mandar a programação, lance aqui.' : 'Quando a viagem for programada, aparece aqui.') + '</div>');
   var ini = inicioSemana(h), fim = somaDias(ini, 6);
   var sem = vivas(DB.viagens.filter(function (v) { return v.data >= ini && v.data <= fim; }));
   var km = sem.reduce(function (a, v) { return a + (Number(v.km_rodado) || 0); }, 0);
@@ -972,15 +973,10 @@ TELAS.agenda = function (r) {
 TELAS.agenda.depois = function (r, el) {
   el.querySelectorAll('[data-filtro]').forEach(function (b) { b.onclick = function () { PREF.agendaFiltro = b.dataset.filtro; salvarPref(); desenhar(); }; });
   var z = el.querySelector('#zap-dia');
-  if (z) z.onclick = function () {
-    var dia = PREF.agendaDia, vs = vivas(DB.viagens.filter(function (v) { return v.data === dia; }));
-    var t = '*Programação ' + DB.config.empresa + ' | ' + DB.config.operacao + '*\n' + dataLonga(dia) + '\n';
-    vs.forEach(function (v) { t += '\n' + textoViagem(v, true); });
-    t += '\n\nTotal do dia: ' + fmt(vs.reduce(function (a, v) { return a + totalP(v); }, 0)) + ' pintinhos';
-    compartilhar(t);
-  };
+  if (z) z.onclick = function () { enviarDia(PREF.agendaDia); };
 };
 
+function enviarDia(dia) { abrirEnvio(DB.viagens.filter(function (v) { return v.data === dia; }), dia, false); }
 function textoViagem(v, curto) {
   var t = '🚚 *' + (v.horario || '--:--') + (madrugada(v.horario) ? ' (madrugada)' : '') + ' | ' + (v.regiao || '') + '*\n';
   t += (v.placa || 'Sem placa') + ' com ' + (v.motorista || 'motorista a definir') + '\nCarrega em: ' + v.origem + '\n';
@@ -1095,7 +1091,7 @@ TELAS.viagem.depois = function (r, el) {
     },
     reabrir: function () { confirmarFolha('Reabrir viagem', 'Ela volta para Programada. O KM lançado fica guardado.', 'Reabrir').then(function (s) { if (s) gravar('mudarStatus', { id: v.id, status: 'Programada' }, 'Viagem reaberta').then(desenhar, function () {}); }); },
     excluir: function () { confirmarFolha('Excluir viagem', 'Ela sai do aplicativo e da planilha. Fica só o registro no histórico. Para guardar a viagem, use Cancelar.', 'Excluir de vez', true).then(function (s) { if (s) gravar('excluirViagem', { id: v.id }, 'Viagem excluída').then(function () { ir('agenda/' + v.data); }, function () {}); }); },
-    zap: function () { var m = motorista(v.motorista_id); compartilhar('*Viagem ' + relativo(v.data).toLowerCase() + ', ' + dataBRc(v.data) + '*\n' + textoViagem(v, false), m && m.telefone ? m.telefone : ''); }
+    zap: function () { var m = motorista(v.motorista_id); abrirEnvio([v], v.data, true, m && m.telefone ? m.telefone : ''); }
   };
   el.querySelectorAll('[data-acao]').forEach(function (b) { b.onclick = function () { acoes[b.dataset.acao](); }; });
   el.querySelectorAll('[data-entrega]').forEach(function (b) {
@@ -1704,6 +1700,259 @@ document.addEventListener('DOMContentLoaded', function () {
   if (window.__DEMO) { document.body.classList.add('demo'); var b = document.createElement('div'); b.className = 'demo-faixa'; b.textContent = 'Demonstração: nada aqui grava na sua planilha'; document.body.appendChild(b); }
   iniciar();
 });
+
+/* ============================================================
+ * Envio pelo WhatsApp: cartão em imagem com a marca + texto formatado
+ * ============================================================ */
+var NUM_EMOJI = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+var DIAS_L = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+function dataExtenso(iso) { var d = dataDe(iso); return DIAS_L[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear(); }
+
+/** Texto para o WhatsApp (negrito, citação e código são formatos do próprio WhatsApp). */
+var TIT_UNICA = { 'Programada': 'Viagem programada', 'Confirmada': 'Viagem confirmada', 'Em viagem': 'Viagem em andamento', 'Finalizada': 'Viagem finalizada', 'Cancelada': 'Viagem cancelada' };
+function textoZap(vs, dia, unica) {
+  var L = [], linha = '━━━━━━━━━━━━━━━━━━';
+  L.push(unica ? '*' + (TIT_UNICA[vs[0].status] || 'Viagem programada').toUpperCase() + '*' : '*PROGRAMAÇÃO DE CARREGAMENTO*');
+  L.push('Andrioni Transportes | Operação ' + DB.config.operacao);
+  L.push('');
+  L.push('📅 *' + dataExtenso(dia) + '*');
+  vs.forEach(function (v) {
+    L.push(linha);
+    L.push('🕖 *' + (v.horario || 'Horário a definir') + (madrugada(v.horario) ? ' (madrugada)' : '') + '*  |  *' + String(v.regiao || 'Região a definir').toUpperCase() + '*');
+    L.push('🚛 ' + (v.placa ? '`' + v.placa + '`' : '_placa a definir_') + '   👤 ' + (v.motorista ? v.motorista : '_motorista a definir_'));
+    L.push('📍 Carrega em ' + v.origem);
+    L.push('');
+    v.entregas.forEach(function (e, i) {
+      L.push((NUM_EMOJI[i] || (i + 1) + '.') + ' *' + e.cidade + '*  🐣 *' + fmt(e.qtd_pintinhos) + '*');
+      if (e.integrado) L.push('> ' + e.integrado);
+      var det = [e.tecnico ? 'Técnico ' + e.tecnico + (e.telefone_tecnico ? ' ' + e.telefone_tecnico : '') : '', e.nota_fiscal ? 'NF ' + e.nota_fiscal : ''].filter(Boolean).join(' | ');
+      if (det) L.push('> _' + det + '_');
+      var rg = typeof rotaDaGranja === 'function' ? rotaDaGranja(e.integrado) : null;
+      if (rg && linkRota(rg)) L.push('> 🗺️ ' + linkRota(rg));
+    });
+    L.push('');
+    L.push('✅ Total da viagem: *' + fmt(totalP(v)) + ' pintinhos*');
+    if (v.obs) L.push('📝 _' + v.obs + '_');
+  });
+  L.push(linha);
+  if (!unica) {
+    var ents = vs.reduce(function (a, v) { return a + v.entregas.length; }, 0);
+    L.push('📊 *Resumo do dia*');
+    L.push(vs.length + (vs.length > 1 ? ' viagens' : ' viagem') + '  |  ' + ents + (ents > 1 ? ' entregas' : ' entrega') + '  |  *' + fmt(vs.reduce(function (a, v) { return a + totalP(v); }, 0)) + ' pintinhos*');
+  }
+  L.push('_Enviado pelo Rota Viva_');
+  return L.join('\n');
+}
+
+/* ---------- desenho do cartão ---------- */
+function carregarImg(src) {
+  return new Promise(function (ok) { if (!src) return ok(null); var i = new Image(); i.onload = function () { ok(i); }; i.onerror = function () { ok(null); }; i.src = src; });
+}
+function svgImg(svg, w, h) {
+  svg = svg.replace(/^<svg([^>]*?)\s(width|height)="[^"]*"/, '<svg$1').replace(/^<svg([^>]*?)\s(width|height)="[^"]*"/, '<svg$1');
+  svg = svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + w + '" height="' + h + '" ').replace(/<animate[^>]*\/>/g, '');
+  return carregarImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+}
+function caminho(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function quebrar(ctx, txt, max) {
+  var ps = String(txt || '').split(/\s+/), ls = [], l = '';
+  ps.forEach(function (p) { var t = l ? l + ' ' + p : p; if (ctx.measureText(t).width > max && l) { ls.push(l); l = p; } else l = t; });
+  if (l) ls.push(l);
+  return ls;
+}
+var F_T = '"Bricolage Grotesque", "Figtree", Arial, sans-serif', F_B = '"Figtree", Arial, sans-serif';
+var COR_ST = { 'Programada': ['#1665C1', '#E3EEFF'], 'Confirmada': ['#6E56CF', '#ECE8FF'], 'Em viagem': ['#B45F00', '#FFF0D1'], 'Finalizada': ['#08794F', '#DBF4E8'], 'Cancelada': ['#5C6A7D', '#ECEFF3'] };
+
+function gerarCartao(vs, dia, unica) {
+  var W = 1080, M = 48;
+  var fontes = document.fonts && document.fonts.load ? Promise.all([
+    document.fonts.load('800 60px "Bricolage Grotesque"'), document.fonts.load('700 30px "Figtree"'), document.fonts.load('500 26px "Figtree"')
+  ]).catch(function () {}) : Promise.resolve();
+  return Promise.all([fontes, carregarImg(IMG.logoBranco), svgImg(caminhaoSVG({ estado: 'programado', id: 'zap' }), 380, 340), svgImg(pinto(48), 48, 48), carregarImg(IMG.marcaBranca)]).then(function (r) {
+    var logo = r[1], truck = r[2], chick = r[3], marca = r[4];
+    var cv = document.createElement('canvas'); cv.width = W; cv.height = 9000;
+    var c = cv.getContext('2d');
+    c.textBaseline = 'alphabetic';
+    // fundo
+    c.fillStyle = '#EDF2F9'; c.fillRect(0, 0, W, cv.height);
+
+    // ---------- cabeçalho ----------
+    var HH = 470;
+    var g = c.createLinearGradient(0, 0, W, HH);
+    g.addColorStop(0, '#1A4D8F'); g.addColorStop(0.55, '#0A2140'); g.addColorStop(1, '#061428');
+    c.fillStyle = g; c.fillRect(0, 0, W, HH);
+    // estrada em perspectiva
+    c.save(); c.globalAlpha = 0.10; c.strokeStyle = '#6FB3EC'; c.lineWidth = 3;
+    for (var k = -6; k <= 14; k++) { c.beginPath(); c.moveTo(W * 0.62 + k * 18, 250); c.lineTo(W * 0.62 + k * 120, HH); c.stroke(); }
+    c.restore();
+    c.save(); c.globalAlpha = 0.9; c.fillStyle = '#FFC83D'; c.fillRect(0, HH - 10, W, 10); c.restore();
+    if (logo) { var lh = 150, lw = lh * logo.width / logo.height; c.drawImage(logo, M, 44, lw, lh); }
+    if (truck) c.drawImage(truck, W - 392, 24, 380, 340);
+    c.fillStyle = '#FFFFFF'; c.font = '800 66px ' + F_T;
+    c.fillText(unica ? (TIT_UNICA[vs[0].status] || 'Viagem programada') : 'Programação do dia', M, 300);
+    c.fillStyle = '#B9CDE8'; c.font = '600 34px ' + F_B;
+    c.fillText(dataExtenso(dia), M, 352);
+    // selo da operação
+    c.font = '700 26px ' + F_B;
+    var selo = 'Operação ' + DB.config.operacao, sw = c.measureText(selo).width + 44;
+    caminho(c, M, 384, sw, 50, 25); c.fillStyle = 'rgba(255,200,61,.16)'; c.fill();
+    c.strokeStyle = 'rgba(255,200,61,.6)'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = '#FFD566'; c.fillText(selo, M + 22, 418);
+
+    var y = HH + 34;
+    // ---------- resumo ----------
+    var tot = vs.reduce(function (a, v) { return a + totalP(v); }, 0), ents = vs.reduce(function (a, v) { return a + v.entregas.length; }, 0);
+    var kp = [[fmt(tot), 'pintinhos', true], [String(vs.length), vs.length > 1 ? 'viagens' : 'viagem'], [String(ents), ents > 1 ? 'entregas' : 'entrega']];
+    var kw = [440, 250, 250], kx = M;
+    kp.forEach(function (q, i) {
+      caminho(c, kx, y, kw[i], 140, 28);
+      if (q[2]) { var gk = c.createLinearGradient(kx, y, kx, y + 140); gk.addColorStop(0, '#FFD566'); gk.addColorStop(1, '#FFC83D'); c.fillStyle = gk; } else c.fillStyle = '#FFFFFF';
+      c.shadowColor = 'rgba(10,33,64,.12)'; c.shadowBlur = 24; c.shadowOffsetY = 8; c.fill(); c.shadowColor = 'transparent';
+      if (q[2] && chick) c.drawImage(chick, kx + 24, y + 38, 64, 64);
+      var tx = kx + (q[2] && chick ? 104 : 28);
+      c.fillStyle = '#0A2140'; c.font = '800 56px ' + F_T; c.fillText(q[0], tx, y + 82);
+      c.fillStyle = q[2] ? '#5B3D00' : '#4A5A70'; c.font = '600 26px ' + F_B; c.fillText(q[1], tx, y + 118);
+      kx += kw[i] + 22;
+    });
+    y += 140 + 36;
+
+    // ---------- viagens ----------
+    vs.forEach(function (v) {
+      var x0 = M, w0 = W - 2 * M, pad = 34, xi = x0 + pad + 10, wi = w0 - 2 * pad - 10;
+      // mede as entregas antes de desenhar o fundo
+      c.font = '500 26px ' + F_B;
+      var blocos = v.entregas.map(function (e) {
+        var linhas = e.integrado ? quebrar(c, e.integrado, wi - 330) : [];
+        var det = [e.tecnico ? 'Técnico ' + e.tecnico + (e.telefone_tecnico ? '  ' + e.telefone_tecnico : '') : '', e.nota_fiscal ? 'NF ' + e.nota_fiscal : ''].filter(Boolean).join('   |   ');
+        var dl = det ? quebrar(c, det, wi - 90) : [];
+        return { e: e, linhas: linhas, det: dl, h: 54 + linhas.length * 34 + dl.length * 32 + 26 };
+      });
+      var hCab = 204, hEnt = blocos.reduce(function (a, b) { return a + b.h; }, 0), hTot = 96;
+      var hObs = 0, obsL = [];
+      if (v.obs) { c.font = 'italic 500 25px ' + F_B; obsL = quebrar(c, v.obs, wi); hObs = obsL.length * 32 + 20; }
+      var H = hCab + 26 + hEnt + hTot + hObs + pad;
+      caminho(c, x0, y, w0, H, 34); c.fillStyle = '#FFFFFF';
+      c.shadowColor = 'rgba(10,33,64,.14)'; c.shadowBlur = 30; c.shadowOffsetY = 10; c.fill(); c.shadowColor = 'transparent';
+      var cs = COR_ST[v.status] || COR_ST.Programada;
+      c.save(); caminho(c, x0, y, w0, H, 34); c.clip(); c.fillStyle = cs[0]; c.fillRect(x0, y, 12, H); c.restore();
+
+      // horário
+      var mad = madrugada(v.horario), hy = y + pad;
+      caminho(c, xi, hy, 168, 132, 24); c.fillStyle = mad ? '#1A2F55' : '#EDF2F9'; c.fill();
+      c.textAlign = 'center';
+      c.fillStyle = mad ? '#FFFFFF' : '#0A2140'; c.font = '800 50px ' + F_T; c.fillText(v.horario || '--:--', xi + 84, hy + 70);
+      c.fillStyle = mad ? '#B9CDE8' : '#4A5A70'; c.font = '700 22px ' + F_B; c.fillText(mad ? 'madrugada' : (v.horario ? 'carregamento' : 'sem horário'), xi + 84, hy + 106);
+      c.textAlign = 'left';
+      // região + situação
+      var tx = xi + 196;
+      c.fillStyle = '#0E1B2E'; c.font = '800 50px ' + F_T; c.fillText(v.regiao || 'Região a definir', tx, hy + 48);
+      c.font = '800 23px ' + F_B; var stw = c.measureText(v.status).width + 54;
+      caminho(c, x0 + w0 - pad - stw, hy + 8, stw, 46, 23); c.fillStyle = cs[1]; c.fill();
+      c.fillStyle = cs[0]; c.beginPath(); c.arc(x0 + w0 - pad - stw + 22, hy + 31, 6, 0, 7); c.fill();
+      c.fillText(v.status, x0 + w0 - pad - stw + 36, hy + 39);
+      // placa e motorista
+      var py = hy + 70;
+      if (v.placa) {
+        c.font = '800 28px ' + F_T; var pw = c.measureText(v.placa).width + 30;
+        caminho(c, tx, py, pw, 46, 8); c.fillStyle = '#FFFFFF'; c.fill(); c.strokeStyle = '#1F2B3A'; c.lineWidth = 2.5; c.stroke();
+        c.save(); caminho(c, tx, py, pw, 46, 8); c.clip(); c.fillStyle = '#1D4FA3'; c.fillRect(tx, py, pw, 9); c.restore();
+        c.fillStyle = '#1F2B3A'; c.fillText(v.placa, tx + 15, py + 39);
+        tx += pw + 18;
+      } else { c.fillStyle = '#E5484D'; c.font = '700 26px ' + F_B; c.fillText('Placa a definir', tx, py + 34); tx += c.measureText('Placa a definir').width + 22; }
+      c.fillStyle = v.motorista ? '#0E1B2E' : '#E5484D'; c.font = '700 28px ' + F_B;
+      c.fillText(v.motorista || 'Motorista a definir', tx, py + 34);
+      c.fillStyle = '#8593A6'; c.font = '600 23px ' + F_B; c.fillText('Carrega em ' + v.origem, xi + 196, py + 82);
+
+      // linha divisória tracejada
+      var yy = y + hCab + 14;
+      c.save(); c.setLineDash([10, 8]); c.strokeStyle = '#DCE4EF'; c.lineWidth = 2; c.beginPath(); c.moveTo(xi, yy); c.lineTo(x0 + w0 - pad, yy); c.stroke(); c.restore();
+      yy += 22;
+      // trilho das paradas
+      var trilhoIni = yy + 26;
+      blocos.forEach(function (b, i) {
+        var e = b.e, ry = yy;
+        c.fillStyle = '#1665C1'; c.beginPath(); c.arc(xi + 22, ry + 26, 22, 0, 7); c.fill();
+        c.fillStyle = '#FFFFFF'; c.font = '800 22px ' + F_T; c.textAlign = 'center'; c.fillText(String(i + 1), xi + 22, ry + 34); c.textAlign = 'left';
+        c.fillStyle = '#0E1B2E'; c.font = '800 34px ' + F_T; c.fillText(e.cidade, xi + 64, ry + 38);
+        // quantidade à direita
+        c.font = '800 36px ' + F_T; var qt = fmt(e.qtd_pintinhos), qw = c.measureText(qt).width;
+        c.fillStyle = '#0A2140'; c.fillText(qt, x0 + w0 - pad - qw, ry + 38);
+        if (chick) c.drawImage(chick, x0 + w0 - pad - qw - 48, ry + 6, 40, 40);
+        var ly = ry + 38;
+        c.fillStyle = '#4A5A70'; c.font = '500 26px ' + F_B;
+        b.linhas.forEach(function (l) { ly += 34; c.fillText(l, xi + 64, ly); });
+        c.fillStyle = '#8593A6'; c.font = '500 23px ' + F_B;
+        b.det.forEach(function (l) { ly += 32; c.fillText(l, xi + 64, ly); });
+        yy += b.h;
+        if (i < blocos.length - 1) { c.fillStyle = '#C6DCF6'; c.fillRect(xi + 20, ry + 50, 4, b.h - 26); }
+      });
+      // total da viagem
+      caminho(c, xi, yy, wi, 74, 20); c.fillStyle = '#FFF5D9'; c.fill();
+      c.fillStyle = '#7A4B00'; c.font = '700 26px ' + F_B; c.fillText('Total da viagem', xi + 24, yy + 47);
+      c.font = '800 36px ' + F_T; var tt = fmt(totalP(v)) + ' pintinhos', tw = c.measureText(tt).width;
+      c.fillStyle = '#0A2140'; c.fillText(tt, xi + wi - 24 - tw, yy + 50);
+      yy += 74 + 22;
+      if (obsL.length) { c.fillStyle = '#4A5A70'; c.font = 'italic 500 25px ' + F_B; obsL.forEach(function (l) { c.fillText(l, xi, yy + 20); yy += 32; }); }
+      y += H + 28;
+    });
+
+    // ---------- rodapé ----------
+    y += 8;
+    caminho(c, M, y, W - 2 * M, 110, 30); c.fillStyle = '#0A2140'; c.fill();
+    if (marca) { var mh = 54, mw = mh * marca.width / marca.height; c.drawImage(marca, M + 30, y + 28, mw, mh); }
+    c.fillStyle = '#FFFFFF'; c.font = '800 30px ' + F_T; c.fillText('Rota Viva', M + 120, y + 50);
+    c.fillStyle = '#A9C1E0'; c.font = '600 22px ' + F_B; c.fillText('Andrioni Transportes', M + 120, y + 82);
+    var ag = new Date(), quem = 'Enviado por ' + primeiro(DB.eu.nome) + ' em ' + pad(ag.getDate()) + '/' + pad(ag.getMonth() + 1) + ' às ' + pad(ag.getHours()) + ':' + pad(ag.getMinutes());
+    c.font = '600 22px ' + F_B; c.fillStyle = '#CFE0F5'; c.fillText(quem, W - M - 30 - c.measureText(quem).width, y + 66);
+    y += 110 + 40;
+
+    var out = document.createElement('canvas'); out.width = W; out.height = y;
+    out.getContext('2d').drawImage(cv, 0, 0);
+    return out;
+  });
+}
+
+/** Abre a folha de envio: mostra o cartão e deixa mandar imagem + texto ou só o texto. */
+function abrirEnvio(vs, dia, unica, tel) {
+  vs = vivas(vs);
+  if (!vs.length) return toast('Não há viagens para enviar.', true);
+  var texto = textoZap(vs, dia, unica);
+  var f = abrirFolha('<h2>Enviar no WhatsApp</h2><p class="mudo" style="margin:2px 0 10px">Cartão com a marca Andrioni e o texto completo junto.</p>' +
+    '<div id="zap-prev" style="background:#fff;border-radius:18px;min-height:220px;display:grid;place-items:center;overflow:auto;max-height:52vh;box-shadow:var(--sombra)"><div class="roda"></div></div>' +
+    '<div class="botoes-folha"><button class="btn verde cheio" id="zap-img" disabled>' + ic('zap') + 'Enviar cartão + texto</button>' +
+    '<button class="btn cheio" id="zap-txt">' + ic('compartilhar') + (tel ? 'Só o texto, direto para o motorista' : 'Enviar só o texto') + '</button>' +
+    '<button class="btn fino cheio" id="zap-baixar" disabled>' + ic('copiar') + 'Baixar a imagem</button></div>');
+  var arquivo = null, url = null;
+  var nome = 'Programacao-' + DB.config.operacao + '-' + dia + (unica ? '-' + vs[0].id : '') + '.png';
+  f.querySelector('#zap-txt').onclick = function () { compartilhar(texto, tel); };
+  gerarCartao(vs, dia, unica).then(function (cv) {
+    cv.toBlob(function (blob) {
+      if (!blob) return;
+      arquivo = new File([blob], nome, { type: 'image/png' });
+      url = URL.createObjectURL(blob);
+      var p = f.querySelector('#zap-prev'); if (!p) return;
+      p.innerHTML = '<img src="' + url + '" alt="Cartão da programação" style="width:100%;display:block;border-radius:18px">';
+      f.querySelector('#zap-img').disabled = false; f.querySelector('#zap-baixar').disabled = false;
+    }, 'image/png');
+  }).catch(function (e) { console.error(e); var p = f.querySelector('#zap-prev'); if (p) p.innerHTML = '<p class="fraco">Não consegui montar o cartão neste aparelho. Envie só o texto.</p>'; });
+  var baixar = function () { var a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); };
+  f.querySelector('#zap-baixar').onclick = baixar;
+  f.querySelector('#zap-img').onclick = function () {
+    if (!arquivo) return;
+    if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+      navigator.share({ files: [arquivo], text: texto }).catch(function () {});
+    } else {
+      baixar();
+      try { navigator.clipboard.writeText(texto); } catch (e) {}
+      toast('Imagem baixada e texto copiado. No WhatsApp, anexe a imagem e cole o texto.');
+    }
+  };
+  f._fechou = function () { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 30000); };
+}
 
 </script>
 </body>
