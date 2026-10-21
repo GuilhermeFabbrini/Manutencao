@@ -420,7 +420,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbyLdDyhiJvIXZ7evgL9JBknEF
 var IMG = window.__IMG || {};
 var TOKEN = lerLocal('rv_token') || '';
 var DB = null, VERSAO = '', ULTIMA_SINC = 0, SINC_ERRO = false, OCUPADO = false;
-var FORM = null, PENDENTE_ATUALIZAR = false;
+var FORM = null, PENDENTE_ATUALIZAR = false, DB_LOCAL = false;
 var PREF = { agendaDia: '', agendaFiltro: 'todos', painelPeriodo: 'mes' };
 try { Object.assign(PREF, JSON.parse(lerLocal('rv_pref') || '{}')); } catch (e) {}
 
@@ -571,28 +571,43 @@ function caminhaoSVG(op) {
 }
 
 /* ============================================================ comunicação com a planilha */
-function chamar(acao, dados) {
+var LEITURAS = { loginLista: 1, dados: 1, entrar: 1 };
+var ESPERAS = [0, 1500, 4000, 9000];
+/** Leituras tentam até 4 vezes antes de desistir (o Google às vezes recusa uma chamada e aceita a seguinte). */
+function chamar(acao, dados, tentativa) {
+  tentativa = tentativa || 1;
+  return chamarUma(acao, dados).catch(function (e) {
+    if (e.rede && LEITURAS[acao] && tentativa < ESPERAS.length) {
+      return new Promise(function (r) { setTimeout(r, ESPERAS[tentativa]); }).then(function () { return chamar(acao, dados, tentativa + 1); });
+    }
+    throw e;
+  });
+}
+function chamarUma(acao, dados) {
   return new Promise(function (ok, erro) {
     var chegou = function (txt) {
-      var r; try { r = typeof txt === 'string' ? JSON.parse(txt) : txt; } catch (e) { return erro(new Error('Resposta inesperada do servidor.')); }
+      var r; try { r = typeof txt === 'string' ? JSON.parse(txt) : txt; } catch (e) { var x0 = new Error('O Google não respondeu direito. Tente de novo em instantes.'); x0.rede = true; return erro(x0); }
       if (r.ok) return ok(r.dados);
       if (r.erro === 'SESSAO') { sair(true); }
       var x = new Error(r.msg || 'Não deu certo. Tente de novo.'); x.codigo = r.erro; erro(x);
     };
-    var falhou = function () { var x = new Error('Sem conexão com a planilha. Confira a internet e tente de novo.'); x.rede = true; erro(x); };
+    var falhou = function () { var x = new Error('Sem conexão com a planilha agora. Confira o sinal do celular e tente de novo.'); x.rede = true; erro(x); };
     if (window.google && google.script && google.script.run) {
       google.script.run.withSuccessHandler(chegou).withFailureHandler(falhou).api(acao, TOKEN, dados || {});
     } else {
-      fetch(API_URL, { method: 'POST', credentials: 'omit', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: acao, token: TOKEN, dados: dados || {} }) })
-        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); }).then(chegou, falhou);
+      var ctl = window.AbortController ? new AbortController() : null;
+      var limite = setTimeout(function () { if (ctl) ctl.abort(); }, 35000);
+      fetch(API_URL, { method: 'POST', credentials: 'omit', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: acao, token: TOKEN, dados: dados || {} }), signal: ctl ? ctl.signal : undefined })
+        .then(function (r) { clearTimeout(limite); if (!r.ok) throw new Error('http ' + r.status); return r.text(); }).then(chegou, function () { clearTimeout(limite); falhou(); });
     }
   });
 }
 
 function aplicar(d) {
-  if (!d || d.mesma) return false;
-  DB = d; VERSAO = d.versao; ULTIMA_SINC = Date.now(); SINC_ERRO = false;
+  if (!d || d.mesma) { if (d && d.mesma) DB_LOCAL = false; return false; }
+  DB = d; VERSAO = d.versao; ULTIMA_SINC = Date.now(); SINC_ERRO = false; DB_LOCAL = false;
   DB.viagens.sort(function (a, b) { return ordemV(a).localeCompare(ordemV(b)); });
+  try { localStorage.setItem('rv_db', JSON.stringify(d)); localStorage.setItem('rv_db_em', String(Date.now())); } catch (e) {}
   return true;
 }
 
@@ -633,7 +648,7 @@ function marcarSinc(est) {
   var el = document.getElementById('sinc'); if (!el) return;
   el.className = 'sinc' + (est === 'girando' ? ' girando' : SINC_ERRO ? ' erro' : '');
   var s = Math.round((Date.now() - ULTIMA_SINC) / 1000);
-  el.querySelector('span').textContent = est === 'girando' ? 'Sincronizando' : SINC_ERRO ? 'Sem conexão' : (s < 30 ? 'Atualizado agora' : s < 3600 ? 'Há ' + Math.max(1, Math.round(s / 60)) + ' min' : 'Desatualizado');
+  el.querySelector('span').textContent = est === 'girando' ? 'Sincronizando' : SINC_ERRO ? (DB_LOCAL ? 'Sem sinal' : 'Sem conexão') : (s < 30 ? 'Atualizado agora' : s < 3600 ? 'Há ' + Math.max(1, Math.round(s / 60)) + ' min' : 'Desatualizado');
 }
 
 /* ============================================================ mensagens e folhas */
@@ -704,7 +719,11 @@ function telaLogin() {
     cena + '<div class="marca"><h1>Rota Viva</h1><p>Programação de viagens da operação Descalvado</p></div><div class="caixa" id="lg-caixa"></div></div>';
   app.innerHTML = h;
   desenharCaixaLogin();
-  if (!LOGIN.lista) chamar('loginLista').then(function (d) { LOGIN.lista = d.usuarios; desenharCaixaLogin(); }, function (e) { LOGIN.erro = e.message; desenharCaixaLogin(); });
+  if (!LOGIN.lista) chamar('loginLista').then(function (d) { LOGIN.lista = d.usuarios; gravarLocal('rv_lista', JSON.stringify(d.usuarios)); desenharCaixaLogin(); }, function (e) {
+    var guardada = null; try { guardada = JSON.parse(lerLocal('rv_lista') || 'null'); } catch (x) {}
+    if (guardada && guardada.length) { LOGIN.lista = guardada; LOGIN.erro = ''; } else LOGIN.erro = e.message;
+    desenharCaixaLogin();
+  });
 }
 
 function desenharCaixaLogin() {
@@ -742,7 +761,7 @@ function desenharCaixaLogin() {
 function entrar() {
   if (LOGIN.pin.length < 4) { LOGIN.erro = 'A senha tem pelo menos 4 números.'; return desenharCaixaLogin(); }
   var c = document.getElementById('lg-caixa');
-  c.querySelector('.erro').textContent = 'Entrando...';
+  c.querySelector('.erro').textContent = 'Entrando... (com sinal fraco pode levar alguns segundos)';
   chamar('entrar', { id: LOGIN.escolhido.id, pin: LOGIN.pin }).then(function (d) {
     TOKEN = d.token; gravarLocal('rv_token', TOKEN); LOGIN.pin = '';
     iniciar();
@@ -750,7 +769,7 @@ function entrar() {
 }
 
 function sair(expirou) {
-  TOKEN = ''; DB = null; VERSAO = ''; FORM = null; gravarLocal('rv_token', null);
+  TOKEN = ''; DB = null; VERSAO = ''; FORM = null; gravarLocal('rv_token', null); gravarLocal('rv_db', null);
   LOGIN = { lista: LOGIN.lista, escolhido: null, pin: '', erro: expirou ? 'Sua sessão terminou. Entre de novo.' : '' };
   fecharFolha(); telaLogin();
 }
@@ -758,6 +777,15 @@ function sair(expirou) {
 /* ============================================================ estrutura e rotas */
 function iniciar() {
   if (!TOKEN) return telaLogin();
+  var copia = null;
+  try { copia = JSON.parse(lerLocal('rv_db') || 'null'); } catch (e) {}
+  if (copia && copia.viagens) {
+    // abre na hora com a última programação salva no celular e atualiza por trás
+    aplicar(copia); DB_LOCAL = true; VERSAO = ''; ULTIMA_SINC = Number(lerLocal('rv_db_em') || 0);
+    montarCasca(); desenhar();
+    sincronizar(true).catch(function () { SINC_ERRO = true; DB_LOCAL = true; marcarSinc(); toast('Sem sinal agora. Mostrando a última programação salva no celular.', true); });
+    return;
+  }
   document.getElementById('app').innerHTML = '<div class="carregando"><div><div class="roda" style="margin:0 auto 12px"></div>Abrindo a programação...</div></div>';
   sincronizar(true).then(function () { montarCasca(); desenhar(); }, function (e) { if (TOKEN) document.getElementById('app').innerHTML = '<div class="carregando"><div><p>' + esc(e.message) + '</p><button class="btn pri" onclick="iniciar()">Tentar de novo</button></div></div>'; });
 }
@@ -770,12 +798,12 @@ function montarCasca() {
     '<button class="sinc" id="sinc" onclick="sincronizar(true).catch(function(e){toast(e.message,true)})"><i></i><span>Atualizado agora</span></button>' +
     '<button class="eu" onclick="menuEu()" aria-label="Minha conta">' + esc(iniciais(eu.nome)) + '</button></header>' +
     '<main id="tela"></main>' +
-    '<nav class="nav" id="nav">' +
+    '<nav class="nav" id="nav"' + (gestor() ? '' : ' style="grid-template-columns:repeat(4,1fr)"') + '>' +
     '<a href="#hoje" data-n="hoje">' + ic('casa', '') + 'Hoje</a>' +
     '<a href="#agenda" data-n="agenda">' + ic('agenda', '') + 'Agenda</a>' +
-    '<a href="#nova" data-n="nova" class="mais-novo"><span class="bola">' + ic('mais', '') + '</span>Nova viagem</a>' +
+    (gestor() ? '<a href="#nova" data-n="nova" class="mais-novo"><span class="bola">' + ic('mais', '') + '</span>Nova viagem</a>' : '') +
     '<a href="#rotas" data-n="rotas">' + ic('rota', '') + 'Rotas</a>' +
-    '<a href="#mais" data-n="mais">' + ic('grade', '') + 'Mais</a></nav>';
+    (analista() ? '<a href="#mais" data-n="mais">' + ic('grade', '') + 'Mais</a>' : '<a href="#contatos" data-n="contatos">' + ic('fone', '') + 'Contatos</a>') + '</nav>';
   marcarSinc();
 }
 
@@ -792,7 +820,11 @@ function desenhar() {
   if (!TOKEN || !DB) return;
   if (!document.getElementById('tela')) montarCasca();
   var r = rota(), el = document.getElementById('tela');
-  var aba = { hoje: 'hoje', agenda: 'agenda', viagem: 'agenda', nova: 'nova', editar: 'nova', rotas: 'rotas', rota: 'rotas', novarota: 'rotas' }[r.tela] || 'mais';
+  // telas que dependem do perfil
+  var SO_ANALISTA = { mais: 1, frota: 1, caminhao: 1, motoristas: 1, motorista: 1, painel: 1, historico: 1, acessos: 1 };
+  var SO_GESTOR = { nova: 1, editar: 1, pendentes: 1 };
+  if ((SO_ANALISTA[r.tela] && !analista()) || (SO_GESTOR[r.tela] && !gestor())) { location.replace('#hoje'); return; }
+  var aba = { hoje: 'hoje', agenda: 'agenda', viagem: 'agenda', nova: 'nova', editar: 'nova', rotas: 'rotas', rota: 'rotas', novarota: 'rotas' }[r.tela] || (analista() ? 'mais' : 'contatos');
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.n === aba); });
   var T = TELAS[r.tela] || TELAS.hoje;
   try { el.innerHTML = T(r); } catch (e) { el.innerHTML = '<div class="vazio"><b>Algo deu errado nesta tela</b>' + esc(e.message) + '</div>'; console.error(e); }
@@ -803,7 +835,7 @@ function menuEu() {
   var eu = DB.eu;
   var f = abrirFolha('<h2>' + esc(eu.nome) + '</h2><p class="mudo">' + esc(eu.perfil) + '</p><div class="botoes-folha">' +
     '<button class="btn cheio" data-a="pin">' + ic('chave') + 'Trocar minha senha</button>' +
-    (gestor() ? '<a class="btn cheio" href="' + esc(DB.config.planilha) + '" target="_blank" rel="noopener">' + ic('planilha') + 'Abrir a planilha</a>' : '') +
+    (analista() ? '<a class="btn cheio" href="' + esc(DB.config.planilha) + '" target="_blank" rel="noopener">' + ic('planilha') + 'Abrir a planilha</a>' : '') +
     '<button class="btn perigo cheio" data-a="sair">' + ic('sair') + 'Sair</button></div>');
   f.querySelector('[data-a=sair]').onclick = function () { sair(false); };
   f.querySelector('[data-a=pin]').onclick = function () { trocarPin(); };
@@ -836,13 +868,14 @@ function listaViagens(vs, op) { return vs.length ? '<div class="lista">' + vs.ma
 /* ============================================================ alertas */
 function alertas() {
   var h = hojeISO(), out = [];
-  frotaPropria().concat(DB.caminhoes.filter(function (c) { return ativo(c) && frotaPropria().indexOf(c) < 0 && DB.viagens.some(function (v) { return v.placa === c.placa && v.data >= somaDias(h, -30); }); }))
+  if (analista()) frotaPropria().concat(DB.caminhoes.filter(function (c) { return ativo(c) && frotaPropria().indexOf(c) < 0 && DB.viagens.some(function (v) { return v.placa === c.placa && v.data >= somaDias(h, -30); }); }))
     .forEach(function (c) {
       if (!c.cronotacografo) return;
       var d = diffDias(h, c.cronotacografo);
       if (d < 0) out.push({ g: 'grave', t: 'Cronotacógrafo vencido do ' + c.placa, s: 'Venceu em ' + dataBRc(c.cronotacografo) + '.', l: '#caminhao/' + c.placa });
       else if (d <= 30) out.push({ g: '', t: 'Cronotacógrafo do ' + c.placa + ' vence em ' + d + ' dia' + (d === 1 ? '' : 's'), s: 'Validade ' + dataBRc(c.cronotacografo) + '. Agende a aferição.', l: '#caminhao/' + c.placa });
     });
+  if (!gestor()) return out;
   var semDef = DB.viagens.filter(function (v) { return (v.status === 'Programada' || v.status === 'Confirmada') && v.data >= h && v.data <= somaDias(h, 2) && (!v.placa || !v.motorista_id); });
   if (semDef.length) out.push({ g: semDef.some(function (v) { return v.data === h; }) ? 'grave' : '', t: semDef.length + ' viage' + (semDef.length > 1 ? 'ns' : 'm') + ' sem caminhão ou motorista', s: 'Até ' + relativo(somaDias(h, 2)).toLowerCase() + ': ' + semDef.slice(0, 3).map(function (v) { return relativo(v.data) + ' ' + (v.regiao || ''); }).join(', ') + (semDef.length > 3 ? ' e mais ' + (semDef.length - 3) : '') + '.', l: '#agenda/' + semDef[0].data });
   var abertas = DB.viagens.filter(function (v) { return (v.status === 'Programada' || v.status === 'Confirmada' || v.status === 'Em viagem') && v.data < somaDias(h, -1); });
@@ -868,12 +901,12 @@ TELAS.hoje = function () {
   var als = alertas();
   if (als.length) s += '<div class="secao"><h2>Precisa de atenção</h2></div><div class="lista">' + als.map(alertaHtml).join('') + '</div>';
   var vh = doDia(h), va = doDia(am);
-  s += '<div class="secao"><h2>Hoje</h2><a href="#agenda/' + h + '">Ver semana</a></div>' + (vh.length ? listaViagens(vh) : '<div class="vazio"><b>Nenhuma viagem hoje</b>Toque em Nova viagem para programar.</div>');
-  s += '<div class="secao"><h2>Amanhã</h2><a href="#agenda/' + am + '">' + esc(DIAS[dataDe(am).getDay()]) + '</a></div>' + (va.length ? listaViagens(va) : '<div class="vazio"><b>Nada programado para amanhã</b>Quando a unidade mandar a programação, lance aqui.</div>');
+  s += '<div class="secao"><h2>Hoje</h2><a href="#agenda/' + h + '">Ver semana</a></div>' + (vh.length ? listaViagens(vh) : '<div class="vazio"><b>Nenhuma viagem hoje</b>' + (gestor() ? 'Toque em Nova viagem para programar.' : 'Quando a viagem for programada, aparece aqui.') + '</div>');
+  s += '<div class="secao"><h2>Amanhã</h2><a href="#agenda/' + am + '">' + esc(DIAS[dataDe(am).getDay()]) + '</a></div>' + (va.length ? listaViagens(va) : '<div class="vazio"><b>Nada programado para amanhã</b>' + (gestor() ? 'Quando a unidade mandar a programação, lance aqui.' : 'Quando a viagem for programada, aparece aqui.') + '</div>');
   var ini = inicioSemana(h), fim = somaDias(ini, 6);
   var sem = vivas(DB.viagens.filter(function (v) { return v.data >= ini && v.data <= fim; }));
   var km = sem.reduce(function (a, v) { return a + (Number(v.km_rodado) || 0); }, 0);
-  s += '<div class="secao"><h2>Esta semana</h2><a href="#painel">Painel completo</a></div><div class="numeros">' +
+  s += '<div class="secao"><h2>Esta semana</h2>' + (analista() ? '<a href="#painel">Painel completo</a>' : '') + '</div><div class="numeros">' +
     '<div><b class="num">' + fmtMil(sem.reduce(function (a, v) { return a + totalP(v); }, 0)) + '</b><small>pintinhos</small></div>' +
     '<div><b class="num">' + sem.length + '</b><small>viagens</small></div>' +
     '<div><b class="num">' + fmt(km) + '</b><small>km rodados</small></div></div>';
@@ -896,7 +929,7 @@ function patio() {
   return '<div class="patio"><div class="cab"><h3>Pátio Descalvado</h3><small>' + fr.length + ' caminhões</small></div><div class="vagas">' +
     fr.map(function (c) {
       var e = estadoCaminhao(c);
-      return '<a class="vaga e-' + e.estado + '" href="' + (e.v ? '#viagem/' + e.v.id : '#caminhao/' + c.placa) + '" style="text-decoration:none">' + caminhaoSVG({ estado: e.estado, id: c.placa, placa: c.placa }) +
+      return '<a class="vaga e-' + e.estado + '" href="' + (e.v ? '#viagem/' + e.v.id : analista() ? '#caminhao/' + c.placa : '#agenda') + '" style="text-decoration:none">' + caminhaoSVG({ estado: e.estado, id: c.placa, placa: c.placa }) +
         placaHtml(c.placa) + '<span class="estado"><i style="background:' + e.cor + '"></i>' + esc(e.txt) + '</span><span class="quem">' + esc(e.quem) + '</span></a>';
     }).join('') + '</div></div>';
 }
@@ -932,8 +965,8 @@ TELAS.agenda = function (r) {
   var vs = daSemana.filter(function (v) { return v.data === dia; });
   var tot = vivas(vs).reduce(function (a, v) { return a + totalP(v); }, 0);
   s += '<div class="dia-cab"><h2>' + esc(dataLonga(dia)) + '</h2><div class="soma">' + (vs.length ? fmt(tot) + ' pintinhos' : '') + '</div></div>';
-  s += vs.length ? listaViagens(vs) : '<div class="vazio"><b>Nenhuma viagem neste dia</b>Programe uma viagem nova para ' + esc(relativo(dia).toLowerCase()) + '.</div>';
-  s += '<div class="linha-btns" style="margin-top:14px"><a class="btn pri" href="#nova/' + dia + '">' + ic('mais') + 'Programar neste dia</a>' + (vs.length ? '<button class="btn" id="zap-dia">' + ic('zap') + 'Mandar o dia no WhatsApp</button>' : '') + '</div>';
+  s += vs.length ? listaViagens(vs) : '<div class="vazio"><b>Nenhuma viagem neste dia</b>' + (gestor() ? 'Programe uma viagem nova para ' + esc(relativo(dia).toLowerCase()) + '.' : 'Nada programado ainda.') + '</div>';
+  if (gestor()) s += '<div class="linha-btns" style="margin-top:14px"><a class="btn pri" href="#nova/' + dia + '">' + ic('mais') + 'Programar neste dia</a>' + (vs.length ? '<button class="btn" id="zap-dia">' + ic('zap') + 'Mandar o dia no WhatsApp</button>' : '') + '</div>';
   return s;
 };
 TELAS.agenda.depois = function (r, el) {
@@ -990,12 +1023,12 @@ TELAS.viagem = function (r) {
 
   // ações conforme a situação
   var a = '';
-  if (v.status === 'Programada') a += '<button class="btn verde cheio" data-acao="confirmar">' + ic('ok') + 'Confirmar viagem</button>';
+  if (v.status === 'Programada' && gestor()) a += '<button class="btn verde cheio" data-acao="confirmar">' + ic('ok') + 'Confirmar viagem</button>';
   if (v.status === 'Programada' || v.status === 'Confirmada') a += '<button class="btn amarelo cheio" data-acao="iniciar">' + ic('play') + 'Iniciar viagem (KM inicial)</button>';
   if (v.status === 'Em viagem') a += '<button class="btn verde cheio" data-acao="finalizar">' + ic('bandeira') + 'Finalizar viagem (KM final)</button>';
   if (v.status === 'Programada' || v.status === 'Confirmada') a += '<button class="btn cheio" data-acao="finalizar">' + ic('bandeira') + 'Lançar KM e finalizar</button>';
   var lin = '<div class="linha-btns">';
-  if (v.status !== 'Cancelada') lin += '<a class="btn" href="#editar/' + esc(v.id) + '">' + ic('lapis') + 'Editar</a>';
+  if (v.status !== 'Cancelada' && gestor()) lin += '<a class="btn" href="#editar/' + esc(v.id) + '">' + ic('lapis') + 'Editar</a>';
   lin += '<button class="btn" data-acao="zap">' + ic('zap') + 'WhatsApp</button>';
   if (rt && rt.link) lin += '<a class="btn" href="' + esc(rt.link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Rota</a>';
   else lin += '<a class="btn" href="' + esc(linkMaps(v.origem, v.entregas.map(function (e) { return e.cidade; }))) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Mapa</a>';
@@ -1029,7 +1062,7 @@ TELAS.viagem = function (r) {
   var hs = DB.historico.filter(function (x) { return x.viagem === v.id; });
   s += '<div class="secao"><h2>O que aconteceu</h2></div><div class="cartao">' + (hs.length ? hs.map(histItem).join('') : '<p class="fraco" style="margin:0">' + (importada(v) ? 'Veio da planilha de programação antiga.' : 'Criada por ' + esc(v.criado_por || '-') + (v.criado_em ? ' ' + esc(quando(v.criado_em)) : '') + '.') + '</p>') + '</div>';
   var fim = '<div class="linha-btns" style="margin-top:14px">';
-  if (v.status !== 'Cancelada' && v.status !== 'Finalizada') fim += '<button class="btn perigo" data-acao="cancelar">' + ic('x') + 'Cancelar viagem</button>';
+  if (v.status !== 'Cancelada' && v.status !== 'Finalizada' && gestor()) fim += '<button class="btn perigo" data-acao="cancelar">' + ic('x') + 'Cancelar viagem</button>';
   if (gestor() && v.status !== 'Programada') fim += '<button class="btn" data-acao="reabrir">' + ic('historico') + 'Reabrir</button>';
   if (gestor()) fim += '<button class="btn perigo" data-acao="excluir">' + ic('lixo') + 'Excluir</button>';
   s += fim + '</div>';
@@ -1280,7 +1313,7 @@ function cartaoRota(r) {
     '<div class="trajeto"><span class="o">' + esc(origemCurta(r.origem)) + '</span>' + cs.map(function (c) { return '<span>' + esc(c) + '</span>'; }).join('') + '</div>' +
     '<div class="dados">' + (r.regiao ? '<span>Região <b>' + esc(r.regiao) + '</b></span>' : '') + (r.km_estimado !== '' ? '<span>Previsto <b>' + fmt(r.km_estimado) + ' km</b></span>' : '') + (r.tempo_estimado ? '<span>Tempo <b>' + esc(r.tempo_estimado) + '</b></span>' : '') + (media !== '' ? '<span>Média real <b>' + fmt(media) + ' km</b></span>' : '') + '<span>Usada <b>' + usos.length + 'x</b></span></div>' +
     '<div class="linha-btns">' + (r.link ? '<a class="btn peq" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Abrir mapa</a>' : '<a class="btn peq" href="' + esc(linkMaps(r.origem, cs)) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Ver no mapa</a>') +
-    '<a class="btn peq" href="#nova/' + somaDias(hojeISO(), 1) + '/' + esc(r.id) + '">' + ic('mais') + 'Programar</a><a class="btn peq" href="#rota/' + esc(r.id) + '">' + ic('lapis') + 'Editar</a></div></div></div>';
+    (gestor() ? '<a class="btn peq" href="#nova/' + somaDias(hojeISO(), 1) + '/' + esc(r.id) + '">' + ic('mais') + 'Programar</a>' : '') + '<a class="btn peq" href="#rota/' + esc(r.id) + '">' + ic('lapis') + 'Editar</a></div></div></div>';
 }
 TELAS.rota = function (r) {
   var x = rotaDe(r.id);
@@ -1326,13 +1359,13 @@ TELAS.mais = function () {
     ['frota', 'caminhao', '#1665C1', 'Frota', DB.caminhoes.filter(ativo).length + ' caminhões'],
     ['motoristas', 'pessoas', '#0FA36B', 'Motoristas', DB.motoristas.filter(ativo).length + ' cadastrados'],
     ['painel', 'grafico', '#E88A00', 'Painel', 'Pintinhos, km e viagens'],
-    ['contatos', 'fone', '#6E56CF', 'Contatos', 'Regiões e técnicos'],
-    ['integrados', 'granja', '#0A2140', 'Integrados', DB.integrados.length + ' granjas'],
+    ['contatos', 'fone', '#6E56CF', 'Contatos', 'Programação e técnicos'],
+    ['contatos/integrados', 'granja', '#0A2140', 'Integrados', DB.integrados.length + ' granjas'],
     ['historico', 'historico', '#5E6B7D', 'Histórico', 'Tudo o que aconteceu']
   ];
-  if (analista()) t.push(['acessos', 'chave', '#B42318', 'Acessos', 'Quem entra e senhas']);
+  t.push(['acessos', 'chave', '#B42318', 'Acessos', 'Quem entra e senhas']);
   return '<h2>Mais</h2><div class="grade-mais" style="margin-top:12px">' + t.map(function (x) { return '<a class="tile" href="#' + x[0] + '"><span class="ib" style="background:' + x[2] + '">' + ic(x[1], '') + '</span><b>' + x[3] + '</b><small>' + esc(x[4]) + '</small></a>'; }).join('') + '</div>' +
-    (gestor() ? '<a class="btn cheio" style="margin-top:14px" href="' + esc(DB.config.planilha) + '" target="_blank" rel="noopener">' + ic('planilha') + 'Abrir a planilha no Drive</a>' : '') +
+    (analista() ? '<a class="btn cheio" style="margin-top:14px" href="' + esc(DB.config.planilha) + '" target="_blank" rel="noopener">' + ic('planilha') + 'Abrir a planilha no Drive</a>' : '') +
     '<button class="btn cheio" style="margin-top:8px" onclick="menuEu()">' + ic('pessoa') + 'Minha conta</button>';
 };
 
@@ -1491,22 +1524,49 @@ function colunas(rot, vals) {
 }
 
 /* ---------- Contatos ---------- */
-TELAS.contatos = function () {
-  var s = '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><h2>Contatos</h2><div class="secao"><h2>Quem manda a programação</h2></div>';
-  s += DB.regioes.map(function (r) {
-    var c = function (n, t) { return n ? '<div class="item"><span class="av">' + esc(iniciais(n)) + '</span><span class="tx"><b>' + esc(n) + '</b><small>' + esc(r.nome) + (r.obs ? ' (' + esc(r.obs) + ')' : '') + ' | ' + esc(t || 'sem telefone') + '</small></span>' + (t ? '<a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(t)) + '" aria-label="WhatsApp">' + ic('zap') + '</a><a class="mini" href="tel:' + esc(String(t).replace(/\D/g, '')) + '" aria-label="Ligar">' + ic('fone') + '</a>' : '') + '</div>' : ''; };
-    return c(r.responsavel, r.telefone) + c(r.responsavel2, r.telefone2);
-  }).join('');
-  if (gestor()) s += '<button class="btn cheio" style="margin-top:10px" onclick="editarRegiao(\'\')">' + ic('mais') + 'Região ou contato</button>';
-  s += '<div class="secao"><h2>Técnicos</h2><span class="fraco">' + DB.tecnicos.length + '</span></div><div class="busca">' + ic('busca', '') + '<input class="inp" id="bt" placeholder="Buscar técnico ou região"></div><div id="lt"></div>';
+function botoesContato(tel, nome) {
+  if (!tel) return '<span class="fraco" style="flex:none">sem telefone</span>';
+  return '<a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(tel)) + '" aria-label="WhatsApp de ' + esc(nome) + '">' + ic('zap') + '</a><a class="mini" href="tel:' + esc(String(tel).replace(/\D/g, '')) + '" aria-label="Ligar para ' + esc(nome) + '">' + ic('fone') + '</a>';
+}
+TELAS.contatos = function (r) {
+  var abas = [['tecnicos', 'Técnicos'], ['integrados', 'Integrados']];
+  if (analista()) abas.push(['programacao', 'Programação']);
+  var aba = abas.some(function (x) { return x[0] === r.id; }) ? r.id : 'tecnicos';
+  var s = (analista() ? '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button>' : '') + '<h2>Contatos</h2>' +
+    '<div class="seg" style="margin:12px 0 14px">' + abas.map(function (x) { return '<button type="button" class="' + (x[0] === aba ? 'on' : '') + '" onclick="location.replace(\'#contatos/' + x[0] + '\')">' + x[1] + '</button>'; }).join('') + '</div>';
+  if (aba === 'programacao') {
+    s += '<p class="mudo" style="margin:0 0 10px">Quem manda a programação de cada região. Só você vê esta lista.</p>';
+    s += DB.regioes.map(function (g) {
+      var c = function (n, t) { return n ? '<div class="item"><span class="av">' + esc(iniciais(n)) + '</span><span class="tx"><b>' + esc(n) + '</b><small>' + esc(g.nome) + (g.obs ? ' (' + esc(g.obs) + ')' : '') + (t ? ' | ' + esc(t) : '') + '</small></span>' + botoesContato(t, n) + '</div>' : ''; };
+      return c(g.responsavel, g.telefone) + c(g.responsavel2, g.telefone2);
+    }).join('');
+    s += '<button class="btn cheio" style="margin-top:10px" onclick="editarRegiao(\'\')">' + ic('mais') + 'Região ou contato</button>';
+    return s;
+  }
+  if (aba === 'integrados') {
+    s += (analista() ? '<div class="linha-btns" style="margin-bottom:10px"><button class="btn pri peq" onclick="editarIntegrado(\'\')">' + ic('mais') + 'Integrado</button></div>' : '') +
+      '<div class="busca">' + ic('busca', '') + '<input class="inp" id="bc" placeholder="Buscar integrado, cidade ou técnico"></div><div id="lc"></div>';
+    return s;
+  }
+  s += '<div class="busca">' + ic('busca', '') + '<input class="inp" id="bc" placeholder="Buscar técnico ou região"></div><div id="lc"></div>';
   return s;
 };
 TELAS.contatos.depois = function (r, el) {
-  var b = el.querySelector('#bt'), l = el.querySelector('#lt');
+  var b = el.querySelector('#bc'), l = el.querySelector('#lc');
+  if (!b) return;
+  var integ = r.id === 'integrados';
   var f = function () {
     var q = chave(b.value);
-    var ts = DB.tecnicos.filter(function (t) { return !q || chave(t.nome + ' ' + t.regiao).indexOf(q) >= 0; }).slice(0, 60);
-    l.innerHTML = ts.map(function (t) { return '<div class="item"><span class="av">' + esc(iniciais(t.nome)) + '</span><span class="tx"><b>' + esc(t.nome) + '</b><small>' + esc(t.regiao) + ' | ' + esc(t.telefone || 'sem telefone') + '</small></span>' + (t.telefone ? '<a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(t.telefone)) + '" aria-label="WhatsApp">' + ic('zap') + '</a><a class="mini" href="tel:' + esc(String(t.telefone).replace(/\D/g, '')) + '" aria-label="Ligar">' + ic('fone') + '</a>' : '') + '</div>'; }).join('') || '<div class="vazio">Nenhum técnico encontrado.</div>';
+    if (integ) {
+      var xs = DB.integrados.filter(function (i) { return !q || chave(i.nome + ' ' + i.cidade + ' ' + i.tecnico + ' ' + i.regiao).indexOf(q) >= 0; });
+      l.innerHTML = xs.slice(0, 80).map(function (i) {
+        return '<div class="item"' + (analista() ? ' data-int="' + esc(i.id) + '" style="cursor:pointer"' : '') + '><span class="av">' + ic('granja', '') + '</span><span class="tx"><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade) + (i.regiao ? ' (' + esc(i.regiao) + ')' : '') + '</small><small>Técnico: ' + esc(i.tecnico || '-') + (i.telefone ? ' | ' + esc(i.telefone) : '') + '</small></span>' + botoesContato(i.telefone, i.tecnico || i.nome) + '</div>';
+      }).join('') + (xs.length > 80 ? '<p class="fraco" style="text-align:center">Mostrando 80 de ' + xs.length + '. Digite para buscar.</p>' : '') || '<div class="vazio">Nenhum integrado encontrado.</div>';
+      if (analista()) l.querySelectorAll('[data-int]').forEach(function (x) { x.onclick = function (ev) { if (ev.target.closest('a')) return; editarIntegrado(x.dataset.int); }; });
+    } else {
+      var ts = DB.tecnicos.filter(function (t) { return !q || chave(t.nome + ' ' + t.regiao).indexOf(q) >= 0; }).slice(0, 80);
+      l.innerHTML = ts.map(function (t) { return '<div class="item"><span class="av">' + esc(iniciais(t.nome)) + '</span><span class="tx"><b>' + esc(t.nome) + '</b><small>' + esc(t.regiao) + (t.telefone ? ' | ' + esc(t.telefone) : '') + '</small></span>' + botoesContato(t.telefone, t.nome) + '</div>'; }).join('') || '<div class="vazio">Nenhum técnico encontrado.</div>';
+    }
   };
   b.oninput = f; f();
 };
@@ -1517,20 +1577,8 @@ function editarRegiao(nome) {
   f.querySelector('#sg').onclick = function () { var d = { nome: nome, original: nome }; f.querySelectorAll('[data-g]').forEach(function (i) { d[i.dataset.g] = i.value; }); gravar('salvarRegiao', { regiao: d }, 'Região salva').then(function () { fecharFolha(); desenhar(); }, function () {}); };
 }
 
-/* ---------- Integrados ---------- */
-TELAS.integrados = function () {
-  return '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><div class="form-cab"><h2>Integrados</h2><button class="btn pri peq" onclick="editarIntegrado(\'\')">' + ic('mais') + 'Integrado</button></div><p class="mudo" style="margin:4px 0 12px">Ao digitar o integrado na viagem, a cidade e o técnico vêm daqui.</p><div class="busca">' + ic('busca', '') + '<input class="inp" id="bi" placeholder="Buscar por integrado, cidade ou técnico"></div><div id="li"></div>';
-};
-TELAS.integrados.depois = function (r, el) {
-  var b = el.querySelector('#bi'), l = el.querySelector('#li');
-  var f = function () {
-    var q = chave(b.value);
-    var xs = DB.integrados.filter(function (i) { return !q || chave(i.nome + ' ' + i.cidade + ' ' + i.tecnico + ' ' + i.regiao).indexOf(q) >= 0; });
-    l.innerHTML = xs.slice(0, 80).map(function (i) { return '<button class="item" data-int="' + esc(i.id) + '"><span class="av">' + ic('granja', '') + '</span><span class="tx"><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade) + ' (' + esc(i.regiao || '-') + ') | técnico ' + esc(i.tecnico || '-') + '</small></span></button>'; }).join('') + (xs.length > 80 ? '<p class="fraco" style="text-align:center">Mostrando 80 de ' + xs.length + '. Refine a busca.</p>' : '') || '<div class="vazio">Nenhum integrado encontrado.</div>';
-    l.querySelectorAll('[data-int]').forEach(function (x) { x.onclick = function () { editarIntegrado(x.dataset.int); }; });
-  };
-  b.oninput = f; f();
-};
+/* ---------- Integrados (agora dentro de Contatos) ---------- */
+TELAS.integrados = function () { location.replace('#contatos/integrados'); return ''; };
 function editarIntegrado(id) {
   var i = id ? DB.integrados.find(function (x) { return x.id === id; }) : { nome: '', regiao: '', cidade: '', tecnico: '', telefone: '', obs: '' };
   var campo = function (k, t, tipo, lista) { return '<label class="campo"><span>' + t + '</span><input class="inp" data-i="' + k + '" type="' + (tipo || 'text') + '" value="' + esc(i[k]) + '"' + (lista ? ' list="' + lista + '"' : '') + '></label>'; };
