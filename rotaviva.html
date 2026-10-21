@@ -1921,9 +1921,9 @@ function abrirEnvio(vs, dia, unica, tel) {
   vs = vivas(vs);
   if (!vs.length) return toast('Não há viagens para enviar.', true);
   var texto = textoZap(vs, dia, unica);
-  var f = abrirFolha('<h2>Enviar no WhatsApp</h2><p class="mudo" style="margin:2px 0 10px">Cartão com a marca Andrioni e o texto completo junto.</p>' +
+  var f = abrirFolha('<h2>Enviar no WhatsApp</h2><p class="mudo" style="margin:2px 0 10px">Cartão com a marca Andrioni, pronto para o grupo.</p>' +
     '<div id="zap-prev" style="background:#fff;border-radius:18px;min-height:220px;display:grid;place-items:center;overflow:auto;max-height:52vh;box-shadow:var(--sombra)"><div class="roda"></div></div>' +
-    '<div class="botoes-folha"><button class="btn verde cheio" id="zap-img" disabled>' + ic('zap') + 'Enviar cartão + texto</button>' +
+    '<div class="botoes-folha"><button class="btn verde cheio" id="zap-so-img" disabled>' + ic('zap') + 'Enviar o cartão</button>' +
     '<button class="btn cheio" id="zap-txt">' + ic('compartilhar') + (tel ? 'Só o texto, direto para o motorista' : 'Enviar só o texto') + '</button>' +
     '<button class="btn fino cheio" id="zap-baixar" disabled>' + ic('copiar') + 'Baixar a imagem</button></div>');
   var arquivo = null, url = null;
@@ -1936,21 +1936,22 @@ function abrirEnvio(vs, dia, unica, tel) {
       url = URL.createObjectURL(blob);
       var p = f.querySelector('#zap-prev'); if (!p) return;
       p.innerHTML = '<img src="' + url + '" alt="Cartão da programação" style="width:100%;display:block;border-radius:18px">';
-      f.querySelector('#zap-img').disabled = false; f.querySelector('#zap-baixar').disabled = false;
+      f.querySelector('#zap-so-img').disabled = false; f.querySelector('#zap-baixar').disabled = false;
     }, 'image/png');
   }).catch(function (e) { console.error(e); var p = f.querySelector('#zap-prev'); if (p) p.innerHTML = '<p class="fraco">Não consegui montar o cartão neste aparelho. Envie só o texto.</p>'; });
   var baixar = function () { var a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); };
   f.querySelector('#zap-baixar').onclick = baixar;
-  f.querySelector('#zap-img').onclick = function () {
+  var enviarImagem = function (comTexto) {
     if (!arquivo) return;
     if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
-      navigator.share({ files: [arquivo], text: texto }).catch(function () {});
+      navigator.share(comTexto ? { files: [arquivo], text: texto } : { files: [arquivo] }).catch(function () {});
     } else {
       baixar();
-      try { navigator.clipboard.writeText(texto); } catch (e) {}
-      toast('Imagem baixada e texto copiado. No WhatsApp, anexe a imagem e cole o texto.');
+      if (comTexto) { try { navigator.clipboard.writeText(texto); } catch (e) {} }
+      toast(comTexto ? 'Imagem baixada e texto copiado. No WhatsApp, anexe a imagem e cole o texto.' : 'Imagem baixada. No WhatsApp, é só anexar.');
     }
   };
+  f.querySelector('#zap-so-img').onclick = function () { enviarImagem(false); };
   f._fechou = function () { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 30000); };
 }
 
