@@ -868,13 +868,6 @@ function listaViagens(vs, op) { return vs.length ? '<div class="lista">' + vs.ma
 /* ============================================================ alertas */
 function alertas() {
   var h = hojeISO(), out = [];
-  if (analista()) frotaPropria().concat(DB.caminhoes.filter(function (c) { return ativo(c) && frotaPropria().indexOf(c) < 0 && DB.viagens.some(function (v) { return v.placa === c.placa && v.data >= somaDias(h, -30); }); }))
-    .forEach(function (c) {
-      if (!c.cronotacografo) return;
-      var d = diffDias(h, c.cronotacografo);
-      if (d < 0) out.push({ g: 'grave', t: 'Cronotacógrafo vencido do ' + c.placa, s: 'Venceu em ' + dataBRc(c.cronotacografo) + '.', l: '#caminhao/' + c.placa });
-      else if (d <= 30) out.push({ g: '', t: 'Cronotacógrafo do ' + c.placa + ' vence em ' + d + ' dia' + (d === 1 ? '' : 's'), s: 'Validade ' + dataBRc(c.cronotacografo) + '. Agende a aferição.', l: '#caminhao/' + c.placa });
-    });
   if (!gestor()) return out;
   var semDef = DB.viagens.filter(function (v) { return (v.status === 'Programada' || v.status === 'Confirmada') && v.data >= h && v.data <= somaDias(h, 2) && (!v.placa || !v.motorista_id); });
   if (semDef.length) out.push({ g: semDef.some(function (v) { return v.data === h; }) ? 'grave' : '', t: semDef.length + ' viage' + (semDef.length > 1 ? 'ns' : 'm') + ' sem caminhão ou motorista', s: 'Até ' + relativo(somaDias(h, 2)).toLowerCase() + ': ' + semDef.slice(0, 3).map(function (v) { return relativo(v.data) + ' ' + (v.regiao || ''); }).join(', ') + (semDef.length > 3 ? ' e mais ' + (semDef.length - 3) : '') + '.', l: '#agenda/' + semDef[0].data });
@@ -1217,7 +1210,6 @@ function avisosForm() {
     if (v.data < hojeISO() && FORM.tela === 'nova') out.push('A data escolhida já passou.');
   }
   var c = caminhao(v.placa);
-  if (c && c.cronotacografo && v.data && c.cronotacografo < v.data) out.push('O cronotacógrafo do ' + v.placa + ' estará vencido nesta data (' + dataBRc(c.cronotacografo) + ').');
   var el = document.getElementById('avisos-form');
   if (el) el.innerHTML = out.map(function (t) { return '<div class="aviso-form">' + ic('alerta', '') + '<span>' + esc(t) + '</span></div>'; }).join('');
 }
@@ -1463,11 +1455,6 @@ TELAS.mais = function () {
 
 /* ---------- Frota ---------- */
 function mesAtual() { var h = hojeISO(); return [h.slice(0, 8) + '01', h]; }
-function seloCrono(c) {
-  if (!c.cronotacografo) return '<span class="selo atencao">Cronotacógrafo sem data</span>';
-  var d = diffDias(hojeISO(), c.cronotacografo);
-  return d < 0 ? '<span class="selo vencido">Cronotacógrafo vencido</span>' : d <= 30 ? '<span class="selo atencao">Cronotacógrafo vence em ' + d + 'd</span>' : '<span class="selo">Cronotacógrafo até ' + dataBRc(c.cronotacografo) + '</span>';
-}
 TELAS.frota = function () {
   var p = mesAtual(), pr = frotaPropria(), out = DB.caminhoes.filter(function (c) { return ativo(c) && pr.indexOf(c) < 0; });
   var card = function (c) {
@@ -1475,7 +1462,7 @@ TELAS.frota = function () {
     var km = vs.reduce(function (a, v) { return a + (Number(v.km_rodado) || 0); }, 0);
     var e = estadoCaminhao(c);
     return '<a class="truck-card" href="#caminhao/' + esc(c.placa) + '" style="text-decoration:none;color:inherit">' + caminhaoSVG({ estado: e.estado, id: 'f' + c.placa }) + '<div class="tc"><h3>' + placaHtml(c.placa) + '<span style="font-size:14px">' + esc(e.txt) + '</span></h3><small>' + esc(c.modelo) + ' ' + esc(c.ano) + ' | ' + esc(c.operacao) + '</small>' +
-      '<div class="kms"><span>KM atual <b class="num">' + (c.km_atual !== '' ? fmt(c.km_atual) : '-') + '</b></span><span>No mês <b class="num">' + fmt(km) + ' km</b></span><span><b>' + vs.length + '</b> viagens</span></div><div style="margin-top:6px">' + seloCrono(c) + '</div></div></a>';
+      '<div class="kms"><span>KM atual <b class="num">' + (c.km_atual !== '' ? fmt(c.km_atual) : '-') + '</b></span><span>No mês <b class="num">' + fmt(km) + ' km</b></span><span><b>' + vs.length + '</b> viagens</span></div></div></a>';
   };
   return '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><div class="form-cab"><h2>Frota</h2>' + (gestor() ? '<button class="btn pri peq" onclick="editarCaminhao(\'\')">' + ic('mais') + 'Caminhão</button>' : '') + '</div>' +
     '<div class="secao"><h2>Descalvado</h2></div>' + pr.map(card).join('') + (out.length ? '<div class="secao"><h2>Apoio de outras unidades</h2></div>' + out.map(card).join('') : '');
@@ -1484,7 +1471,7 @@ TELAS.caminhao = function (r) {
   var c = caminhao(r.id);
   if (!c) return '<div class="vazio"><b>Caminhão não encontrado</b></div>';
   var vs = DB.viagens.filter(function (v) { return v.placa === c.placa; }).slice().reverse();
-  return '<button class="voltar" onclick="ir(\'frota\')">' + ic('esq') + 'Frota</button><div class="truck-card" style="grid-template-columns:150px 1fr">' + caminhaoSVG({ estado: estadoCaminhao(c).estado, id: 'cd' }) + '<div class="tc"><h3>' + placaHtml(c.placa) + '</h3><small>' + esc(c.modelo) + ' ' + esc(c.ano) + ' ' + esc(c.cor) + '</small><small>' + esc(c.tipo) + ' | ' + esc(c.proprietario) + '</small><small>Renavam ' + esc(c.renavam) + '</small><div style="margin-top:6px">' + seloCrono(c) + '</div></div></div>' +
+  return '<button class="voltar" onclick="ir(\'frota\')">' + ic('esq') + 'Frota</button><div class="truck-card" style="grid-template-columns:150px 1fr">' + caminhaoSVG({ estado: estadoCaminhao(c).estado, id: 'cd' }) + '<div class="tc"><h3>' + placaHtml(c.placa) + '</h3><small>' + esc(c.modelo) + ' ' + esc(c.ano) + ' ' + esc(c.cor) + '</small><small>' + esc(c.tipo) + ' | ' + esc(c.proprietario) + '</small><small>Renavam ' + esc(c.renavam) + '</small></div></div>' +
     (gestor() ? '<button class="btn cheio" style="margin-top:10px" onclick="editarCaminhao(\'' + esc(c.placa) + '\')">' + ic('lapis') + 'Editar dados do caminhão</button>' : '') +
     '<div class="secao"><h2>Viagens</h2><span class="fraco">' + vs.length + '</span></div>' + (vs.length ? listaViagens(vs.slice(0, 30), { mostrarData: true }) : '<div class="vazio"><b>Sem viagens ainda</b></div>');
 };
@@ -1494,7 +1481,7 @@ function editarCaminhao(placa) {
   var f = abrirFolha('<h2>' + (placa ? 'Editar ' + esc(placa) : 'Novo caminhão') + '</h2>' + (placa ? '' : campo('placa', 'Placa')) +
     '<div class="duas">' + campo('modelo', 'Modelo') + campo('ano', 'Ano', 'text', ' inputmode="numeric"') + '</div><div class="duas">' + campo('operacao', 'Operação') + campo('tipo', 'Tipo') + '</div>' +
     '<div class="duas">' + campo('renavam', 'Renavam', 'text', ' inputmode="numeric"') + campo('cor', 'Cor') + '</div>' + campo('proprietario', 'Proprietário') +
-    '<div class="duas">' + campo('cronotacografo', 'Validade do cronotacógrafo', 'date') + campo('km_atual', 'KM atual', 'text', ' inputmode="numeric"') + '</div>' +
+    campo('km_atual', 'KM atual', 'text', ' inputmode="numeric"') +
     '<div class="botoes-folha"><button class="btn pri cheio" id="sc">Salvar</button></div>', null);
   f.querySelector('input').dataset.semfoco = 1;
   f.querySelector('#sc').onclick = function () {
