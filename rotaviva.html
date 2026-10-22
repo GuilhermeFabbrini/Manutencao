@@ -441,6 +441,56 @@ details.mais-campos summary::-webkit-details-marker { display: none; }
 .vitrine3d .cam3d.ok:not(.erro3d) + .dica3d { display: block; }
 @media (prefers-reduced-motion: reduce) { .vaga.e-viagem .cam3d > img, .cam3d > img, .cam3d > canvas { animation: none !important; } }
 
+/* ---------- GPS na entrega ---------- */
+.gps-st { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 12px; border-radius: 14px; background: var(--fundo); color: var(--tinta-2); font-size: 14px; font-weight: 600; }
+.gps-st svg { width: 18px; height: 18px; flex: none; }
+.gps-st.ok { background: #DBF4E8; color: #08794F; }
+.gps-st.fraco { background: #FFF0D1; color: #8A4B00; }
+.gps-st.sem { background: #ECEFF3; color: #5C6A7D; }
+.roda.mini-roda { width: 16px; height: 16px; border-width: 2.5px; flex: none; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.gps-st .roda.mini-roda { margin-right: 0; }
+
+/* ---------- Ocorrências ---------- */
+.tipos-oc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 4px 0 6px; }
+.tipos-oc button { display: flex; align-items: center; gap: 8px; text-align: left; min-height: 54px; padding: 8px 12px; border-radius: 16px; border: 2px solid var(--linha); background: var(--cartao); color: var(--tinta); font: 700 14px/1.2 var(--fonte, inherit); cursor: pointer; }
+.tipos-oc button svg { width: 24px; height: 24px; flex: none; color: var(--c); }
+.tipos-oc button.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, white); box-shadow: 0 0 0 1px var(--c) inset; }
+.foto-oc { position: relative; margin-top: 10px; border-radius: 18px; overflow: hidden; background: #0A2140; }
+.foto-oc img { display: block; width: 100%; max-height: 260px; object-fit: contain; }
+.foto-oc .tirar { position: absolute; top: 8px; right: 8px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(10,33,64,.75); color: #fff; display: grid; place-items: center; }
+.foto-oc .tirar svg { width: 18px; height: 18px; }
+#oc-bts { margin-top: 10px; }
+.oc-card { background: var(--cartao); border-radius: var(--raio); box-shadow: var(--sombra); padding: 12px 14px; margin-top: 10px; border-left: 5px solid var(--linha); }
+.oc-card.aberta { border-left-color: var(--c); }
+.oc-top { display: flex; align-items: center; gap: 10px; }
+.oc-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; color: var(--c); background: color-mix(in srgb, var(--c) 13%, white); }
+.oc-ic svg { width: 22px; height: 22px; }
+.oc-tt { flex: 1; min-width: 0; }
+.oc-tt b { display: block; font-size: 15.5px; }
+.oc-tt small { color: var(--tinta-3); font-size: 12.5px; }
+.pill.oc-aberta { background: #FDECEC; color: #B42318; }
+.oc-desc { margin: 8px 0 0; font-size: 14.5px; color: var(--tinta-2); }
+.oc-via { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13.5px; font-weight: 600; color: var(--azul); text-decoration: none; }
+.oc-via svg { width: 16px; height: 16px; }
+.oc-res { display: flex; gap: 6px; align-items: flex-start; margin: 8px 0 0; font-size: 13px; }
+.oc-res svg { width: 15px; height: 15px; flex: none; color: #08794F; margin-top: 2px; }
+.foto-ver { min-height: 200px; display: grid; place-items: center; background: #0A2140; border-radius: 18px; overflow: hidden; }
+.foto-ver img { display: block; width: 100%; max-height: 68vh; object-fit: contain; }
+
+/* ---------- Resumo do mês ---------- */
+.aviso-res { display: flex; gap: 8px; align-items: flex-start; background: #FFF0D1; color: #8A4B00; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; margin: 10px 0 0; }
+.aviso-res svg { width: 18px; height: 18px; flex: none; }
+.res-lin { padding: 10px 0; border-top: 1px solid var(--linha); }
+.res-lin:first-of-type { border-top: 0; }
+.res-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.res-top b { font-family: var(--fonte-titulo); font-size: 17px; }
+.res-nome { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14.5px; min-width: 0; }
+.res-nome .av { width: 30px; height: 30px; border-radius: 50%; background: var(--pinto); color: var(--noite); display: grid; place-items: center; font-size: 12px; font-weight: 800; flex: none; }
+.res-lin .tr { height: 10px; background: var(--fundo); border-radius: 5px; overflow: hidden; margin: 8px 0 5px; }
+.res-lin .tr i { display: block; height: 100%; border-radius: 5px; background: var(--azul); }
+.res-lin .tr.marinho i { background: var(--noite); }
+.res-lin small { color: var(--tinta-3); font-size: 12.5px; }
+
 </style>
 </head>
 <body>
@@ -897,8 +947,8 @@ function desenhar() {
   if (!document.getElementById('tela')) montarCasca();
   var r = rota(), el = document.getElementById('tela');
   // telas que dependem do perfil
-  var SO_ANALISTA = { mais: 1, frota: 1, caminhao: 1, motoristas: 1, motorista: 1, painel: 1, historico: 1, acessos: 1 };
-  var SO_GESTOR = { nova: 1, editar: 1, pendentes: 1 };
+  var SO_ANALISTA = { mais: 1, frota: 1, caminhao: 1, motoristas: 1, motorista: 1, painel: 1, historico: 1, acessos: 1, resumo: 1 };
+  var SO_GESTOR = { nova: 1, editar: 1, pendentes: 1, ocorrencias: 1 };
   if ((SO_ANALISTA[r.tela] && !analista()) || (SO_GESTOR[r.tela] && !gestor())) { location.replace('#hoje'); return; }
   var aba = { hoje: 'hoje', agenda: 'agenda', viagem: 'agenda', nova: 'nova', editar: 'nova', rotas: 'rotas', rota: 'rotas', novarota: 'rotas' }[r.tela] || (analista() ? 'mais' : 'contatos');
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.n === aba); });
@@ -950,6 +1000,10 @@ function alertas() {
     if (l.faltam < 0) out.push({ g: 'grave', t: 'Lubrificação vencida do ' + c.placa, s: 'Última em ' + dataBRc(l.ultima) + '. Venceu em ' + dataBRc(l.proxima) + ' (a cada ' + LUB_DIAS + ' dias).', l: '#hoje' });
     else if (l.faltam <= 3) out.push({ g: '', t: 'Lubrificação do ' + c.placa + (l.faltam === 0 ? ' vence hoje' : ' vence em ' + l.faltam + (l.faltam === 1 ? ' dia' : ' dias')), s: 'Última em ' + dataBRc(l.ultima) + '. Próxima até ' + dataBRc(l.proxima) + '.', l: '#hoje' });
   });
+  if (gestor()) {
+    var oa = ocAbertas();
+    if (oa.length) out.unshift({ g: 'grave', t: oa.length + (oa.length > 1 ? ' ocorrências abertas' : ' ocorrência aberta'), s: oa[0].tipo + (oa[0].placa ? ' no ' + oa[0].placa : '') + ', ' + primeiro(oa[0].registrado_por) + ' ' + quando(oa[0].data_hora).toLowerCase() + (oa[0].descricao ? ': ' + oa[0].descricao : '') + '.', l: '#ocorrencias' });
+  }
   if (!gestor()) return out;
   var semDef = DB.viagens.filter(function (v) { return (v.status === 'Programada' || v.status === 'Confirmada') && v.data >= h && v.data <= somaDias(h, 2) && (!v.placa || !v.motorista_id); });
   if (semDef.length) out.push({ g: semDef.some(function (v) { return v.data === h; }) ? 'grave' : '', t: semDef.length + ' viage' + (semDef.length > 1 ? 'ns' : 'm') + ' sem caminhão ou motorista', s: 'Até ' + relativo(somaDias(h, 2)).toLowerCase() + ': ' + semDef.slice(0, 3).map(function (v) { return relativo(v.data) + ' ' + (v.regiao || ''); }).join(', ') + (semDef.length > 3 ? ' e mais ' + (semDef.length - 3) : '') + '.', l: '#agenda/' + semDef[0].data });
@@ -1101,6 +1155,7 @@ TELAS.viagem = function (r) {
   var lin = '<div class="linha-btns">';
   if (v.status !== 'Cancelada' && gestor()) lin += '<a class="btn" href="#editar/' + esc(v.id) + '">' + ic('lapis') + 'Editar</a>';
   lin += '<button class="btn" data-acao="zap">' + ic('zap') + 'WhatsApp</button>';
+  if (v.status !== 'Cancelada') lin += '<button class="btn" data-acao="ocorrencia">' + ic('alerta') + 'Ocorrência</button>';
   var mg = mapaDasGranjas(v);
   if (mg) lin += '<a class="btn" href="' + esc(mg.link) + '" target="_blank" rel="noopener">' + ic('mapa') + (mg.n < v.entregas.length ? 'Mapa (' + mg.n + ' de ' + v.entregas.length + ')' : 'Mapa das granjas') + '</a>';
   lin += '</div>';
@@ -1129,6 +1184,10 @@ TELAS.viagem = function (r) {
   });
   s += '</div>';
   if (v.obs) s += '<div class="secao"><h2>Observações</h2></div><div class="cartao">' + esc(v.obs) + '</div>';
+
+  // ocorrências
+  var ocs = ocorrenciasDe(v.id);
+  if (ocs.length) s += '<div class="secao"><h2>Ocorrências</h2><span class="fraco">' + ocs.length + '</span></div>' + ocs.map(function (o) { return cartaoOcorrencia(o, false); }).join('');
 
   // histórico da viagem
   var hs = DB.historico.filter(function (x) { return x.viagem === v.id; });
@@ -1166,18 +1225,12 @@ TELAS.viagem.depois = function (r, el) {
     },
     reabrir: function () { confirmarFolha('Reabrir viagem', 'Ela volta para Programada. O KM lançado fica guardado.', 'Reabrir').then(function (s) { if (s) gravar('mudarStatus', { id: v.id, status: 'Programada' }, 'Viagem reaberta').then(desenhar, function () {}); }); },
     excluir: function () { confirmarFolha('Excluir viagem', 'Ela sai do aplicativo e da planilha. Fica só o registro no histórico. Para guardar a viagem, use Cancelar.', 'Excluir de vez', true).then(function (s) { if (s) gravar('excluirViagem', { id: v.id }, 'Viagem excluída').then(function () { ir('agenda/' + v.data); }, function () {}); }); },
+    ocorrencia: function () { abrirOcorrencia(v); },
     zap: function () { var m = motorista(v.motorista_id); abrirEnvio([v], v.data, true, m && m.telefone ? m.telefone : ''); }
   };
   el.querySelectorAll('[data-acao]').forEach(function (b) { b.onclick = function () { acoes[b.dataset.acao](); }; });
   el.querySelectorAll('[data-entrega]').forEach(function (b) {
-    b.onclick = function () {
-      var e = v.entregas.find(function (x) { return x.id === b.dataset.entrega; });
-      var f = abrirFolha('<h2>Entrega em ' + esc(e.cidade) + '</h2><p class="mudo">' + esc(e.integrado || '') + ' | ' + fmt(e.qtd_pintinhos) + ' pintinhos</p>' +
-        '<label class="campo"><span>Nota fiscal</span><input class="inp" id="nf" value="' + esc(e.nota_fiscal) + '" inputmode="numeric"></label>' +
-        '<label class="campo"><span>KM na chegada <em>(opcional)</em></span><input class="inp num" id="kc" inputmode="numeric" value="' + (e.km_chegada !== '' ? fmt(e.km_chegada) : '') + '"></label>' +
-        '<div class="botoes-folha"><button class="btn verde cheio" id="ce">' + ic('ok') + 'Confirmar entrega</button></div>');
-      f.querySelector('#ce').onclick = function () { gravar('marcarEntrega', { id: e.id, entregue: true, nota_fiscal: f.querySelector('#nf').value, km_chegada: numero(f.querySelector('#kc').value) }, 'Entrega registrada').then(function () { fecharFolha(); desenhar(); }, function () {}); };
-    };
+    b.onclick = function () { abrirEntrega(v, v.entregas.find(function (x) { return x.id === b.dataset.entrega; })); };
   });
   el.querySelectorAll('[data-desfaz]').forEach(function (b) { b.onclick = function () { gravar('marcarEntrega', { id: b.dataset.desfaz, entregue: false }, 'Entrega desfeita').then(desenhar, function () {}); }; });
 };
@@ -1528,6 +1581,8 @@ TELAS.mais = function () {
     ['frota', 'caminhao', '#1665C1', 'Frota', DB.caminhoes.filter(ativo).length + ' caminhões'],
     ['motoristas', 'pessoas', '#0FA36B', 'Motoristas', DB.motoristas.filter(ativo).length + ' cadastrados'],
     ['painel', 'grafico', '#E88A00', 'Painel', 'Pintinhos, km e viagens'],
+    ['resumo', 'resumo', '#0FA36B', 'Resumo do mês', 'Pronto para mandar'],
+    ['ocorrencias', 'alerta', '#E5484D', 'Ocorrências', ocAbertas().length ? ocAbertas().length + ' abertas' : 'Nenhuma aberta'],
     ['contatos', 'fone', '#6E56CF', 'Contatos', 'Programação e técnicos'],
     ['contatos/integrados', 'granja', '#0A2140', 'Integrados', DB.integrados.length + ' granjas'],
     ['historico', 'historico', '#5E6B7D', 'Histórico', 'Tudo o que aconteceu']
@@ -1638,7 +1693,8 @@ TELAS.painel = function () {
   var ents = vs.reduce(function (a, v) { return a + v.entregas.length; }, 0);
   var comKm = vs.filter(function (v) { return v.km_rodado !== ''; });
   var km = comKm.reduce(function (a, v) { return a + Number(v.km_rodado); }, 0);
-  var s = '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><h2>Painel da operação</h2>';
+  var s = '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><h2>Painel da operação</h2>' +
+    '<a class="btn verde cheio" style="margin-top:10px" href="#resumo">' + ic('resumo') + 'Resumo do mês para enviar</a>';
   s += '<div class="chips" style="margin-top:10px">' + [['semana', 'Esta semana'], ['mes', 'Este mês'], ['passado', 'Mês passado'], ['90', '90 dias']].map(function (o) { return '<button class="chip' + (PREF.painelPeriodo === o[0] ? ' on' : '') + '" data-per="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
   s += '<p class="fraco" style="margin:0 0 10px">' + dataBRc(ini) + ' a ' + dataBRc(fim) + ', sem contar canceladas.</p>';
   s += '<div class="kpis"><div class="kpi destaque">' + pinto(58) + '<div><small>Pintinhos no período</small><b class="num">' + fmt(pint) + '</b><span>' + fmt(vs.filter(function (v) { return v.status === 'Finalizada'; }).reduce(function (a, v) { return a + totalP(v); }, 0)) + ' já entregues | média de ' + fmt(vs.length ? pint / vs.length : 0) + ' por viagem</span></div></div>' +
@@ -2664,6 +2720,429 @@ function c3ImagemPronta(estado, placa) {
 }
 
 window.addEventListener('load', function () { setTimeout(function () { c3Carregar(); }, 250); });
+
+/* ============================================================
+ * GPS na entrega e ocorrências com foto
+ * ============================================================ */
+IC.camera = '<path d="M4 8.5h3.2L8.8 6h6.4l1.6 2.5H20V19H4z"/><circle cx="12" cy="13.5" r="3.4"/>';
+IC.galeria = '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4.5 3.5"/>';
+IC.pneu = '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M12 3.5V9M12 15v5.5M3.5 12H9M15 12h5.5"/>';
+IC.estrada = '<path d="M8 3 4 21M16 3l4 18M12 4v3M12 10.5v3M12 17v3"/>';
+IC.ferramenta = '<path d="M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3z"/><path d="M14.5 6.5 17 4l3 3-2.5 2.5"/>';
+IC.resumo = '<rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/>';
+
+var TIPOS_OC = [
+  ['Pneu furado', 'pneu', '#E5484D'], ['Granja não estava pronta', 'granja', '#E88A00'], ['Estrada ruim', 'estrada', '#8A5A00'],
+  ['Atraso', 'relogio', '#6E56CF'], ['Problema no caminhão', 'ferramenta', '#1665C1'], ['Outro', 'alerta', '#5E6B7D']
+];
+function tipoOc(t) { return TIPOS_OC.find(function (x) { return x[0] === t; }) || TIPOS_OC[5]; }
+LEITURAS.foto = 1;
+
+/** Localização do celular: { latitude, longitude, precisao } ou null (sem GPS, negado ou demorou). */
+function pegarGps(ms) {
+  return new Promise(function (ok) {
+    if (!navigator.geolocation) return ok(null);
+    var feito = false, fim = function (g) { if (!feito) { feito = true; clearTimeout(t); ok(g); } };
+    var t = setTimeout(function () { fim(null); }, ms || 15000);
+    try {
+      navigator.geolocation.getCurrentPosition(function (p) {
+        fim({ latitude: p.coords.latitude.toFixed(6), longitude: p.coords.longitude.toFixed(6), precisao: Math.round(p.coords.accuracy) });
+      }, function () { fim(null); }, { enableHighAccuracy: true, timeout: ms || 15000, maximumAge: 30000 });
+    } catch (e) { fim(null); }
+  });
+}
+function esperar(ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); }
+
+/** Foto do celular reduzida (no máximo 1600 px, JPEG) para subir rápido mesmo com sinal fraco. */
+function prepararFoto(arquivo) {
+  return new Promise(function (ok, erro) {
+    var url = URL.createObjectURL(arquivo), im = new Image();
+    im.onload = function () {
+      var k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
+      var c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      var d = c.toDataURL('image/jpeg', .74);
+      ok({ mime: 'image/jpeg', dados: d.split(',')[1], previa: d });
+    };
+    im.onerror = function () { URL.revokeObjectURL(url); erro(new Error('Não consegui abrir essa foto. Tente outra.')); };
+    im.src = url;
+  });
+}
+
+/* ---------- entrega com GPS ---------- */
+function abrirEntrega(v, e) {
+  var f = abrirFolha('<h2>Entrega em ' + esc(e.cidade) + '</h2><p class="mudo">' + esc(e.integrado || '') + ' | ' + fmt(e.qtd_pintinhos) + ' pintinhos</p>' +
+    '<label class="campo"><span>Nota fiscal</span><input class="inp" id="nf" value="' + esc(e.nota_fiscal) + '" inputmode="numeric"></label>' +
+    '<label class="campo"><span>KM na chegada <em>(opcional)</em></span><input class="inp num" id="kc" inputmode="numeric" value="' + (e.km_chegada !== '' ? fmt(e.km_chegada) : '') + '"></label>' +
+    '<div class="gps-st" id="eg"><span class="roda mini-roda"></span><span>Pegando a localização da granja...</span></div>' +
+    '<p class="fraco" style="margin:6px 0 0;font-size:13px">Marque a entrega ainda na granja: a localização fica gravada para as próximas viagens.</p>' +
+    '<div class="botoes-folha"><button class="btn verde cheio" id="ce">' + ic('ok') + 'Confirmar entrega</button></div>');
+  f.querySelector('#nf').dataset.semfoco = 1;
+  var gps = null, pronto = false;
+  var gpsP = pegarGps(20000).then(function (g) {
+    gps = g; pronto = true;
+    var el = f.querySelector('#eg'); if (!el) return g;
+    if (!g) { el.className = 'gps-st sem'; el.innerHTML = ic('pin') + '<span>Sem localização: o celular não liberou o GPS. A entrega é registrada do mesmo jeito.</span>'; }
+    else if (g.precisao > 150) { el.className = 'gps-st fraco'; el.innerHTML = ic('pin') + '<span>Sinal de GPS fraco (±' + g.precisao + ' m). A entrega é registrada, mas não muda a localização da granja.</span>'; }
+    else { el.className = 'gps-st ok'; el.innerHTML = ic('ok') + '<span>Localização da granja pronta (±' + g.precisao + ' m)</span>'; }
+    return g;
+  });
+  var b = f.querySelector('#ce');
+  b.onclick = function () {
+    b.disabled = true; b.innerHTML = '<span class="roda mini-roda"></span>' + (pronto ? 'Salvando...' : 'Terminando a localização...');
+    Promise.race([gpsP, esperar(pronto ? 0 : 6000)]).then(function () {
+      b.innerHTML = '<span class="roda mini-roda"></span>Salvando...';
+      return gravar('marcarEntrega', { id: e.id, entregue: true, nota_fiscal: f.querySelector('#nf').value, km_chegada: numero(f.querySelector('#kc').value), gps: gps }, gps && gps.precisao <= 150 ? 'Entrega registrada com a localização da granja' : 'Entrega registrada');
+    }).then(function () { fecharFolha(); desenhar(); }, function () { b.disabled = false; b.innerHTML = ic('ok') + 'Confirmar entrega'; });
+  };
+}
+
+/* ---------- ocorrências ---------- */
+function abrirOcorrencia(v) {
+  var h = '<h2>Registrar ocorrência</h2><p class="mudo" style="margin:2px 0 10px">' + (v ? esc(v.placa || 'Sem placa') + ' | ' + esc(v.regiao || '') + ' | ' : '') + 'o horário e o lugar entram sozinhos.</p>' +
+    '<div class="tipos-oc">' + TIPOS_OC.map(function (t) { return '<button type="button" data-t="' + esc(t[0]) + '" style="--c:' + t[2] + '">' + ic(t[1]) + '<span>' + esc(t[0]) + '</span></button>'; }).join('') + '</div>' +
+    '<label class="campo"><span id="oc-dl">O que aconteceu? <em>(opcional)</em></span><textarea class="inp" id="oc-d" data-semfoco="1" placeholder="Ex.: pneu traseiro furou na rodovia, perto do km 120"></textarea></label>' +
+    '<div class="foto-oc oculto" id="oc-prev"><img alt="Foto da ocorrência"><button type="button" class="tirar" id="oc-x" aria-label="Tirar a foto">' + ic('x') + '</button></div>' +
+    '<div class="duas" id="oc-bts"><button type="button" class="btn amarelo" id="oc-cam">' + ic('camera') + 'Tirar foto</button><button type="button" class="btn" id="oc-gal">' + ic('galeria') + 'Da galeria</button></div>' +
+    '<input type="file" accept="image/*" capture="environment" id="oc-fc" hidden><input type="file" accept="image/*" id="oc-fg" hidden>' +
+    '<div class="gps-st" id="oc-g"><span class="roda mini-roda"></span><span>Pegando a localização...</span></div>' +
+    '<div class="botoes-folha"><button class="btn verde cheio" id="oc-s">' + ic('ok') + 'Enviar ocorrência</button></div>';
+  var f = abrirFolha(h), tipo = '', foto = null, gps = null, pronto = false;
+  f.querySelectorAll('.tipos-oc button').forEach(function (b) {
+    b.onclick = function () {
+      tipo = b.dataset.t;
+      f.querySelectorAll('.tipos-oc button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      f.querySelector('#oc-dl').innerHTML = tipo === 'Outro' ? 'O que aconteceu? <em>(obrigatório)</em>' : 'O que aconteceu? <em>(opcional)</em>';
+    };
+  });
+  var gpsP = pegarGps(20000).then(function (g) {
+    gps = g; pronto = true;
+    var el = f.querySelector('#oc-g'); if (!el) return g;
+    el.className = 'gps-st ' + (g ? 'ok' : 'sem');
+    el.innerHTML = g ? ic('ok') + '<span>Local registrado (±' + g.precisao + ' m)</span>' : ic('pin') + '<span>Sem localização. A ocorrência vai mesmo assim.</span>';
+    return g;
+  });
+  var usar = function (inp) {
+    inp.onchange = function () {
+      var a = inp.files && inp.files[0]; inp.value = '';
+      if (!a) return;
+      prepararFoto(a).then(function (p) {
+        foto = p;
+        var pv = f.querySelector('#oc-prev'); pv.querySelector('img').src = p.previa; pv.classList.remove('oculto');
+        f.querySelector('#oc-bts').classList.add('oculto');
+      }, function (e) { toast(e.message, true); });
+    };
+  };
+  usar(f.querySelector('#oc-fc')); usar(f.querySelector('#oc-fg'));
+  f.querySelector('#oc-cam').onclick = function () { f.querySelector('#oc-fc').click(); };
+  f.querySelector('#oc-gal').onclick = function () { f.querySelector('#oc-fg').click(); };
+  f.querySelector('#oc-x').onclick = function () { foto = null; f.querySelector('#oc-prev').classList.add('oculto'); f.querySelector('#oc-bts').classList.remove('oculto'); };
+  var b = f.querySelector('#oc-s');
+  b.onclick = function () {
+    var desc = f.querySelector('#oc-d').value.trim();
+    if (!tipo) return toast('Toque no que aconteceu (pneu furado, atraso...).', true);
+    if (tipo === 'Outro' && !desc) return toast('Escreva em poucas palavras o que aconteceu.', true);
+    b.disabled = true; b.innerHTML = '<span class="roda mini-roda"></span>' + (foto ? 'Enviando a foto...' : 'Enviando...');
+    Promise.race([gpsP, esperar(pronto ? 0 : 5000)]).then(function () {
+      return gravar('registrarOcorrencia', { viagem_id: v ? v.id : '', placa: v ? v.placa : '', tipo: tipo, descricao: desc, gps: gps, foto: foto ? { mime: foto.mime, dados: foto.dados } : null }, 'Ocorrência enviada');
+    }).then(function () { fecharFolha(); desenhar(); }, function () { b.disabled = false; b.innerHTML = ic('ok') + 'Enviar ocorrência'; });
+  };
+}
+
+function cartaoOcorrencia(o, comViagem) {
+  var t = tipoOc(o.tipo), aberta = o.status !== 'Resolvida';
+  var v = comViagem && o.viagem_id ? viagemDe(o.viagem_id) : null;
+  var s = '<div class="oc-card' + (aberta ? ' aberta' : '') + '" style="--c:' + t[2] + '"><div class="oc-top"><span class="oc-ic">' + ic(t[1]) + '</span><div class="oc-tt"><b>' + esc(o.tipo) + '</b>' +
+    '<small>' + esc(quando(o.data_hora)) + ' | ' + esc(primeiro(o.registrado_por)) + (o.placa ? ' | ' + esc(o.placa) : '') + '</small></div>' +
+    '<span class="pill ' + (aberta ? 'st-Cancelada oc-aberta' : 'st-Finalizada') + '"><i></i>' + (aberta ? 'Aberta' : 'Resolvida') + '</span></div>';
+  if (o.descricao) s += '<p class="oc-desc">' + esc(o.descricao) + '</p>';
+  if (v) s += '<a class="oc-via" href="#viagem/' + esc(v.id) + '">' + ic('caminhao') + esc(relativo(v.data)) + ' | ' + esc(v.regiao || '') + ' | ' + esc(apelido(v.motorista_id, v.motorista) || 'sem motorista') + ic('dir') + '</a>';
+  s += '<div class="linha-btns" style="margin-top:8px">';
+  if (o.foto_id) s += '<button class="btn peq" data-foto="' + esc(o.id) + '">' + ic('galeria') + 'Ver foto</button>';
+  if (o.latitude !== '' && o.latitude !== undefined) s += '<a class="btn peq" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(o.latitude + ',' + o.longitude) + '">' + ic('pin') + 'Onde foi</a>';
+  if (gestor() && aberta) s += '<button class="btn peq verde" data-resolver="' + esc(o.id) + '">' + ic('ok') + 'Resolvida</button>';
+  if (gestor() && !aberta) s += '<button class="btn peq fino" data-reabrir="' + esc(o.id) + '">Reabrir</button>';
+  s += '</div>';
+  if (!aberta) s += '<p class="fraco oc-res">' + ic('ok') + 'Resolvida por ' + esc(primeiro(o.resolvido_por)) + ' ' + esc(quando(o.resolvido_em)).toLowerCase() + (o.resolucao ? ': ' + esc(o.resolucao) : '') + '</p>';
+  return s + '</div>';
+}
+
+var FOTOS = {};
+function verFoto(id) {
+  var f = abrirFolha('<h2>Foto da ocorrência</h2><div class="foto-ver" id="fv"><div class="roda"></div></div><div class="botoes-folha"><button class="btn cheio" onclick="fecharFolha()">Fechar</button></div>');
+  var mostrar = function (src) { var el = f.querySelector('#fv'); if (el) el.innerHTML = '<img src="' + src + '" alt="Foto da ocorrência">'; };
+  if (FOTOS[id]) return mostrar(FOTOS[id]);
+  chamar('foto', { id: id }).then(function (d) { FOTOS[id] = 'data:' + d.mime + ';base64,' + d.dados; mostrar(FOTOS[id]); },
+    function (e) { var el = f.querySelector('#fv'); if (el) el.innerHTML = '<p class="fraco">' + esc(e.message || 'Não consegui abrir a foto agora.') + '</p>'; });
+}
+function resolverOc(id) {
+  var f = abrirFolha('<h2>Ocorrência resolvida</h2><label class="campo"><span>Como foi resolvido? <em>(opcional)</em></span><input class="inp" id="rs" placeholder="Ex.: pneu trocado no posto"></label>' +
+    '<div class="botoes-folha"><button class="btn verde cheio" id="rs-ok">' + ic('ok') + 'Marcar como resolvida</button></div>');
+  f.querySelector('#rs-ok').onclick = function () {
+    gravar('resolverOcorrencia', { id: id, resolucao: f.querySelector('#rs').value }, 'Ocorrência resolvida').then(function () { fecharFolha(); desenhar(); }, function () {});
+  };
+}
+document.addEventListener('click', function (ev) {
+  var b = ev.target.closest && ev.target.closest('[data-foto],[data-resolver],[data-reabrir]');
+  if (!b) return;
+  ev.preventDefault();
+  if (b.dataset.foto) verFoto(b.dataset.foto);
+  else if (b.dataset.resolver) resolverOc(b.dataset.resolver);
+  else if (b.dataset.reabrir) gravar('resolverOcorrencia', { id: b.dataset.reabrir, resolvida: false }, 'Ocorrência reaberta').then(desenhar, function () {});
+});
+
+function ocorrenciasDe(viagemId) { return (DB.ocorrencias || []).filter(function (o) { return o.viagem_id === viagemId; }); }
+function ocAbertas() { return (DB.ocorrencias || []).filter(function (o) { return o.status !== 'Resolvida'; }); }
+
+TELAS.ocorrencias = function () {
+  var todas = DB.ocorrencias || [], ver = PREF.ocVer || 'abertas';
+  var lista = ver === 'abertas' ? ocAbertas() : todas;
+  var s = '<button class="voltar" onclick="history.back()">' + ic('esq') + 'Voltar</button><h2>Ocorrências</h2>' +
+    '<div class="chips" style="margin-top:10px"><button class="chip' + (ver === 'abertas' ? ' on' : '') + '" data-ver="abertas">Abertas (' + ocAbertas().length + ')</button>' +
+    '<button class="chip' + (ver === 'todas' ? ' on' : '') + '" data-ver="todas">Todas (' + todas.length + ')</button></div>';
+  if (!lista.length) return s + '<div class="vazio"><b>' + (ver === 'abertas' ? 'Nenhuma ocorrência aberta' : 'Nenhuma ocorrência ainda') + '</b>O motorista registra pela tela da viagem, no botão Ocorrência.</div>';
+  return s + lista.map(function (o) { return cartaoOcorrencia(o, true); }).join('');
+};
+TELAS.ocorrencias.depois = function (r, el) {
+  el.querySelectorAll('[data-ver]').forEach(function (b) { b.onclick = function () { PREF.ocVer = b.dataset.ver; salvarPref(); desenhar(); }; });
+};
+
+/* ============================================================
+ * Resumo do mês: pintinhos entregues, km por caminhão e viagens por motorista
+ * Tudo calculado das viagens do aplicativo; vira um cartão pronto para mandar.
+ * ============================================================ */
+function nomeMes(ym) { var p = ym.split('-'); return MESES[Number(p[1]) - 1] + ' de ' + p[0]; }
+function mesesComDados() {
+  var h = hojeISO().slice(0, 7), ms = {};
+  ms[h] = 1;
+  DB.viagens.forEach(function (v) { if (v.data && v.data.slice(0, 7) <= h) ms[v.data.slice(0, 7)] = 1; });
+  return Object.keys(ms).sort().reverse().slice(0, 6);
+}
+
+function resumoMes(ym) {
+  var vs = DB.viagens.filter(function (v) { return String(v.data).slice(0, 7) === ym; });
+  var vivasM = vs.filter(function (v) { return v.status !== 'Cancelada'; });
+  var fin = vivasM.filter(function (v) { return v.status === 'Finalizada'; });
+  var entregue = function (v) { return v.entregas.filter(function (e) { return e.status === 'Entregue'; }); };
+  var pintV = function (v) { return entregue(v).reduce(function (a, e) { return a + (Number(e.qtd_pintinhos) || 0); }, 0); };
+  var kmV = function (v) { return v.km_rodado !== '' && v.km_rodado !== null && v.km_rodado !== undefined ? Number(v.km_rodado) || 0 : null; };
+  var r = {
+    ym: ym, pint: 0, entregas: 0, viagens: fin.length, km: 0, comKm: 0,
+    canceladas: vs.length - vivasM.length,
+    abertas: vivasM.filter(function (v) { return v.status !== 'Finalizada'; }).length,
+    porCaminhao: {}, porMotorista: {}, porOrigem: {}, ocorrencias: {}
+  };
+  vivasM.forEach(function (v) {
+    var p = pintV(v);
+    r.pint += p; r.entregas += entregue(v).length;
+    if (p) r.porOrigem[v.origem || 'Sem origem'] = (r.porOrigem[v.origem || 'Sem origem'] || 0) + p;
+  });
+  fin.forEach(function (v) {
+    var km = kmV(v), p = pintV(v);
+    if (km !== null) { r.km += km; r.comKm++; }
+    var c = r.porCaminhao[v.placa || 'Sem placa'] = r.porCaminhao[v.placa || 'Sem placa'] || { viagens: 0, km: 0, comKm: 0, pint: 0 };
+    c.viagens++; c.pint += p; if (km !== null) { c.km += km; c.comKm++; }
+    var nome = (motorista(v.motorista_id) || {}).nome || v.motorista || 'Sem motorista';
+    var m = r.porMotorista[nome] = r.porMotorista[nome] || { viagens: 0, km: 0, pint: 0, apelido: apelido(v.motorista_id, v.motorista) || 'Sem motorista' };
+    m.viagens++; m.pint += p; if (km !== null) m.km += km;
+  });
+  (DB.ocorrencias || []).forEach(function (o) { if (String(o.data_hora).slice(0, 7) === ym) r.ocorrencias[o.tipo] = (r.ocorrencias[o.tipo] || 0) + 1; });
+  r.nOcorrencias = Object.keys(r.ocorrencias).reduce(function (a, k) { return a + r.ocorrencias[k]; }, 0);
+  r.caminhoes = Object.keys(r.porCaminhao).map(function (k) { return Object.assign({ placa: k }, r.porCaminhao[k]); })
+    .sort(function (a, b) { return (b.km - a.km) || (b.viagens - a.viagens); });
+  r.motoristas = Object.keys(r.porMotorista).map(function (k) { return Object.assign({ nome: k }, r.porMotorista[k]); })
+    .sort(function (a, b) { return (b.viagens - a.viagens) || (b.km - a.km); });
+  return r;
+}
+
+TELAS.resumo = function () {
+  var ms = mesesComDados();
+  var ym = PREF.resumoMes && ms.indexOf(PREF.resumoMes) >= 0 ? PREF.resumoMes : ms[0];
+  var r = resumoMes(ym);
+  var s = '<button class="voltar" onclick="history.back()">' + ic('esq') + 'Voltar</button><h2>Resumo do mês</h2>' +
+    '<div class="chips" style="margin-top:10px">' + ms.map(function (m) { var p = m.split('-'); return '<button class="chip' + (m === ym ? ' on' : '') + '" data-mes="' + m + '">' + MESES[Number(p[1]) - 1].replace(/^./, function (c) { return c.toUpperCase(); }) + '/' + p[0].slice(2) + '</button>'; }).join('') + '</div>' +
+    '<button class="btn verde cheio" id="res-zap" style="margin:4px 0 12px">' + ic('zap') + 'Enviar o resumo no WhatsApp</button>';
+  s += '<div class="kpis"><div class="kpi destaque">' + pinto(58) + '<div><small>Pintinhos entregues em ' + esc(nomeMes(ym)) + '</small><b class="num">' + fmt(r.pint) + '</b><span>' + r.entregas + (r.entregas === 1 ? ' entrega' : ' entregas') + '</span></div></div>' +
+    '<div class="kpi"><small>Viagens realizadas</small><b class="num">' + r.viagens + '</b><span>' + (r.canceladas ? r.canceladas + (r.canceladas > 1 ? ' canceladas' : ' cancelada') : 'nenhuma cancelada') + '</span></div>' +
+    '<div class="kpi"><small>KM rodados</small><b class="num">' + fmt(r.km) + '</b><span>' + (r.comKm < r.viagens ? r.comKm + ' de ' + r.viagens + ' viagens com KM' : (r.comKm ? 'média de ' + fmt(r.km / r.comKm) + ' por viagem' : 'sem KM lançado')) + '</span></div></div>';
+  if (r.abertas) s += '<p class="aviso-res">' + ic('alerta') + r.abertas + (r.abertas > 1 ? ' viagens deste mês ainda não foram finalizadas' : ' viagem deste mês ainda não foi finalizada') + ' e só entram no resumo depois do KM final.</p>';
+  var tab = function (titulo, sub, linhas) { return '<div class="grafico"><h3>' + titulo + '</h3><p>' + sub + '</p>' + (linhas || '<p class="fraco">Sem viagens finalizadas no mês.</p>') + '</div>'; };
+  var mxKm = Math.max.apply(null, r.caminhoes.map(function (c) { return c.km; }).concat([0])), mxV = Math.max.apply(null, r.caminhoes.map(function (c) { return c.viagens; }).concat([1]));
+  s += tab(r.comKm ? 'KM por caminhão' : 'Viagens por caminhão', r.comKm ? 'Quilômetros lançados nas viagens finalizadas.' : 'Ainda sem KM lançado neste mês.', r.caminhoes.map(function (c) {
+    var pct = mxKm ? c.km / mxKm : c.viagens / mxV;
+    return '<div class="res-lin"><div class="res-top">' + placaHtml(c.placa === 'Sem placa' ? '' : c.placa) + '<b class="num">' + (c.comKm ? fmt(c.km) + ' km' : r.comKm ? 'sem KM' : c.viagens + (c.viagens > 1 ? ' viagens' : ' viagem')) + '</b></div>' +
+      '<div class="tr"><i style="width:' + Math.max(3, Math.round(pct * 100)) + '%"></i></div><small>' + c.viagens + (c.viagens > 1 ? ' viagens' : ' viagem') + ' | ' + fmt(c.pint) + ' pintinhos' + (c.comKm ? ' | média ' + fmt(c.km / c.comKm) + ' km' : '') + '</small></div>';
+  }).join(''));
+  var mxM = Math.max.apply(null, r.motoristas.map(function (m) { return m.viagens; }).concat([1]));
+  s += tab('Viagens por motorista', 'Viagens finalizadas no mês por cada motorista.', r.motoristas.map(function (m) {
+    return '<div class="res-lin"><div class="res-top"><span class="res-nome"><span class="av">' + esc(iniciais(m.nome)) + '</span>' + esc(m.nome) + '</span><b class="num">' + m.viagens + (m.viagens > 1 ? ' viagens' : ' viagem') + '</b></div>' +
+      '<div class="tr marinho"><i style="width:' + Math.max(3, Math.round(m.viagens / mxM * 100)) + '%"></i></div><small>' + (m.km ? fmt(m.km) + ' km | ' : '') + fmt(m.pint) + ' pintinhos</small></div>';
+  }).join(''));
+  var org = Object.keys(r.porOrigem), cores = ['#1665C1', '#FFC83D', '#6E56CF', '#0FA36B'];
+  if (org.length) s += '<div class="grafico"><h3>Onde carregou</h3><p>Pintinhos entregues por fornecedor.</p><div class="divisao">' + org.map(function (k, i) { return '<i style="width:' + (r.pint ? r.porOrigem[k] / r.pint * 100 : 0) + '%;background:' + cores[i % 4] + '"></i>'; }).join('') + '</div><div class="legenda">' +
+    org.map(function (k, i) { return '<span><i style="background:' + cores[i % 4] + '"></i>' + esc(k) + ' <b>' + Math.round(r.porOrigem[k] / r.pint * 100) + '%</b> (' + fmt(r.porOrigem[k]) + ')</span>'; }).join('') + '</div></div>';
+  if (r.nOcorrencias) s += '<div class="grafico"><h3>Ocorrências no mês</h3><p>' + r.nOcorrencias + ' registradas pelos motoristas.</p><div class="legenda">' + Object.keys(r.ocorrencias).map(function (k) { return '<span><i style="background:' + tipoOc(k)[2] + '"></i>' + esc(k) + ' <b>' + r.ocorrencias[k] + '</b></span>'; }).join('') + '</div></div>';
+  return s;
+};
+TELAS.resumo.depois = function (rr, el) {
+  el.querySelectorAll('[data-mes]').forEach(function (b) { b.onclick = function () { PREF.resumoMes = b.dataset.mes; salvarPref(); desenhar(); }; });
+  el.querySelector('#res-zap').onclick = function () {
+    var ms = mesesComDados(), ym = PREF.resumoMes && ms.indexOf(PREF.resumoMes) >= 0 ? PREF.resumoMes : ms[0];
+    abrirImagemZap('Resumo de ' + nomeMes(ym), 'Cartão com a marca Andrioni, pronto para mandar.', function () { return gerarResumo(ym); }, 'Resumo-' + DB.config.operacao + '-' + ym + '.png');
+  };
+};
+
+/** Folha com a prévia da imagem e os botões de mandar e baixar (só a imagem, sem texto). */
+function abrirImagemZap(titulo, sub, gerar, nome) {
+  var f = abrirFolha('<h2>' + esc(titulo) + '</h2><p class="mudo" style="margin:2px 0 10px">' + esc(sub) + '</p>' +
+    '<div id="zi-prev" style="background:#fff;border-radius:18px;min-height:220px;display:grid;place-items:center;overflow:auto;max-height:56vh;box-shadow:var(--sombra)"><div class="roda"></div></div>' +
+    '<div class="botoes-folha"><button class="btn verde cheio" id="zi-env" disabled>' + ic('zap') + 'Enviar a imagem</button>' +
+    '<button class="btn fino cheio" id="zi-bx" disabled>' + ic('copiar') + 'Baixar a imagem</button></div>');
+  var arquivo = null, url = null;
+  gerar().then(function (cv) {
+    cv.toBlob(function (blob) {
+      if (!blob) return;
+      arquivo = new File([blob], nome, { type: 'image/png' }); url = URL.createObjectURL(blob);
+      var p = f.querySelector('#zi-prev'); if (!p) return;
+      p.innerHTML = '<img src="' + url + '" alt="' + esc(titulo) + '" style="width:100%;display:block;border-radius:18px">';
+      f.querySelector('#zi-env').disabled = false; f.querySelector('#zi-bx').disabled = false;
+    }, 'image/png');
+  }).catch(function (e) { console.error(e); var p = f.querySelector('#zi-prev'); if (p) p.innerHTML = '<p class="fraco">Não consegui montar a imagem neste aparelho.</p>'; });
+  var baixar = function () { var a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); };
+  f.querySelector('#zi-bx').onclick = baixar;
+  f.querySelector('#zi-env').onclick = function () {
+    if (!arquivo) return;
+    if (navigator.canShare && navigator.canShare({ files: [arquivo] })) navigator.share({ files: [arquivo] }).catch(function () {});
+    else { baixar(); toast('Imagem baixada. No WhatsApp, é só anexar.'); }
+  };
+  f._fechou = function () { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 30000); };
+}
+
+/* ---------- cartão do resumo ---------- */
+function gerarResumo(ym) {
+  var r = resumoMes(ym), W = 1080, M = 48;
+  var fontes = document.fonts && document.fonts.load ? Promise.all([
+    document.fonts.load('800 60px "Bricolage Grotesque"'), document.fonts.load('700 30px "Figtree"'), document.fonts.load('500 26px "Figtree"')
+  ]).catch(function () {}) : Promise.resolve();
+  return Promise.all([fontes, carregarImg(IMG.logoBranco), (c3ImagemPronta('livre', '') || svgImg(caminhaoSVG({ estado: 'livre', id: 'res', cru: true }), 380, 340)), svgImg(pinto(48), 48, 48), carregarImg(IMG.marcaBranca)]).then(function (a) {
+    var logo = a[1], truck = a[2], chick = a[3], marca = a[4];
+    var cv = document.createElement('canvas'); cv.width = W; cv.height = 6000;
+    var c = cv.getContext('2d');
+    c.fillStyle = '#EDF2F9'; c.fillRect(0, 0, W, cv.height);
+    // cabeçalho
+    var HH = 470, g = c.createLinearGradient(0, 0, W, HH);
+    g.addColorStop(0, '#1A4D8F'); g.addColorStop(0.55, '#0A2140'); g.addColorStop(1, '#061428');
+    c.fillStyle = g; c.fillRect(0, 0, W, HH);
+    c.save(); c.globalAlpha = 0.10; c.strokeStyle = '#6FB3EC'; c.lineWidth = 3;
+    for (var k = -6; k <= 14; k++) { c.beginPath(); c.moveTo(W * 0.62 + k * 18, 250); c.lineTo(W * 0.62 + k * 120, HH); c.stroke(); }
+    c.restore();
+    c.fillStyle = '#FFC83D'; c.fillRect(0, HH - 10, W, 10);
+    if (logo) { var lh = 150, lw = lh * logo.width / logo.height; c.drawImage(logo, M, 44, lw, lh); }
+    if (truck) { var th = Math.min(340, 380 * truck.height / truck.width); c.drawImage(truck, W - 392, 24 + (340 - th) / 2, 380, th); }
+    c.fillStyle = '#FFFFFF'; c.font = '800 66px ' + F_T; c.fillText('Resumo do mês', M, 300);
+    c.fillStyle = '#B9CDE8'; c.font = '600 36px ' + F_B; var nm = nomeMes(ym); c.fillText(nm.charAt(0).toUpperCase() + nm.slice(1), M, 352);
+    c.font = '700 26px ' + F_B;
+    var selo = 'Operação ' + DB.config.operacao, sw = c.measureText(selo).width + 44;
+    caminho(c, M, 384, sw, 50, 25); c.fillStyle = 'rgba(255,200,61,.16)'; c.fill();
+    c.strokeStyle = 'rgba(255,200,61,.6)'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = '#FFD566'; c.fillText(selo, M + 22, 418);
+
+    var y = HH + 34;
+    var sombra = function () { c.shadowColor = 'rgba(10,33,64,.12)'; c.shadowBlur = 24; c.shadowOffsetY = 8; };
+    var semSombra = function () { c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0; };
+    // pintinhos entregues
+    caminho(c, M, y, W - 2 * M, 170, 30);
+    var gk = c.createLinearGradient(0, y, 0, y + 170); gk.addColorStop(0, '#FFD566'); gk.addColorStop(1, '#FFC83D'); c.fillStyle = gk; sombra(); c.fill(); semSombra();
+    if (chick) c.drawImage(chick, M + 32, y + 45, 80, 80);
+    c.fillStyle = '#0A2140'; c.font = '800 76px ' + F_T; c.fillText(fmt(r.pint), M + 134, y + 100);
+    c.fillStyle = '#5B3D00'; c.font = '700 28px ' + F_B; c.fillText('pintinhos entregues', M + 136, y + 142);
+    if (r.comKm) {
+      c.font = '700 26px ' + F_B; var et = r.entregas + (r.entregas === 1 ? ' entrega' : ' entregas'), ew = c.measureText(et).width;
+      caminho(c, W - M - 40 - ew - 36, y + 62, ew + 36, 48, 24); c.fillStyle = 'rgba(10,33,64,.10)'; c.fill();
+      c.fillStyle = '#0A2140'; c.fillText(et, W - M - 40 - ew - 18, y + 95);
+    }
+    y += 170 + 22;
+    // viagens e km
+    var kp = r.comKm ? [[String(r.viagens), r.viagens === 1 ? 'viagem realizada' : 'viagens realizadas'], [fmt(r.km), 'km rodados'], [fmt(r.km / r.comKm), 'km por viagem']]
+      : [[String(r.viagens), r.viagens === 1 ? 'viagem realizada' : 'viagens realizadas'], [String(r.entregas), r.entregas === 1 ? 'entrega' : 'entregas'], [r.viagens ? fmt(r.pint / r.viagens) : '-', 'pintinhos/viagem']];
+    var kw = (W - 2 * M - 2 * 22) / 3;
+    kp.forEach(function (q, i) {
+      var kx = M + i * (kw + 22);
+      caminho(c, kx, y, kw, 140, 28); c.fillStyle = '#FFFFFF'; sombra(); c.fill(); semSombra();
+      c.fillStyle = '#0A2140'; c.font = '800 54px ' + F_T; c.fillText(q[0], kx + 28, y + 80);
+      c.fillStyle = '#4A5A70'; c.font = '600 25px ' + F_B; c.fillText(q[1], kx + 28, y + 116);
+    });
+    y += 140 + 18;
+    var notas = [];
+    if (r.comKm && r.comKm < r.viagens) notas.push('KM lançado em ' + r.comKm + ' de ' + r.viagens + ' viagens');
+    if (!r.comKm && r.viagens) notas.push('KM ainda não lançado neste mês');
+    if (r.canceladas) notas.push(r.canceladas + (r.canceladas > 1 ? ' viagens canceladas' : ' viagem cancelada'));
+    if (r.nOcorrencias) notas.push(r.nOcorrencias + (r.nOcorrencias > 1 ? ' ocorrências' : ' ocorrência'));
+    if (notas.length) { c.fillStyle = '#5E6B7D'; c.font = '600 24px ' + F_B; c.fillText(notas.join('   |   '), M + 6, y + 18); y += 40; }
+    y += 18;
+
+    // bloco com título
+    var bloco = function (titulo, sub, linhas, hLinha, desenharLinha) {
+      var H = 118 + linhas.length * hLinha + 26;
+      caminho(c, M, y, W - 2 * M, H, 32); c.fillStyle = '#FFFFFF'; sombra(); c.fill(); semSombra();
+      c.fillStyle = '#0A2140'; c.font = '800 38px ' + F_T; c.fillText(titulo, M + 36, y + 62);
+      c.fillStyle = '#6B7A8F'; c.font = '500 24px ' + F_B; c.fillText(sub, M + 36, y + 98);
+      linhas.forEach(function (l, i) { desenharLinha(l, M + 36, y + 118 + i * hLinha, W - 2 * M - 72); });
+      y += H + 26;
+    };
+    var placaCv = function (p, x, yy) {
+      c.font = '800 30px ' + F_T; var pw = c.measureText(p).width + 40;
+      caminho(c, x, yy, pw, 52, 10); c.fillStyle = '#FFFFFF'; c.fill(); c.strokeStyle = '#1B2633'; c.lineWidth = 3; c.stroke();
+      c.save(); caminho(c, x, yy, pw, 52, 10); c.clip(); c.fillStyle = '#0B3D91'; c.fillRect(x, yy, pw, 11); c.restore();
+      c.fillStyle = '#111'; c.fillText(p, x + 20, yy + 44); return pw;
+    };
+    var barra = function (x, yy, w, pct, cor) {
+      caminho(c, x, yy, w, 16, 8); c.fillStyle = '#E8EEF6'; c.fill();
+      if (pct > 0) { caminho(c, x, yy, Math.max(16, w * pct), 16, 8); c.fillStyle = cor; c.fill(); }
+    };
+    var mxKm = Math.max.apply(null, r.caminhoes.map(function (x) { return x.km; }).concat([0])), mxV = Math.max.apply(null, r.caminhoes.map(function (x) { return x.viagens; }).concat([1]));
+    if (r.caminhoes.length) bloco(r.comKm ? 'KM por caminhão' : 'Viagens por caminhão', 'Viagens finalizadas no mês', r.caminhoes, 128, function (x, x0, y0, w) {
+      if (x.placa === 'Sem placa') { c.fillStyle = '#8593A6'; c.font = '700 28px ' + F_B; c.fillText('Sem placa', x0, y0 + 40); } else placaCv(x.placa, x0, y0 + 4);
+      c.fillStyle = '#0A2140'; c.font = '800 38px ' + F_T; var kt = x.comKm ? fmt(x.km) + ' km' : r.comKm ? 'sem KM' : x.viagens + (x.viagens > 1 ? ' viagens' : ' viagem'), kw2 = c.measureText(kt).width; c.fillText(kt, x0 + w - kw2, y0 + 44);
+      barra(x0, y0 + 70, w, mxKm ? x.km / mxKm : x.viagens / mxV, '#1665C1');
+      c.fillStyle = '#5E6B7D'; c.font = '600 23px ' + F_B;
+      c.fillText((r.comKm ? x.viagens + (x.viagens > 1 ? ' viagens' : ' viagem') + '   |   ' : '') + fmt(x.pint) + ' pintinhos' + (x.comKm ? '   |   média ' + fmt(x.km / x.comKm) + ' km' : ''), x0, y0 + 116);
+    });
+    var mxM = Math.max.apply(null, r.motoristas.map(function (x) { return x.viagens; }).concat([1]));
+    if (r.motoristas.length) bloco('Viagens por motorista', 'Viagens finalizadas no mês', r.motoristas, 118, function (x, x0, y0, w) {
+      c.beginPath(); c.arc(x0 + 28, y0 + 32, 28, 0, Math.PI * 2); c.fillStyle = '#FFC83D'; c.fill();
+      c.fillStyle = '#0A2140'; c.font = '800 24px ' + F_T; var ini = iniciais(x.nome), iw = c.measureText(ini).width; c.fillText(ini, x0 + 28 - iw / 2, y0 + 41);
+      c.font = '700 30px ' + F_B; var nmx = x.nome; while (c.measureText(nmx).width > w - 300 && nmx.length > 4) nmx = nmx.slice(0, -2); if (nmx !== x.nome) nmx = nmx.trim() + '…';
+      c.fillText(nmx, x0 + 72, y0 + 43);
+      c.font = '800 36px ' + F_T; var vt = x.viagens + (x.viagens > 1 ? ' viagens' : ' viagem'), vw = c.measureText(vt).width; c.fillText(vt, x0 + w - vw, y0 + 44);
+      barra(x0 + 72, y0 + 62, w - 72, x.viagens / mxM, '#0A2140');
+      c.fillStyle = '#5E6B7D'; c.font = '600 23px ' + F_B; c.fillText((x.km ? fmt(x.km) + ' km   |   ' : '') + fmt(x.pint) + ' pintinhos', x0 + 72, y0 + 106);
+    });
+    var org = Object.keys(r.porOrigem), cores = ['#1665C1', '#FFC83D', '#6E56CF', '#0FA36B'];
+    if (org.length && r.pint) bloco('Onde carregou', 'Pintinhos entregues por fornecedor', [0], 60 + org.length * 44, function (_, x0, y0, w) {
+      var xx = x0;
+      org.forEach(function (k, i) { var ww = w * r.porOrigem[k] / r.pint; caminho(c, xx, y0 + 8, Math.max(8, ww - 4), 26, 8); c.fillStyle = cores[i % 4]; c.fill(); xx += ww; });
+      org.forEach(function (k, i) {
+        var ly = y0 + 80 + i * 44;
+        caminho(c, x0, ly - 20, 22, 22, 6); c.fillStyle = cores[i % 4]; c.fill();
+        c.fillStyle = '#0A2140'; c.font = '700 26px ' + F_B; c.fillText(k, x0 + 36, ly);
+        c.font = '800 28px ' + F_T; var t = Math.round(r.porOrigem[k] / r.pint * 100) + '%  (' + fmt(r.porOrigem[k]) + ')', tw = c.measureText(t).width; c.fillText(t, x0 + w - tw, ly);
+      });
+    });
+    // rodapé
+    caminho(c, M, y, W - 2 * M, 110, 30); c.fillStyle = '#0A2140'; c.fill();
+    if (marca) { var mh = 54, mw = mh * marca.width / marca.height; c.drawImage(marca, M + 30, y + 28, mw, mh); }
+    c.fillStyle = '#FFFFFF'; c.font = '800 30px ' + F_T; c.fillText('Rota Viva', M + 120, y + 50);
+    c.fillStyle = '#A9C1E0'; c.font = '600 22px ' + F_B; c.fillText('Andrioni Transportes', M + 120, y + 82);
+    var ag = new Date(), quem = 'Gerado em ' + pad(ag.getDate()) + '/' + pad(ag.getMonth() + 1) + '/' + ag.getFullYear() + ' às ' + pad(ag.getHours()) + ':' + pad(ag.getMinutes());
+    c.font = '600 22px ' + F_B; c.fillStyle = '#CFE0F5'; c.fillText(quem, W - M - 30 - c.measureText(quem).width, y + 66);
+    y += 110 + 40;
+    var out = document.createElement('canvas'); out.width = W; out.height = y;
+    out.getContext('2d').drawImage(cv, 0, 0);
+    return out;
+  });
+}
 
 </script>
 </body>
