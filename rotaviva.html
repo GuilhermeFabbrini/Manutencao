@@ -1026,8 +1026,8 @@ TELAS.viagem = function (r) {
   var lin = '<div class="linha-btns">';
   if (v.status !== 'Cancelada' && gestor()) lin += '<a class="btn" href="#editar/' + esc(v.id) + '">' + ic('lapis') + 'Editar</a>';
   lin += '<button class="btn" data-acao="zap">' + ic('zap') + 'WhatsApp</button>';
-  if (rt && rt.link) lin += '<a class="btn" href="' + esc(rt.link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Rota</a>';
-  else lin += '<a class="btn" href="' + esc(linkMaps(v.origem, v.entregas.map(function (e) { return e.cidade; }))) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Mapa</a>';
+  var mg = mapaDasGranjas(v);
+  if (mg) lin += '<a class="btn" href="' + esc(mg.link) + '" target="_blank" rel="noopener">' + ic('mapa') + (mg.n < v.entregas.length ? 'Mapa (' + mg.n + ' de ' + v.entregas.length + ')' : 'Mapa das granjas') + '</a>';
   lin += '</div>';
   s += '<div class="acoes">' + a + lin + '</div>';
 
@@ -1309,10 +1309,22 @@ TELAS.rotas.depois = function (r, el) {
 };
 function temGps(r) { return String(r.latitude === undefined || r.latitude === null ? '' : r.latitude) !== '' && String(r.longitude === undefined || r.longitude === null ? '' : r.longitude) !== ''; }
 function linkWaze(lat, lng) { return 'https://waze.com/ul?ll=' + lat + ',' + lng + '&navigate=yes'; }
-function linkRota(r) { return temGps(r) ? 'https://www.google.com/maps/dir/?api=1&destination=' + r.latitude + ',' + r.longitude : (r.link || ''); }
+function linkRota(r) { return temGps(r) ? 'https://www.google.com/maps/dir/?api=1&destination=' + r.latitude + ',' + r.longitude : ''; }
+/** Localização da granja: só a gravada pelo GPS (rota cadastrada ou integrado ligado a ela). Nunca o centro da cidade. */
 function rotaDaGranja(integrado) {
   var k = chave(integrado); if (!k) return null;
-  return DB.rotas.filter(ativo).find(function (r) { return chave(r.nome) === k && (temGps(r) || r.link); }) || null;
+  var r = DB.rotas.filter(ativo).find(function (x) { return chave(x.nome) === k && temGps(x); });
+  if (r) return r;
+  var i = DB.integrados.find(function (x) { return chave(x.nome) === k && temGps(x); });
+  return i ? { nome: i.nome, latitude: i.latitude, longitude: i.longitude } : null;
+}
+/** Caminho com todas as granjas da viagem que têm GPS, na ordem das entregas. */
+function mapaDasGranjas(v) {
+  var pts = [];
+  v.entregas.forEach(function (e) { var g = rotaDaGranja(e.integrado); if (g) { var p = g.latitude + ',' + g.longitude; if (pts.indexOf(p) < 0) pts.push(p); } });
+  if (!pts.length) return null;
+  var dest = pts.pop();
+  return { n: pts.length + 1, link: 'https://www.google.com/maps/dir/?api=1&destination=' + dest + (pts.length ? '&waypoints=' + encodeURIComponent(pts.join('|')) : '') + '&travelmode=driving' };
 }
 function mapinha(n) {
   var pts = [[14, 60]], w = 300;
@@ -1349,7 +1361,6 @@ TELAS.novarota = function () {
 function formRota(titulo) {
   var r = FORM.r;
   var regs = DB.regioes.map(function (x) { return x.nome; });
-  var linkSolto = r.link && !temGps(r);
   return '<button class="voltar" onclick="history.back()">' + ic('esq') + 'Voltar</button><h2>' + esc(titulo) + '</h2>' +
     '<label class="campo"><span>Nome do integrado (fazenda)</span><input class="inp" list="dl-int" data-r="nome" value="' + esc(r.nome) + '" placeholder="Digite o nome do integrado" autocomplete="off"></label><div class="achado oculto" id="achado-r"></div>' +
     '<div class="duas"><label class="campo"><span>Cidade</span><input class="inp" list="dl-cid" data-r="cidades" value="' + esc(r.cidades) + '" autocomplete="off"></label>' +
@@ -1360,7 +1371,7 @@ function formRota(titulo) {
     '<div class="duas"><label class="campo"><span>Latitude</span><input class="inp num" inputmode="decimal" data-r="latitude" value="' + esc(r.latitude) + '" placeholder="-21.904512" autocomplete="off"></label>' +
     '<label class="campo"><span>Longitude</span><input class="inp num" inputmode="decimal" data-r="longitude" value="' + esc(r.longitude) + '" placeholder="-47.654321" autocomplete="off"></label></div>' +
     '<div class="achado oculto" id="gps-ok"></div>' +
-    '<details class="mais-campos" style="margin-top:12px"' + (linkSolto ? ' open' : '') + '><summary>' + ic('link') + 'Prefiro colar o link do mapa</summary><label class="campo"><span>Link do Google Maps ou Waze</span><input class="inp" type="url" data-r="link" value="' + esc(linkSolto ? r.link : '') + '" placeholder="https://maps.app.goo.gl/..."></label></details></div>' +
+    '</div>' +
     '<details class="mais-campos"' + (r.km_estimado !== '' || r.tempo_estimado || r.obs ? ' open' : '') + '><summary>' + ic('mais') + 'Mais detalhes (opcional)</summary>' +
     '<div class="duas"><label class="campo"><span>KM previsto</span><input class="inp num" inputmode="numeric" data-r="km_estimado" data-num value="' + (r.km_estimado !== '' ? fmt(r.km_estimado) : '') + '"></label>' +
     '<label class="campo"><span>Tempo previsto</span><input class="inp" data-r="tempo_estimado" value="' + esc(r.tempo_estimado) + '" placeholder="Ex.: 4h30"></label></div>' +
@@ -1427,10 +1438,8 @@ TELAS.rota.depois = TELAS.novarota.depois = function (rr, el) {
   el.querySelector('#salvar-r').onclick = function () {
     if (!String(r.nome).trim()) return toast('Escreva o nome do integrado (fazenda).', true);
     var temLat = String(r.latitude || '') !== '', temLng = String(r.longitude || '') !== '';
-    if (temLat !== temLng) return toast('Preencha a latitude e a longitude, as duas.', true);
-    if (!temLat && !String(r.link || '').trim()) return toast('Pegue a localização da granja ou cole o link do mapa.', true);
-    var envio = Object.assign({}, r);
-    if (temLat) envio.link = '';
+    if (!temLat || !temLng) return toast('Pegue a localização na porteira da granja (latitude e longitude).', true);
+    var envio = Object.assign({}, r); envio.link = '';
     gravar('salvarRota', { rota: envio }, 'Rota salva').then(function () { FORM = null; ir('rotas'); }, function () {});
   };
   var a = el.querySelector('#arq-r'); if (a) a.onclick = function () { confirmarFolha('Arquivar rota', 'Ela some da lista, mas as viagens antigas continuam com ela.', 'Arquivar').then(function (s) { if (s) gravar('excluirRota', { id: r.id }, 'Rota arquivada').then(function () { FORM = null; ir('rotas'); }, function () {}); }); };
@@ -1643,7 +1652,7 @@ TELAS.contatos.depois = function (r, el) {
     if (integ) {
       var xs = DB.integrados.filter(function (i) { return !q || chave(i.nome + ' ' + i.cidade + ' ' + i.tecnico + ' ' + i.regiao).indexOf(q) >= 0; });
       l.innerHTML = xs.slice(0, 80).map(function (i) {
-        return '<div class="item"' + (analista() ? ' data-int="' + esc(i.id) + '" style="cursor:pointer"' : '') + '><span class="av">' + ic('granja', '') + '</span><span class="tx"><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade) + (i.regiao ? ' (' + esc(i.regiao) + ')' : '') + '</small><small>Técnico: ' + esc(i.tecnico || '-') + (i.telefone ? ' | ' + esc(i.telefone) : '') + '</small></span>' + botoesContato(i.telefone, i.tecnico || i.nome) + '</div>';
+        return '<div class="item"' + (analista() ? ' data-int="' + esc(i.id) + '" style="cursor:pointer"' : '') + '><span class="av">' + ic('granja', '') + '</span><span class="tx"><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade) + (i.regiao ? ' (' + esc(i.regiao) + ')' : '') + '</small><small>Técnico: ' + esc(i.tecnico || '-') + (i.telefone ? ' | ' + esc(i.telefone) : '') + '</small>' + (temGps(i) ? '<small style="color:#08794F;font-weight:700">Localização gravada pelo GPS</small>' : '') + '</span>' + (temGps(i) ? '<a class="mini" style="background:#E3EEFF;color:#0F4F9C" target="_blank" rel="noopener" href="' + esc(linkRota(i)) + '" aria-label="Ir até a granja">' + ic('mapa') + '</a>' : '') + botoesContato(i.telefone, i.tecnico || i.nome) + '</div>';
       }).join('') + (xs.length > 80 ? '<p class="fraco" style="text-align:center">Mostrando 80 de ' + xs.length + '. Digite para buscar.</p>' : '') || '<div class="vazio">Nenhum integrado encontrado.</div>';
       if (analista()) l.querySelectorAll('[data-int]').forEach(function (x) { x.onclick = function (ev) { if (ev.target.closest('a')) return; editarIntegrado(x.dataset.int); }; });
     } else {
