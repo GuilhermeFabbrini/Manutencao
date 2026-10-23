@@ -752,7 +752,7 @@ function gravar(acao, dados, msgOk) {
   OCUPADO = true; marcarSinc('girando');
   return chamar(acao, dados).then(function (d) {
     OCUPADO = false; aplicar(d); marcarSinc();
-    if (msgOk) toast(msgOk);
+    if (d && d.aviso) toast(d.aviso, true); else if (msgOk) toast(msgOk);
     return d;
   }, function (e) {
     OCUPADO = false; marcarSinc();
