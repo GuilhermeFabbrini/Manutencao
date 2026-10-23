@@ -525,6 +525,9 @@ details.mais-campos summary::-webkit-details-marker { display: none; }
 .tt-item small { color: var(--tinta-3); font-size: 12px; }
 .tt-cab .link { background: none; border: 0; padding: 4px 0; color: var(--azul); font: 700 13.5px var(--fonte); cursor: pointer; }
 
+/* ---------- Calibração no Pátio ---------- */
+.vaga .lub + .lub { margin-top: 5px; }
+
 </style>
 </head>
 <body>
@@ -846,6 +849,41 @@ function lubHtml(placa) {
   var txt = l.faltam < 0 ? 'Lubrificação vencida há ' + (-l.faltam) + (l.faltam === -1 ? ' dia' : ' dias') : l.faltam === 0 ? 'Lubrificar hoje' : 'Próxima em ' + dataBR(l.proxima) + (l.faltam <= 3 ? ' (' + l.faltam + (l.faltam === 1 ? ' dia)' : ' dias)') : '');
   return '<span class="lub ' + cls + '"' + at + '><b>' + ic('relogio') + ' Lub. ' + dataBR(l.ultima) + '</b>' + esc(txt) + '</span>';
 }
+/** Calibração dos pneus: mesmo quadradinho da lubrificação, só no Pátio. */
+var CAL_DIAS = 7;
+function calDe(placa) {
+  var c = caminhao(placa), ult = c && /^\d{4}-\d{2}-\d{2}$/.test(String(c.ultima_calibracao || '').slice(0, 10)) ? String(c.ultima_calibracao).slice(0, 10) : '';
+  if (!ult) return null;
+  var prox = somaDias(ult, CAL_DIAS);
+  return { ultima: ult, proxima: prox, faltam: diffDias(hojeISO(), prox) };
+}
+function calHtml(placa) {
+  var l = calDe(placa), at = ' role="button" data-cal="' + esc(placa) + '"';
+  if (!l) return '<span class="lub cal sem"' + at + '><b>' + ic('pneu') + ' Calibração</b>Toque para lançar a data</span>';
+  var cls = l.faltam < 0 ? 'vencida' : l.faltam <= 2 ? 'perto' : '';
+  var txt = l.faltam < 0 ? 'Calibração vencida há ' + (-l.faltam) + (l.faltam === -1 ? ' dia' : ' dias') : l.faltam === 0 ? 'Calibrar hoje' : 'Próxima em ' + dataBR(l.proxima) + (l.faltam <= 2 ? ' (' + l.faltam + (l.faltam === 1 ? ' dia)' : ' dias)') : '');
+  return '<span class="lub cal ' + cls + '"' + at + '><b>' + ic('pneu') + ' Calib. ' + dataBR(l.ultima) + '</b>' + esc(txt) + '</span>';
+}
+document.addEventListener('click', function (ev) {
+  var b = ev.target.closest && ev.target.closest('[data-cal]');
+  if (!b) return;
+  ev.preventDefault(); ev.stopPropagation();
+  lancarCal(b.dataset.cal);
+}, true);
+function lancarCal(placa) {
+  var l = calDe(placa);
+  var f = abrirFolha('<h2>Calibração do ' + esc(placa) + '</h2><p class="mudo">' + (l ? 'Última: ' + esc(dataBRc(l.ultima)) + '. Próxima até ' + esc(dataBRc(l.proxima)) + '.' : 'Ainda sem data lançada.') + ' A calibração dos pneus é a cada ' + CAL_DIAS + ' dias.</p>' +
+    '<label class="campo"><span>Data em que foi calibrado</span><input class="inp" type="date" id="cal-d" max="' + hojeISO() + '" value="' + hojeISO() + '"></label>' +
+    '<div class="botoes-folha"><button class="btn pri cheio" id="cal-s">' + ic('ok') + 'Salvar calibração</button><button class="btn cheio" id="cal-n">Voltar</button></div>');
+  f.querySelector('#cal-d').dataset.semfoco = 1;
+  f.querySelector('#cal-n').onclick = function () { fecharFolha(); };
+  f.querySelector('#cal-s').onclick = function () {
+    var d = f.querySelector('#cal-d').value;
+    if (!d) return toast('Escolha a data.', true);
+    if (d > hojeISO()) return toast('A data não pode ser depois de hoje.', true);
+    gravar('registrarCalibracao', { placa: placa, data: d }, 'Calibração lançada').then(function () { fecharFolha(); desenhar(); }, function () {});
+  };
+}
 /** Toque no selo de lubrificação (Pátio ou Frota) abre a folha para lançar a data. */
 document.addEventListener('click', function (ev) {
   var b = ev.target.closest && ev.target.closest('[data-lub]');
@@ -1028,12 +1066,6 @@ function listaViagens(vs, op) { return vs.length ? '<div class="lista">' + vs.ma
 /* ============================================================ alertas */
 function alertas() {
   var h = hojeISO(), out = [];
-  if (gestor()) frotaPropria().forEach(function (c) {
-    var l = lubDe(c.placa);
-    if (!l) return;
-    if (l.faltam < 0) out.push({ g: 'grave', t: 'Lubrificação vencida do ' + c.placa, s: 'Última em ' + dataBRc(l.ultima) + '. Venceu em ' + dataBRc(l.proxima) + ' (a cada ' + LUB_DIAS + ' dias).', l: '#hoje' });
-    else if (l.faltam <= 3) out.push({ g: '', t: 'Lubrificação do ' + c.placa + (l.faltam === 0 ? ' vence hoje' : ' vence em ' + l.faltam + (l.faltam === 1 ? ' dia' : ' dias')), s: 'Última em ' + dataBRc(l.ultima) + '. Próxima até ' + dataBRc(l.proxima) + '.', l: '#hoje' });
-  });
   if (gestor()) {
     var oa = ocAbertas();
     if (oa.length) out.unshift({ g: 'grave', t: oa.length + (oa.length > 1 ? ' ocorrências abertas' : ' ocorrência aberta'), s: oa[0].tipo + (oa[0].placa ? ' no ' + oa[0].placa : '') + ', ' + primeiro(oa[0].registrado_por) + ' ' + quando(oa[0].data_hora).toLowerCase() + (oa[0].descricao ? ': ' + oa[0].descricao : '') + '.', l: '#ocorrencias' });
@@ -1096,7 +1128,7 @@ function patio() {
     fr.map(function (c) {
       var e = estadoCaminhao(c);
       return '<a class="vaga e-' + e.estado + '" href="' + (e.v ? '#viagem/' + e.v.id : analista() ? '#caminhao/' + c.placa : '#agenda') + '" style="text-decoration:none">' + caminhaoSVG({ estado: e.estado, id: c.placa, placa: c.placa }) +
-        placaHtml(c.placa) + '<span class="estado"><i style="background:' + e.cor + '"></i>' + esc(e.txt) + '</span><span class="quem">' + esc(e.quem) + '</span>' + lubHtml(c.placa) + '</a>';
+        placaHtml(c.placa) + '<span class="estado"><i style="background:' + e.cor + '"></i>' + esc(e.txt) + '</span><span class="quem">' + esc(e.quem) + '</span>' + lubHtml(c.placa) + calHtml(c.placa) + '</a>';
     }).join('') + '</div></div>';
 }
 
