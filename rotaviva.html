@@ -491,6 +491,18 @@ details.mais-campos summary::-webkit-details-marker { display: none; }
 .res-lin .tr.marinho i { background: var(--noite); }
 .res-lin small { color: var(--tinta-3); font-size: 12.5px; }
 
+/* ---------- Nota fiscal anexada ---------- */
+.nf-anexo { margin-top: 4px; }
+.nf-anexo .nf-bts { margin-top: 2px; }
+.nf-prev { position: relative; border-radius: 16px; overflow: hidden; background: #0A2140; margin-top: 4px; }
+.nf-prev img { display: block; width: 100%; max-height: 240px; object-fit: contain; }
+.nf-prev .tirar { position: absolute; top: 8px; right: 8px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(10,33,64,.75); color: #fff; display: grid; place-items: center; }
+.nf-prev .tirar svg { width: 18px; height: 18px; }
+.nf-pdf { display: flex; align-items: center; gap: 10px; padding: 16px; color: #fff; font-weight: 700; font-size: 14.5px; word-break: break-all; }
+.nf-pdf svg { width: 30px; height: 30px; flex: none; }
+.nf-pdf.grande { padding: 40px 20px; justify-content: center; }
+.mini.nf-ok { background: #DBF4E8; color: #08794F; }
+
 </style>
 </head>
 <body>
@@ -1179,6 +1191,7 @@ TELAS.viagem = function (r) {
       (e.obs ? '<div>' + esc(e.obs) + '</div>' : '') + '</div></div><span class="qt num">' + pinto(18) + fmt(e.qtd_pintinhos) + '</span></div><div class="botoes">' +
       (function () { var rg = rotaDaGranja(e.integrado); if (!rg) return ''; return '<a class="mini" style="background:#E3EEFF;color:#0F4F9C" target="_blank" rel="noopener" href="' + esc(linkRota(rg)) + '">' + ic('mapa') + 'Ir até a granja</a>' + (temGps(rg) ? '<a class="mini" target="_blank" rel="noopener" href="' + esc(linkWaze(rg.latitude, rg.longitude)) + '">' + ic('rota') + 'Waze</a>' : ''); })() +
       (v.status !== 'Cancelada' ? (ok ? '<button class="mini" data-desfaz="' + esc(e.id) + '">' + ic('x') + 'Desfazer entrega</button>' : '<button class="mini ok" data-entrega="' + esc(e.id) + '">' + ic('ok') + 'Marcar entregue</button>') : '') +
+      (e.nf_arquivo_id ? '<button class="mini nf-ok" data-nf-ver="' + esc(e.id) + '">' + ic('resumo') + 'Ver NF</button>' : (v.status !== 'Cancelada' ? '<button class="mini" data-nf="' + esc(e.id) + '">' + ic('camera') + 'Anexar NF</button>' : '')) +
       (e.telefone_tecnico ? '<a class="mini" href="tel:' + esc(String(e.telefone_tecnico).replace(/\D/g, '')) + '">' + ic('fone') + 'Ligar</a><a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(e.telefone_tecnico, 'Olá ' + primeiro(e.tecnico) + ', aqui é da Andrioni Transportes sobre a entrega de pintinhos em ' + e.cidade + (e.integrado ? ' (' + e.integrado + ')' : '') + '.')) + '">' + ic('zap') + 'WhatsApp</a>' : '') +
       '</div></div>';
   });
@@ -1232,6 +1245,8 @@ TELAS.viagem.depois = function (r, el) {
   el.querySelectorAll('[data-entrega]').forEach(function (b) {
     b.onclick = function () { abrirEntrega(v, v.entregas.find(function (x) { return x.id === b.dataset.entrega; })); };
   });
+  el.querySelectorAll('[data-nf]').forEach(function (b) { b.onclick = function () { abrirAnexoNF(v, v.entregas.find(function (x) { return x.id === b.dataset.nf; })); }; });
+  el.querySelectorAll('[data-nf-ver]').forEach(function (b) { b.onclick = function () { verNF(v, v.entregas.find(function (x) { return x.id === b.dataset.nfVer; })); }; });
   el.querySelectorAll('[data-desfaz]').forEach(function (b) { b.onclick = function () { gravar('marcarEntrega', { id: b.dataset.desfaz, entregue: false }, 'Entrega desfeita').then(desenhar, function () {}); }; });
 };
 
@@ -2754,15 +2769,15 @@ function pegarGps(ms) {
 function esperar(ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); }
 
 /** Foto do celular reduzida (no máximo 1600 px, JPEG) para subir rápido mesmo com sinal fraco. */
-function prepararFoto(arquivo) {
+function prepararFoto(arquivo, max, q) {
   return new Promise(function (ok, erro) {
     var url = URL.createObjectURL(arquivo), im = new Image();
     im.onload = function () {
-      var k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
+      var k = Math.min(1, (max || 1600) / Math.max(im.naturalWidth, im.naturalHeight));
       var c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
-      var d = c.toDataURL('image/jpeg', .74);
+      var d = c.toDataURL('image/jpeg', q || .74);
       ok({ mime: 'image/jpeg', dados: d.split(',')[1], previa: d });
     };
     im.onerror = function () { URL.revokeObjectURL(url); erro(new Error('Não consegui abrir essa foto. Tente outra.')); };
@@ -2770,15 +2785,88 @@ function prepararFoto(arquivo) {
   });
 }
 
+/** Nota fiscal: foto (reduzida, mas legível) ou PDF como veio. */
+function prepararNF(arquivo) {
+  if (arquivo.type === 'application/pdf' || /\.pdf$/i.test(arquivo.name || '')) {
+    if (arquivo.size > 10 * 1024 * 1024) return Promise.reject(new Error('Esse PDF passou de 10 MB. Tire uma foto da nota.'));
+    return new Promise(function (ok, erro) {
+      var r = new FileReader();
+      r.onload = function () { ok({ mime: 'application/pdf', dados: String(r.result).split(',')[1], nome: arquivo.name || 'nota.pdf', pdf: true }); };
+      r.onerror = function () { erro(new Error('Não consegui abrir esse PDF.')); };
+      r.readAsDataURL(arquivo);
+    });
+  }
+  return prepararFoto(arquivo, 2200, .82);
+}
+/** Bloco de anexo da NF (tirar foto ou escolher foto/PDF) usado na entrega e no botão Anexar NF. */
+function blocoNF(id) {
+  return '<div class="nf-anexo" id="' + id + '"><div class="nf-prev oculto"></div>' +
+    '<div class="duas nf-bts"><button type="button" class="btn" data-nfcam>' + ic('camera') + 'Foto da NF</button><button type="button" class="btn" data-nfarq>' + ic('galeria') + 'Galeria ou PDF</button></div>' +
+    '<input type="file" accept="image/*" capture="environment" data-nfin1 hidden><input type="file" accept="image/*,application/pdf" data-nfin2 hidden></div>';
+}
+function ligarNF(cx, aoEscolher) {
+  var prev = cx.querySelector('.nf-prev'), bts = cx.querySelector('.nf-bts'), atual = null;
+  var mostrar = function (a) {
+    atual = a; aoEscolher(a);
+    if (!a) { prev.classList.add('oculto'); bts.classList.remove('oculto'); prev.innerHTML = ''; return; }
+    prev.innerHTML = (a.pdf ? '<div class="nf-pdf">' + ic('resumo') + '<span>' + esc(a.nome) + '</span></div>' : '<img src="' + a.previa + '" alt="Nota fiscal">') +
+      '<button type="button" class="tirar" aria-label="Tirar o anexo">' + ic('x') + '</button>';
+    prev.classList.remove('oculto'); bts.classList.add('oculto');
+    prev.querySelector('.tirar').onclick = function () { mostrar(null); };
+  };
+  [cx.querySelector('[data-nfin1]'), cx.querySelector('[data-nfin2]')].forEach(function (inp) {
+    inp.onchange = function () { var a = inp.files && inp.files[0]; inp.value = ''; if (a) prepararNF(a).then(mostrar, function (e) { toast(e.message, true); }); };
+  });
+  cx.querySelector('[data-nfcam]').onclick = function () { cx.querySelector('[data-nfin1]').click(); };
+  cx.querySelector('[data-nfarq]').onclick = function () { cx.querySelector('[data-nfin2]').click(); };
+}
+function abrirAnexoNF(v, e) {
+  var f = abrirFolha('<h2>Anexar nota fiscal</h2><p class="mudo">' + esc(e.cidade) + (e.integrado ? ' | ' + esc(e.integrado) : '') + '</p>' +
+    '<label class="campo"><span>Número da NF</span><input class="inp" id="anf-n" value="' + esc(e.nota_fiscal) + '" inputmode="numeric" data-semfoco="1"></label>' +
+    blocoNF('anf') + '<div class="botoes-folha"><button class="btn verde cheio" id="anf-s">' + ic('ok') + 'Salvar nota fiscal</button></div>');
+  var arq = null; ligarNF(f.querySelector('#anf'), function (a) { arq = a; });
+  var b = f.querySelector('#anf-s');
+  b.onclick = function () {
+    if (!arq) return toast('Tire a foto da nota ou escolha o PDF.', true);
+    b.disabled = true; b.innerHTML = '<span class="roda mini-roda"></span>Enviando a nota...';
+    gravar('anexarNF', { id: e.id, nota_fiscal: f.querySelector('#anf-n').value, arquivo: { mime: arq.mime, dados: arq.dados } }, 'Nota fiscal anexada')
+      .then(function () { fecharFolha(); desenhar(); }, function () { b.disabled = false; b.innerHTML = ic('ok') + 'Salvar nota fiscal'; });
+  };
+}
+var ARQ_NF = {};
+function verNF(v, e) {
+  var f = abrirFolha('<h2>Nota fiscal' + (e.nota_fiscal ? ' ' + esc(e.nota_fiscal) : '') + '</h2><p class="mudo">' + esc(e.cidade) + (e.integrado ? ' | ' + esc(e.integrado) : '') +
+    (e.nf_anexada_por ? '<br>Anexada por ' + esc(primeiro(e.nf_anexada_por)) + ' ' + esc(quando(e.nf_anexada_em)).toLowerCase() : '') + '</p>' +
+    '<div class="foto-ver" id="nfv"><div class="roda"></div></div><div class="botoes-folha" id="nfb">' +
+    (gestor() ? '<button class="btn fino cheio" id="nf-tira">Tirar este anexo</button>' : '') + '<button class="btn cheio" onclick="fecharFolha()">Fechar</button></div>');
+  var mostrar = function (d) {
+    var el = f.querySelector('#nfv'); if (!el) return;
+    if (d.mime === 'application/pdf') {
+      var bin = atob(d.dados), arr = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      var url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
+      el.innerHTML = '<div class="nf-pdf grande">' + ic('resumo') + '<span>' + esc(d.nome || 'Nota fiscal.pdf') + '</span></div>';
+      f.querySelector('#nfb').insertAdjacentHTML('afterbegin', '<a class="btn verde cheio" href="' + url + '" target="_blank" rel="noopener" download="' + esc((d.nome || 'nota-fiscal').replace(/\.pdf$/i, '') + '.pdf') + '">' + ic('resumo') + 'Abrir o PDF</a>');
+    } else el.innerHTML = '<img src="data:' + d.mime + ';base64,' + d.dados + '" alt="Nota fiscal">';
+  };
+  if (ARQ_NF[e.nf_arquivo_id]) mostrar(ARQ_NF[e.nf_arquivo_id]);
+  else chamar('arquivoNF', { id: e.id }).then(function (d) { ARQ_NF[e.nf_arquivo_id] = d; mostrar(d); },
+    function (x) { var el = f.querySelector('#nfv'); if (el) el.innerHTML = '<p class="fraco">' + esc(x.message || 'Não consegui abrir a nota agora.') + '</p>'; });
+  var t = f.querySelector('#nf-tira');
+  if (t) t.onclick = function () { gravar('anexarNF', { id: e.id, remover: true }, 'Anexo retirado').then(function () { fecharFolha(); desenhar(); }, function () {}); };
+}
+LEITURAS.arquivoNF = 1;
+
 /* ---------- entrega com GPS ---------- */
 function abrirEntrega(v, e) {
   var f = abrirFolha('<h2>Entrega em ' + esc(e.cidade) + '</h2><p class="mudo">' + esc(e.integrado || '') + ' | ' + fmt(e.qtd_pintinhos) + ' pintinhos</p>' +
     '<label class="campo"><span>Nota fiscal</span><input class="inp" id="nf" value="' + esc(e.nota_fiscal) + '" inputmode="numeric"></label>' +
     '<label class="campo"><span>KM na chegada <em>(opcional)</em></span><input class="inp num" id="kc" inputmode="numeric" value="' + (e.km_chegada !== '' ? fmt(e.km_chegada) : '') + '"></label>' +
+    (e.nf_arquivo_id ? '<p class="fraco" style="margin:8px 0 0">' + ic('ok') + ' Nota fiscal já anexada.</p>' : '<div class="campo"><span>Nota fiscal <em>(foto ou PDF, opcional)</em></span></div>' + blocoNF('ce-nf')) +
     '<div class="gps-st" id="eg"><span class="roda mini-roda"></span><span>Pegando a localização da granja...</span></div>' +
     '<p class="fraco" style="margin:6px 0 0;font-size:13px">Marque a entrega ainda na granja: a localização fica gravada para as próximas viagens.</p>' +
     '<div class="botoes-folha"><button class="btn verde cheio" id="ce">' + ic('ok') + 'Confirmar entrega</button></div>');
   f.querySelector('#nf').dataset.semfoco = 1;
+  var nfArq = null; if (f.querySelector('#ce-nf')) ligarNF(f.querySelector('#ce-nf'), function (a) { nfArq = a; });
   var gps = null, pronto = false;
   var gpsP = pegarGps(20000).then(function (g) {
     gps = g; pronto = true;
@@ -2790,10 +2878,10 @@ function abrirEntrega(v, e) {
   });
   var b = f.querySelector('#ce');
   b.onclick = function () {
-    b.disabled = true; b.innerHTML = '<span class="roda mini-roda"></span>' + (pronto ? 'Salvando...' : 'Terminando a localização...');
+    b.disabled = true; b.innerHTML = '<span class="roda mini-roda"></span>' + (pronto ? (nfArq ? 'Enviando a nota...' : 'Salvando...') : 'Terminando a localização...');
     Promise.race([gpsP, esperar(pronto ? 0 : 6000)]).then(function () {
       b.innerHTML = '<span class="roda mini-roda"></span>Salvando...';
-      return gravar('marcarEntrega', { id: e.id, entregue: true, nota_fiscal: f.querySelector('#nf').value, km_chegada: numero(f.querySelector('#kc').value), gps: gps }, gps && gps.precisao <= 150 ? 'Entrega registrada com a localização da granja' : 'Entrega registrada');
+      return gravar('marcarEntrega', { id: e.id, entregue: true, nota_fiscal: f.querySelector('#nf').value, km_chegada: numero(f.querySelector('#kc').value), gps: gps, arquivo_nf: nfArq ? { mime: nfArq.mime, dados: nfArq.dados } : null }, gps && gps.precisao <= 150 ? 'Entrega registrada com a localização da granja' : 'Entrega registrada');
     }).then(function () { fecharFolha(); desenhar(); }, function () { b.disabled = false; b.innerHTML = ic('ok') + 'Confirmar entrega'; });
   };
 }
