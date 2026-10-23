@@ -515,6 +515,16 @@ details.mais-campos summary::-webkit-details-marker { display: none; }
 .sr-item b { display: block; font-size: 14.5px; }
 .sr-item small { color: var(--tinta-3); font-size: 12.5px; }
 
+/* ---------- Troca de técnico ---------- */
+.tt-cab { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 4px; font-size: 14px; }
+.tt-itens { max-height: 34vh; overflow: auto; border: 1px solid var(--linha); border-radius: 14px; padding: 2px 10px; background: var(--cartao); }
+.tt-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--linha); cursor: pointer; }
+.tt-item:first-child { border-top: 0; }
+.tt-item input { width: 20px; height: 20px; accent-color: var(--azul); flex: none; }
+.tt-item b { display: block; font-size: 14px; }
+.tt-item small { color: var(--tinta-3); font-size: 12px; }
+.tt-cab .link { background: none; border: 0; padding: 4px 0; color: var(--azul); font: 700 13.5px var(--fonte); cursor: pointer; }
+
 </style>
 </head>
 <body>
@@ -1797,7 +1807,8 @@ TELAS.contatos = function (r) {
       '<div class="busca">' + ic('busca', '') + '<input class="inp" id="bc" placeholder="Buscar integrado, cidade ou técnico"></div><div id="lc"></div>';
     return s;
   }
-  s += '<div class="busca">' + ic('busca', '') + '<input class="inp" id="bc" placeholder="Buscar técnico ou região"></div><div id="lc"></div>';
+  s += (analista() ? '<div class="linha-btns" style="margin-bottom:10px"><button class="btn pri peq" onclick="editarTecnico(\'\')">' + ic('mais') + 'Técnico</button><button class="btn peq" onclick="trocarTecnico()">' + ic('pessoas') + 'Trocar técnico</button></div>' : '') +
+    '<div class="busca">' + ic('busca', '') + '<input class="inp" id="bc" placeholder="Buscar técnico ou região"></div><div id="lc"></div>';
   return s;
 };
 TELAS.contatos.depois = function (r, el) {
@@ -1814,7 +1825,8 @@ TELAS.contatos.depois = function (r, el) {
       if (analista()) l.querySelectorAll('[data-int]').forEach(function (x) { x.onclick = function (ev) { if (ev.target.closest('a')) return; editarIntegrado(x.dataset.int); }; });
     } else {
       var ts = DB.tecnicos.filter(function (t) { return !q || chave(t.nome + ' ' + t.regiao).indexOf(q) >= 0; }).slice(0, 80);
-      l.innerHTML = ts.map(function (t) { return '<div class="item"><span class="av">' + esc(iniciais(t.nome)) + '</span><span class="tx"><b>' + esc(t.nome) + '</b><small>' + esc(t.regiao) + (t.telefone ? ' | ' + esc(t.telefone) : '') + '</small></span>' + botoesContato(t.telefone, t.nome) + '</div>'; }).join('') || '<div class="vazio">Nenhum técnico encontrado.</div>';
+      l.innerHTML = ts.map(function (t) { return '<div class="item"' + (analista() ? ' data-tec="' + esc(t.nome) + '" style="cursor:pointer"' : '') + '><span class="av">' + esc(iniciais(t.nome)) + '</span><span class="tx"><b>' + esc(t.nome) + '</b><small>' + esc(t.regiao) + (t.telefone ? ' | ' + esc(t.telefone) : '') + '</small></span>' + botoesContato(t.telefone, t.nome) + '</div>'; }).join('') || '<div class="vazio">Nenhum técnico encontrado.</div>';
+      if (analista()) l.querySelectorAll('[data-tec]').forEach(function (x) { x.onclick = function (ev) { if (ev.target.closest('a')) return; editarTecnico(x.dataset.tec); }; });
     }
   };
   b.oninput = f; f();
@@ -3309,6 +3321,99 @@ TELAS.semrota.depois = function (r, el) {
     };
   });
 };
+
+/* ============================================================
+ * Técnicos: cadastro, edição e troca de técnico por região (só o analista)
+ * ============================================================ */
+function editarTecnico(nome) {
+  var t = nome ? DB.tecnicos.find(function (x) { return x.nome === nome; }) : { nome: '', telefone: '', regiao: '', obs: '' };
+  if (!t) return;
+  var nI = nome ? DB.integrados.filter(function (i) { return i.tecnico === nome; }).length : 0;
+  var f = abrirFolha('<h2>' + (nome ? 'Editar técnico' : 'Novo técnico') + '</h2>' +
+    '<label class="campo"><span>Nome do técnico</span><input class="inp" id="tc-n" value="' + esc(t.nome) + '"></label>' +
+    '<div class="duas"><label class="campo"><span>Telefone</span><input class="inp" id="tc-t" type="tel" inputmode="tel" value="' + esc(t.telefone) + '" placeholder="(35) 99999-9999"></label>' +
+    '<label class="campo"><span>Região</span><select class="inp" id="tc-r">' + opcoes(DB.regioes.map(function (r) { return r.nome; }), t.regiao, '-') + '</select></label></div>' +
+    '<label class="campo"><span>Observações <em>(opcional)</em></span><input class="inp" id="tc-o" value="' + esc(t.obs) + '"></label>' +
+    (nI ? '<p class="fraco" style="margin:8px 0 0">Cuida de ' + nI + (nI > 1 ? ' integrados' : ' integrado') + '. Mudando o nome ou o telefone, eles e as viagens já programadas acompanham.</p>' : '') +
+    '<div class="botoes-folha"><button class="btn pri cheio" id="tc-s">' + ic('ok') + 'Salvar técnico</button>' +
+    (nI ? '<button class="btn cheio" id="tc-tr">' + ic('pessoas') + 'Passar os integrados para outro técnico</button>' : '') + '</div>');
+  f.querySelector('#tc-s').onclick = function () {
+    gravar('salvarTecnico', { tecnico: { original: nome || '', nome: f.querySelector('#tc-n').value, telefone: f.querySelector('#tc-t').value, regiao: f.querySelector('#tc-r').value, obs: f.querySelector('#tc-o').value } }, 'Técnico salvo')
+      .then(function () { fecharFolha(); desenhar(); }, function () {});
+  };
+  var tr = f.querySelector('#tc-tr'); if (tr) tr.onclick = function () { trocarTecnico(t.regiao, t.nome); };
+}
+
+/** Troca de técnico por região: escolhe a região, o técnico que sai, os integrados e o técnico novo. */
+function trocarTecnico(regiao, de) {
+  var regs = DB.regioes.map(function (r) { return r.nome; });
+  var estado = { regiao: regiao || '', de: de || '', marcados: null };
+  var f = abrirFolha('<h2>Trocar técnico</h2><p class="mudo" style="margin:2px 0 8px">Os integrados passam para o técnico novo, e as viagens já programadas também.</p>' +
+    '<label class="campo"><span>Região</span><select class="inp" id="tt-r">' + opcoes(regs, estado.regiao, 'Escolha a região') + '</select></label>' +
+    '<label class="campo"><span>Técnico que vai sair</span><select class="inp" id="tt-d"></select></label>' +
+    '<div id="tt-lista"></div>' +
+    '<label class="campo"><span>Técnico novo</span><input class="inp" id="tt-p" list="dl-tt" placeholder="Nome do técnico novo" autocomplete="off"></label>' +
+    '<label class="campo"><span>Telefone do técnico novo</span><input class="inp" id="tt-t" type="tel" inputmode="tel" placeholder="(35) 99999-9999"></label>' +
+    '<datalist id="dl-tt">' + DB.tecnicos.map(function (t) { return '<option value="' + esc(t.nome) + '">' + esc(t.regiao || '') + '</option>'; }).join('') + '</datalist>' +
+    '<div class="botoes-folha"><button class="btn pri cheio" id="tt-s" disabled>' + ic('ok') + 'Trocar técnico</button></div>');
+  var selR = f.querySelector('#tt-r'), selD = f.querySelector('#tt-d'), lista = f.querySelector('#tt-lista'), inP = f.querySelector('#tt-p'), inT = f.querySelector('#tt-t'), bt = f.querySelector('#tt-s');
+  var integrados = function () { return DB.integrados.filter(function (i) { return chave(i.regiao) === chave(estado.regiao) && i.tecnico === estado.de; }); };
+  var montarDe = function () {
+    var cont = {};
+    DB.integrados.forEach(function (i) { if (chave(i.regiao) === chave(estado.regiao) && i.tecnico) cont[i.tecnico] = (cont[i.tecnico] || 0) + 1; });
+    var ks = Object.keys(cont).sort();
+    if (ks.indexOf(estado.de) < 0) estado.de = '';
+    selD.innerHTML = '<option value="">' + (estado.regiao ? (ks.length ? 'Escolha o técnico' : 'Nenhum técnico com integrados aqui') : 'Escolha a região primeiro') + '</option>' +
+      ks.map(function (k) { return '<option value="' + esc(k) + '"' + (k === estado.de ? ' selected' : '') + '>' + esc(k) + ' (' + cont[k] + ')</option>'; }).join('');
+    montarLista();
+  };
+  var montarLista = function () {
+    var xs = integrados(); estado.marcados = {};
+    xs.forEach(function (i) { estado.marcados[i.id] = true; });
+    lista.innerHTML = !xs.length ? '' : '<div class="tt-cab"><b>' + xs.length + (xs.length > 1 ? ' integrados' : ' integrado') + '</b><button type="button" class="link" id="tt-todos">Desmarcar todos</button></div><div class="tt-itens">' +
+      xs.map(function (i) { return '<label class="tt-item"><input type="checkbox" data-id="' + esc(i.id) + '" checked><span><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade || '') + '</small></span></label>'; }).join('') + '</div>';
+    lista.querySelectorAll('[data-id]').forEach(function (c) { c.onchange = function () { estado.marcados[c.dataset.id] = c.checked; conferir(); }; });
+    var td = lista.querySelector('#tt-todos');
+    if (td) td.onclick = function () {
+      var algum = Object.keys(estado.marcados).some(function (k) { return estado.marcados[k]; });
+      lista.querySelectorAll('[data-id]').forEach(function (c) { c.checked = !algum; estado.marcados[c.dataset.id] = !algum; });
+      td.textContent = algum ? 'Marcar todos' : 'Desmarcar todos'; conferir();
+    };
+    conferir();
+  };
+  var escolhidos = function () { return Object.keys(estado.marcados || {}).filter(function (k) { return estado.marcados[k]; }); };
+  var conferir = function () {
+    var n = escolhidos().length;
+    bt.disabled = !(n && inP.value.trim());
+    bt.innerHTML = ic('ok') + (n ? 'Trocar técnico de ' + n + (n > 1 ? ' integrados' : ' integrado') : 'Trocar técnico');
+  };
+  selR.onchange = function () { estado.regiao = selR.value; montarDe(); };
+  selD.onchange = function () { estado.de = selD.value; montarLista(); };
+  inP.oninput = function () {
+    var t = DB.tecnicos.find(function (x) { return chave(x.nome) === chave(inP.value); });
+    if (t && t.telefone && !inT.dataset.mexeu) inT.value = t.telefone;
+    conferir();
+  };
+  inT.oninput = function () { inT.dataset.mexeu = 1; };
+  bt.onclick = function () {
+    var ids = escolhidos(), total = integrados().length;
+    var para = inP.value.trim(), existe = DB.tecnicos.some(function (x) { return chave(x.nome) === chave(para); });
+    confirmarFolha('Confirmar a troca', estado.de + ' → ' + para + ' em ' + ids.length + (ids.length > 1 ? ' integrados' : ' integrado') + ' de ' + estado.regiao + '.' + (existe ? '' : ' O técnico novo entra no cadastro.') + ' As viagens já programadas também mudam.', 'Trocar').then(function (sim) {
+      if (!sim) return;
+      gravar('trocarTecnico', { regiao: estado.regiao, de: estado.de, para: para, telefone: inT.value.trim(), ids: ids.length === total ? [] : ids }, 'Técnico trocado').then(function () { fecharFolha(); desenhar(); }, function () {});
+    });
+  };
+  montarDe();
+}
+
+/** No cadastro do integrado, ao escolher o técnico, o telefone vem sozinho. */
+document.addEventListener('input', function (ev) {
+  var i = ev.target;
+  if (!i.matches || !i.matches('[data-i="tecnico"]')) return;
+  var t = DB && DB.tecnicos ? DB.tecnicos.find(function (x) { return chave(x.nome) === chave(i.value); }) : null;
+  var tel = i.closest('.folha') && i.closest('.folha').querySelector('[data-i="telefone"]');
+  if (t && tel) tel.value = t.telefone || '';
+});
 
 </script>
 </body>
