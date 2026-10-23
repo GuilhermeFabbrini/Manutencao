@@ -528,6 +528,17 @@ details.mais-campos summary::-webkit-details-marker { display: none; }
 /* ---------- Calibração no Pátio ---------- */
 .vaga .lub + .lub { margin-top: 5px; }
 
+/* ---------- Espaço no Drive ---------- */
+.cartao.espaco { margin-top: 14px; }
+.esp-cab { display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+.esp-cab b { display: flex; align-items: center; gap: 6px; }
+.esp-cab b svg { width: 18px; height: 18px; color: var(--azul); }
+.esp-cab span { font-family: var(--fonte-titulo); font-weight: 800; font-size: 18px; }
+.esp-barra { height: 10px; background: var(--fundo); border-radius: 5px; overflow: hidden; margin: 8px 0 6px; }
+.esp-barra i { display: block; height: 100%; border-radius: 5px; }
+.cartao.espaco small { display: block; color: var(--tinta-2); font-size: 13px; }
+.cartao.espaco .esp-regra { color: var(--tinta-3); font-size: 12px; margin-top: 4px; }
+
 </style>
 </head>
 <body>
@@ -1066,6 +1077,8 @@ function listaViagens(vs, op) { return vs.length ? '<div class="lista">' + vs.ma
 /* ============================================================ alertas */
 function alertas() {
   var h = hojeISO(), out = [];
+  var ae = typeof alertaEspaco === 'function' ? alertaEspaco() : null;
+  if (ae) out.unshift(ae);
   if (gestor()) {
     var oa = ocAbertas();
     if (oa.length) out.unshift({ g: 'grave', t: oa.length + (oa.length > 1 ? ' ocorrências abertas' : ' ocorrência aberta'), s: oa[0].tipo + (oa[0].placa ? ' no ' + oa[0].placa : '') + ', ' + primeiro(oa[0].registrado_por) + ' ' + quando(oa[0].data_hora).toLowerCase() + (oa[0].descricao ? ': ' + oa[0].descricao : '') + '.', l: '#ocorrencias' });
@@ -1660,6 +1673,7 @@ TELAS.mais = function () {
   ];
   t.push(['acessos', 'chave', '#B42318', 'Acessos', 'Quem entra e senhas']);
   return '<h2>Mais</h2><div class="grade-mais" style="margin-top:12px">' + t.map(function (x) { return '<a class="tile" href="#' + x[0] + '"><span class="ib" style="background:' + x[2] + '">' + ic(x[1], '') + '</span><b>' + x[3] + '</b><small>' + esc(x[4]) + '</small></a>'; }).join('') + '</div>' +
+    (typeof cartaoEspaco === 'function' ? cartaoEspaco() : '') +
     (analista() ? '<a class="btn cheio" style="margin-top:14px" href="' + esc(DB.config.planilha) + '" target="_blank" rel="noopener">' + ic('planilha') + 'Abrir a planilha no Drive</a>' : '') +
     '<button class="btn cheio" style="margin-top:8px" onclick="menuEu()">' + ic('pessoa') + 'Minha conta</button>';
 };
@@ -3446,6 +3460,45 @@ document.addEventListener('input', function (ev) {
   var tel = i.closest('.folha') && i.closest('.folha').querySelector('[data-i="telefone"]');
   if (t && tel) tel.value = t.telefone || '';
 });
+
+/* ============================================================
+ * Espaço no Drive: aviso com antecedência antes de encher (só o analista vê)
+ * ============================================================ */
+function fmtBytes(b) {
+  if (b === null || b === undefined) return '-';
+  var gb = b / 1073741824;
+  if (gb >= 1) return (gb >= 10 ? Math.round(gb) : gb.toFixed(1).replace('.', ',')) + ' GB';
+  return Math.max(1, Math.round(b / 1048576)) + ' MB';
+}
+function prazoTexto(d) {
+  if (d === null || d === undefined) return '';
+  if (d > 730) return 'mais de 2 anos';
+  if (d > 60) return 'uns ' + Math.round(d / 30) + ' meses';
+  return d + (d === 1 ? ' dia' : ' dias');
+}
+/** Regra do aviso: 75% usado, 85% (grave), 95% (urgente) ou quando, no ritmo atual, encher em até 90 dias. */
+function alertaEspaco() {
+  var e = DB.espaco;
+  if (!e || !analista()) return null;
+  var pct = e.pct, falta = e.limite ? e.limite - e.usado : null, ritmo = e.dias !== null && e.dias !== undefined ? ' No ritmo atual, enche em ' + prazoTexto(e.dias) + '.' : '';
+  var oque = ' Quando encher, as fotos e as notas fiscais param de ser salvas (as entregas continuam).';
+  if (pct !== null && pct >= 0.95) return { g: 'grave', t: 'Drive quase cheio: ' + Math.round(pct * 100) + '% usado', s: 'Faltam só ' + fmtBytes(falta) + '. Libere espaço agora ou aumente o plano.' + oque, l: '#mais' };
+  if (pct !== null && pct >= 0.85) return { g: 'grave', t: 'Drive com ' + Math.round(pct * 100) + '% usado', s: 'Faltam ' + fmtBytes(falta) + '.' + ritmo + ' Hora de liberar espaço.', l: '#mais' };
+  if (pct !== null && pct >= 0.75) return { g: '', t: 'Drive com ' + Math.round(pct * 100) + '% usado', s: 'Faltam ' + fmtBytes(falta) + '.' + ritmo + ' Vá se programando para liberar espaço.', l: '#mais' };
+  if (e.dias !== null && e.dias !== undefined && e.dias <= 90) return { g: e.dias <= 30 ? 'grave' : '', t: 'Drive enche em ' + prazoTexto(e.dias), s: 'No ritmo atual (cerca de ' + fmtBytes(e.porDia) + ' por dia), faltam ' + fmtBytes(falta) + '.' + oque, l: '#mais' };
+  return null;
+}
+function cartaoEspaco() {
+  var e = DB.espaco;
+  if (!e || !analista()) return '';
+  var pct = e.pct, cor = pct === null ? 'var(--azul)' : pct >= 0.85 ? '#E5484D' : pct >= 0.75 ? '#E88A00' : '#0FA36B';
+  return '<div class="cartao espaco"><div class="esp-cab"><b>' + ic('planilha') + ' Espaço no Drive</b><span>' + (pct !== null ? Math.round(pct * 100) + '%' : '') + '</span></div>' +
+    (pct !== null ? '<div class="esp-barra"><i style="width:' + Math.max(1.5, Math.min(100, pct * 100)) + '%;background:' + cor + '"></i></div>' : '') +
+    '<small>' + fmtBytes(e.usado) + (e.limite ? ' de ' + fmtBytes(e.limite) + ' usados' : ' usados') +
+    (e.porDia !== null && e.porDia !== undefined ? ' | cresce cerca de ' + fmtBytes(e.porDia) + ' por dia' : ' | o ritmo aparece depois de 3 dias de uso') +
+    (e.dias !== null && e.dias !== undefined ? ' | enche em ' + prazoTexto(e.dias) : '') + '</small>' +
+    '<small class="esp-regra">Aviso em "Precisa de atenção" com 75%, 85% e 95% usado, ou quando faltar até 90 dias para encher.</small></div>';
+}
 
 </script>
 </body>
