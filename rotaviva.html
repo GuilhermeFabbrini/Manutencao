@@ -542,6 +542,20 @@ details.mais-campos summary::-webkit-details-marker { display: none; }
 .cartao.espaco small { display: block; color: var(--tinta-2); font-size: 13px; }
 .cartao.espaco .esp-regra { color: var(--tinta-3); font-size: 12px; margin-top: 4px; }
 
+/* histórico da caixinha (lubrificação / calibração) */
+.hm { margin-top: 18px; border-top: 1px solid var(--linha); padding-top: 14px; }
+.hm h3 { margin: 0 0 6px; font-size: 15px; }
+.hm-res { margin: 0 0 10px; font-size: 13px; color: var(--tinta-2); }
+.hm-res b { color: var(--tinta); }
+.hm ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hm li { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--cartao); border-radius: var(--raio-p); padding: 9px 12px; }
+.hm li b { font-size: 14px; }
+.hm li small { color: var(--tinta-3); font-size: 12px; }
+.hm li span { display: block; font-size: 12px; color: var(--tinta-2); margin-top: 1px; }
+.hm-chip { flex: none; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+.hm-chip.ok { background: #E3F6EC; color: #146C43; }
+.hm-chip.atraso { background: #FDECEC; color: #B42318; }
+
 </style>
 </head>
 <body>
@@ -878,6 +892,29 @@ function calHtml(placa) {
   var txt = l.faltam < 0 ? 'Calibração vencida há ' + (-l.faltam) + (l.faltam === -1 ? ' dia' : ' dias') : l.faltam === 0 ? 'Calibrar hoje' : 'Próxima em ' + dataBR(l.proxima) + (l.faltam <= 2 ? ' (' + l.faltam + (l.faltam === 1 ? ' dia)' : ' dias)') : '');
   return '<span class="lub cal ' + cls + '"' + at + '><b>' + ic('pneu') + ' Calib. ' + dataBR(l.ultima) + '</b>' + esc(txt) + '</span>';
 }
+/**
+ * Histórico da caixinha: últimas datas lançadas daquele caminhão e se cada uma ficou no prazo
+ * (intervalo desde a anterior até o limite de dias da regra).
+ */
+function histManutHtml(placa, tipo) {
+  var dias = tipo === 'cal' ? CAL_DIAS : LUB_DIAS, nome = tipo === 'cal' ? 'calibrações' : 'lubrificações';
+  var lista = ((DB.manutencoes || {})[placa] || {})[tipo] || [];
+  if (!lista.length) return '<div class="hm"><h3>Histórico</h3><p class="mudo">Nenhuma data lançada ainda. As próximas ficam guardadas aqui.</p></div>';
+  var noPrazo = 0, comparadas = 0, soma = 0;
+  var linhas = lista.map(function (x, i) {
+    var ant = lista[i + 1], chip = '', inter = '';
+    if (ant) {
+      var gap = diffDias(ant.data, x.data); comparadas++; soma += gap;
+      inter = gap + (gap === 1 ? ' dia' : ' dias') + ' depois da anterior';
+      if (gap <= dias) { noPrazo++; chip = '<span class="hm-chip ok">No prazo</span>'; }
+      else chip = '<span class="hm-chip atraso">' + (gap - dias) + (gap - dias === 1 ? ' dia' : ' dias') + ' de atraso</span>';
+    } else inter = 'Primeiro registro';
+    var por = x.por ? 'Lançado por ' + x.por.split(' ')[0] + (x.em ? ' em ' + dataBR(x.em) : '') : '';
+    return '<li><div><b>' + esc(dataBRc(x.data)) + '</b> <small>' + esc(diaNome(x.data)) + '</small><span>' + esc(inter) + (por ? ' | ' + esc(por) : '') + '</span></div>' + chip + '</li>';
+  }).join('');
+  var resumo = comparadas ? '<p class="hm-res"><b>No prazo em ' + noPrazo + ' de ' + comparadas + (comparadas === 1 ? ' vez' : ' vezes') + '</b> | média de ' + Math.round(soma / comparadas) + ' dias entre uma e outra (regra: ' + dias + ' dias)</p>' : '';
+  return '<div class="hm"><h3>Últimas ' + nome + '</h3>' + resumo + '<ul>' + linhas + '</ul></div>';
+}
 document.addEventListener('click', function (ev) {
   var b = ev.target.closest && ev.target.closest('[data-cal]');
   if (!b) return;
@@ -888,7 +925,7 @@ function lancarCal(placa) {
   var l = calDe(placa);
   var f = abrirFolha('<h2>Calibração do ' + esc(placa) + '</h2><p class="mudo">' + (l ? 'Última: ' + esc(dataBRc(l.ultima)) + '. Próxima até ' + esc(dataBRc(l.proxima)) + '.' : 'Ainda sem data lançada.') + ' A calibração dos pneus é a cada ' + CAL_DIAS + ' dias.</p>' +
     '<label class="campo"><span>Data em que foi calibrado</span><input class="inp" type="date" id="cal-d" max="' + hojeISO() + '" value="' + hojeISO() + '"></label>' +
-    '<div class="botoes-folha"><button class="btn pri cheio" id="cal-s">' + ic('ok') + 'Salvar calibração</button><button class="btn cheio" id="cal-n">Voltar</button></div>');
+    '<div class="botoes-folha"><button class="btn pri cheio" id="cal-s">' + ic('ok') + 'Salvar calibração</button><button class="btn cheio" id="cal-n">Voltar</button></div>' + histManutHtml(placa, 'cal'));
   f.querySelector('#cal-d').dataset.semfoco = 1;
   f.querySelector('#cal-n').onclick = function () { fecharFolha(); };
   f.querySelector('#cal-s').onclick = function () {
@@ -909,7 +946,7 @@ function lancarLub(placa) {
   var l = lubDe(placa);
   var f = abrirFolha('<h2>Lubrificação do ' + esc(placa) + '</h2><p class="mudo">' + (l ? 'Última: ' + esc(dataBRc(l.ultima)) + '. Próxima até ' + esc(dataBRc(l.proxima)) + '.' : 'Ainda sem data lançada.') + ' É feita a cada ' + LUB_DIAS + ' dias.</p>' +
     '<label class="campo"><span>Data em que foi lubrificado</span><input class="inp" type="date" id="lub-d" max="' + hojeISO() + '" value="' + hojeISO() + '"></label>' +
-    '<div class="botoes-folha"><button class="btn pri cheio" id="lub-s">' + ic('ok') + 'Salvar lubrificação</button><button class="btn cheio" id="lub-n">Voltar</button></div>');
+    '<div class="botoes-folha"><button class="btn pri cheio" id="lub-s">' + ic('ok') + 'Salvar lubrificação</button><button class="btn cheio" id="lub-n">Voltar</button></div>' + histManutHtml(placa, 'lub'));
   f.querySelector('#lub-d').dataset.semfoco = 1;
   f.querySelector('#lub-n').onclick = function () { fecharFolha(); };
   f.querySelector('#lub-s').onclick = function () {
