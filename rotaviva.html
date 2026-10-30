@@ -1071,7 +1071,7 @@ function desenhar() {
   var r = rota(), el = document.getElementById('tela');
   // telas que dependem do perfil
   var SO_ANALISTA = { mais: 1, frota: 1, caminhao: 1, motoristas: 1, motorista: 1, painel: 1, historico: 1, acessos: 1, resumo: 1 };
-  var SO_GESTOR = { nova: 1, editar: 1, pendentes: 1, ocorrencias: 1, semrota: 1 };
+  var SO_GESTOR = { nova: 1, editar: 1, pendentes: 1, ocorrencias: 1, semrota: 1, km: 1 };
   if ((SO_ANALISTA[r.tela] && !analista()) || (SO_GESTOR[r.tela] && !gestor())) { location.replace('#hoje'); return; }
   var aba = { hoje: 'hoje', agenda: 'agenda', viagem: 'agenda', nova: 'nova', editar: 'nova', rotas: 'rotas', rota: 'rotas', novarota: 'rotas' }[r.tela] || (analista() ? 'mais' : 'contatos');
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.n === aba); });
@@ -1251,11 +1251,108 @@ TELAS.pendentes = function () {
   var ab = DB.viagens.filter(function (v) { return (v.status === 'Programada' || v.status === 'Confirmada' || v.status === 'Em viagem') && v.data < somaDias(h, -1); });
   var sk = DB.viagens.filter(function (v) { return v.status === 'Finalizada' && v.data >= somaDias(h, -7) && v.km_rodado === '' && !importada(v); });
   return '<button class="voltar" onclick="history.back()">' + ic('esq') + 'Voltar</button><h2>Viagens para fechar</h2>' +
+    '<a class="btn cheio" style="margin-top:12px" href="#km">' + ic('lapis') + 'Corrigir KM lançado errado</a>' +
     '<div class="secao"><h2>Passadas sem finalizar</h2></div>' + (ab.length ? listaViagens(ab.slice().reverse(), { mostrarData: true }) : '<div class="vazio"><b>Tudo finalizado</b>Nenhuma viagem passada em aberto.</div>') +
     '<div class="secao"><h2>Finalizadas sem KM</h2></div>' + (sk.length ? listaViagens(sk.slice().reverse(), { mostrarData: true }) : '<div class="vazio"><b>KM em dia</b>Todas as viagens dos últimos 7 dias têm KM.</div>');
 };
 
 /* ---------- Detalhe da viagem ---------- */
+/* ---------- Corrigir KM ---------- */
+var KMF = { placa: '', dias: 30, so: false, _rota: '' };
+/** Marca KM suspeito: não bate com a viagem anterior do mesmo caminhão, final menor que o inicial ou rodado acima de 2.000 km. */
+function kmAnalise() {
+  var porPlaca = {}, out = {};
+  DB.viagens.forEach(function (v) { if (v.status !== 'Cancelada' && v.placa) (porPlaca[v.placa] = porPlaca[v.placa] || []).push(v); });
+  Object.keys(porPlaca).forEach(function (p) {
+    var ant = null;
+    porPlaca[p].slice().sort(function (a, b) { return ordemV(a).localeCompare(ordemV(b)); }).forEach(function (v) {
+      var av = [], ki = numero(v.km_inicial), kf = numero(v.km_final);
+      if (ki !== '' && kf !== '' && kf < ki) av.push('KM final menor que o inicial');
+      else if (ki !== '' && kf !== '' && kf - ki > 2000) av.push('Rodou ' + fmt(kf - ki) + ' km, confira');
+      if (ant && ki !== '' && numero(ant.km_final) !== '' && ki !== numero(ant.km_final)) {
+        var d = ki - numero(ant.km_final);
+        av.push('A viagem anterior (' + ant.id + ') terminou com ' + fmt(ant.km_final) + ' km (diferença ' + (d > 0 ? '+' : '-') + fmt(Math.abs(d)) + ')');
+      }
+      out[v.id] = { anterior: ant, avisos: av };
+      if (kf !== '' || ki !== '') ant = v;
+    });
+  });
+  return out;
+}
+function kmProblemas() {
+  if (!DB) return [];
+  var a = kmAnalise(), ini = somaDias(hojeISO(), -30);
+  return DB.viagens.filter(function (v) { return v.data >= ini && a[v.id] && a[v.id].avisos.length && !importada(v); });
+}
+TELAS.km = function (r) {
+  if (r.id && KMF._rota !== r.id) { KMF.placa = r.id; KMF._rota = r.id; }
+  var h = hojeISO(), ini = somaDias(h, -KMF.dias), an = kmAnalise();
+  var pr = frotaPropria(), placasV = {};
+  DB.viagens.forEach(function (v) { if (v.placa && v.data >= ini) placasV[v.placa] = 1; });
+  var placas = pr.map(function (c) { return c.placa; });
+  Object.keys(placasV).sort().forEach(function (p) { if (placas.indexOf(p) < 0) placas.push(p); });
+  var vs = DB.viagens.filter(function (v) {
+    return v.status !== 'Cancelada' && v.data >= ini && v.data <= somaDias(h, 1) && (!KMF.placa || v.placa === KMF.placa) &&
+      (v.km_inicial !== '' || v.km_final !== '' || v.status === 'Em viagem' || v.status === 'Finalizada') &&
+      (!KMF.so || (an[v.id] && an[v.id].avisos.length));
+  }).slice().reverse();
+
+  var s = '<button class="voltar" onclick="history.back()">' + ic('esq') + 'Voltar</button><h2>Corrigir KM</h2>' +
+    '<p class="mudo" style="margin:6px 0 0">Ajuste o KM inicial e final lançado pelos motoristas. Cada viagem salva na hora, direto na planilha.</p>';
+
+  // último KM de cada caminhão (é o número sugerido quando o motorista inicia a próxima viagem)
+  s += '<div class="secao"><h2>Último KM dos caminhões</h2></div><div class="cartao">' + pr.map(function (c) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0">' + placaHtml(c.placa) +
+      '<b class="num">' + (c.km_atual !== '' ? fmt(c.km_atual) : '-') + '</b>' +
+      '<button class="btn peq" onclick="editarCaminhao(\'' + esc(c.placa) + '\')">' + ic('lapis') + 'Corrigir</button></div>';
+  }).join('') + '<p class="fraco" style="margin:6px 0 0">Esse número aparece sugerido no KM inicial da próxima viagem. Se estiver errado, corrija aqui também.</p></div>';
+
+  // filtros
+  s += '<div class="secao"><h2>Viagens</h2><span class="fraco">' + vs.length + '</span></div>';
+  s += '<div class="chips"><button type="button" class="escolha' + (!KMF.placa ? ' on' : '') + '" data-kp="">Todos</button>' +
+    placas.map(function (p) { return '<button type="button" class="escolha' + (KMF.placa === p ? ' on' : '') + '" data-kp="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') + '</div>';
+  s += '<div class="seg" style="margin-top:4px">' + [7, 30, 60].map(function (d) { return '<button type="button" class="' + (KMF.dias === d ? 'on' : '') + '" data-kd="' + d + '">' + d + ' dias</button>'; }).join('') +
+    '<button type="button" class="' + (KMF.so ? 'on' : '') + '" data-kso>Só suspeitos</button></div>';
+
+  if (!vs.length) return s + '<div class="vazio" style="margin-top:12px"><b>Nada para mostrar</b>' + (KMF.so ? 'Nenhum KM suspeito neste período.' : 'Nenhuma viagem com KM neste período.') + '</div>';
+
+  s += vs.map(function (v) {
+    var a = an[v.id] || { avisos: [] }, ki = numero(v.km_inicial), kf = numero(v.km_final), rod = (ki !== '' && kf !== '') ? kf - ki : '';
+    return '<div class="cartao" data-kmv="' + esc(v.id) + '" style="margin-top:10px' + (a.avisos.length ? ';box-shadow:0 0 0 2px #F5B400 inset,var(--sombra)' : '') + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div><b>' + esc(dataBRc(v.data)) + '</b> <a href="#viagem/' + esc(v.id) + '" class="fraco">' + esc(v.id) + '</a><div class="fraco">' + esc(v.placa || 'sem placa') + ' | ' + esc(v.motorista ? primeiro(v.motorista) : 'sem motorista') + (v.regiao ? ' | ' + esc(v.regiao) : '') + '</div></div>' + pill(v.status) + '</div>' +
+      '<div class="duas"><label class="campo"><span>KM inicial</span><input class="inp num" inputmode="numeric" autocomplete="off" data-ki value="' + (ki !== '' ? fmt(ki) : '') + '"></label>' +
+      '<label class="campo"><span>KM final</span><input class="inp num" inputmode="numeric" autocomplete="off" data-kf value="' + (kf !== '' ? fmt(kf) : '') + '"></label></div>' +
+      '<p class="fraco" data-krod style="margin:8px 0 0">Rodado: ' + (rod !== '' ? fmt(rod) + ' km' : '-') + '</p>' +
+      (a.avisos.length ? '<p style="margin:6px 0 0;color:#9A6700;font-size:14px;font-weight:600">' + ic('alerta') + ' ' + a.avisos.map(esc).join('<br>') + '</p>' : '') +
+      '<button class="btn pri cheio" style="margin-top:10px" data-ksalvar>' + ic('ok') + 'Salvar KM</button></div>';
+  }).join('');
+  return s;
+};
+TELAS.km.depois = function (r, el) {
+  el.querySelectorAll('[data-kp]').forEach(function (b) { b.onclick = function () { KMF.placa = b.dataset.kp; KMF._rota = KMF.placa; desenhar(); }; });
+  el.querySelectorAll('[data-kd]').forEach(function (b) { b.onclick = function () { KMF.dias = Number(b.dataset.kd); desenhar(); }; });
+  var so = el.querySelector('[data-kso]'); if (so) so.onclick = function () { KMF.so = !KMF.so; desenhar(); };
+  el.querySelectorAll('[data-kmv]').forEach(function (c) {
+    var ki = c.querySelector('[data-ki]'), kf = c.querySelector('[data-kf]'), rod = c.querySelector('[data-krod]');
+    var calc = function () {
+      [ki, kf].forEach(function (i) { var n = numero(i.value); if (n !== '' && i.value !== fmt(n)) i.value = fmt(n); });
+      var a = numero(ki.value), b = numero(kf.value);
+      rod.textContent = (a !== '' && b !== '') ? (b >= a ? 'Rodado: ' + fmt(b - a) + ' km' : 'O KM final está menor que o inicial.') : 'Rodado: -';
+    };
+    ki.addEventListener('input', calc); kf.addEventListener('input', calc);
+    c.querySelector('[data-ksalvar]').onclick = function () {
+      var v = viagemDe(c.dataset.kmv); if (!v) return toast('Viagem não encontrada. Atualize o aplicativo.', true);
+      var a = numero(ki.value), b = numero(kf.value);
+      if (a !== '' && b !== '' && b < a) return toast('O KM final está menor que o inicial.', true);
+      if (v.status === 'Finalizada' && b === '') return toast('Viagem finalizada precisa do KM final.', true);
+      var nv = JSON.parse(JSON.stringify(v)), es = JSON.parse(JSON.stringify(v.entregas || []));
+      delete nv.entregas;
+      nv.km_inicial = a; nv.km_final = b;
+      gravar('salvarViagem', { viagem: nv, entregas: es }, 'KM corrigido na ' + v.id).then(desenhar, function () {});
+    };
+  });
+};
+
 TELAS.viagem = function (r) {
   var v = viagemDe(r.id);
   if (!v) return '<button class="voltar" onclick="ir(\'agenda\')">' + ic('esq') + 'Agenda</button><div class="vazio"><b>Viagem não encontrada</b>Ela pode ter sido excluída.</div>';
@@ -1283,7 +1380,7 @@ TELAS.viagem = function (r) {
   s += '<div class="acoes">' + a + lin + '</div>';
 
   // km
-  s += '<div class="secao"><h2>Quilometragem</h2>' + (cam && cam.km_atual !== '' ? '<span class="fraco">Último KM do ' + esc(v.placa) + ': ' + fmt(cam.km_atual) + '</span>' : '') + '</div>';
+  s += '<div class="secao"><h2>Quilometragem</h2>' + (cam && cam.km_atual !== '' ? '<span class="fraco">Último KM do ' + esc(v.placa) + ': ' + fmt(cam.km_atual) + '</span>' : '') + (gestor() && v.status !== 'Cancelada' ? '<a href="#km/' + esc(v.placa || '') + '">' + ic('lapis') + ' Corrigir KM</a>' : '') + '</div>';
   s += '<div class="cartao"><div class="km-bloco"><div><small>KM inicial</small><b class="num">' + (v.km_inicial !== '' ? fmt(v.km_inicial) : '-') + '</b></div><div><small>KM final</small><b class="num">' + (v.km_final !== '' ? fmt(v.km_final) : '-') + '</b></div><div class="rodado"><small>Rodado</small><b class="num">' + (v.km_rodado !== '' ? fmt(v.km_rodado) : '-') + '</b></div></div>' +
     (rt && rt.km_estimado ? '<p class="fraco" style="margin:8px 0 0">Rota prevista: ' + fmt(rt.km_estimado) + ' km' + (v.km_rodado !== '' ? ' (diferença de ' + fmt(v.km_rodado - rt.km_estimado) + ' km)' : '') + '</p>' : '') +
     (v.inicio_em ? '<p class="fraco" style="margin:6px 0 0">Saiu ' + esc(quando(v.inicio_em)) + (v.fim_em ? ' e finalizou ' + esc(quando(v.fim_em)) : '') + '</p>' : '') + '</div>';
@@ -1706,6 +1803,7 @@ TELAS.mais = function () {
     ['motoristas', 'pessoas', '#0FA36B', 'Motoristas', DB.motoristas.filter(ativo).length + ' cadastrados'],
     ['painel', 'grafico', '#E88A00', 'Painel', 'Pintinhos, km e viagens'],
     ['resumo', 'resumo', '#0FA36B', 'Resumo do mês', 'Pronto para mandar'],
+    ['km', 'lapis', '#1665C1', 'Corrigir KM', kmProblemas().length ? kmProblemas().length + ' para conferir' : 'KM das viagens'],
     ['ocorrencias', 'alerta', '#E5484D', 'Ocorrências', ocAbertas().length ? ocAbertas().length + ' abertas' : 'Nenhuma aberta'],
     ['contatos', 'fone', '#6E56CF', 'Contatos', 'Programação e técnicos'],
     ['contatos/integrados', 'granja', '#0A2140', 'Integrados', DB.integrados.length + ' granjas'],
