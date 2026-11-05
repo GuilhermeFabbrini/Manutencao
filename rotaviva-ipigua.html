@@ -493,6 +493,30 @@ details.mais-campos summary::-webkit-details-marker { display: none; }
 .res-lin .tr i { display: block; height: 100%; border-radius: 5px; background: var(--azul); }
 .res-lin .tr.marinho i { background: var(--noite); }
 .res-lin small { color: var(--tinta-3); font-size: 12.5px; }
+/* fechamento por motorista (diárias extras) */
+.fe-tot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.fe-tot div { background: var(--fundo); border-radius: 14px; padding: 10px 6px; text-align: center; }
+.fe-tot b { display: block; font-family: var(--fonte-titulo); font-size: 24px; color: var(--noite); }
+.fe-tot small { color: var(--tinta-2); font-size: 12px; font-weight: 600; }
+.fe-tot .fe-alerta { background: #FFF0D1; } .fe-tot .fe-alerta b { color: #8A4B00; }
+.grafico .btn svg { width: 20px; height: 20px; }
+details.fe-mot { border-top: 1px solid var(--linha); }
+details.fe-mot summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 0; cursor: pointer; }
+details.fe-mot summary::-webkit-details-marker { display: none; }
+.fe-mot .res-nome small { display: block; font-weight: 600; color: var(--tinta-3); font-size: 12px; }
+.fe-badge { flex: none; padding: 5px 10px; border-radius: 999px; background: var(--fundo); color: var(--tinta-2); font-weight: 800; font-size: 13px; white-space: nowrap; }
+.fe-badge.on { background: #DDF5EA; color: #07724A; }
+.fe-d { margin: 0 0 8px; border-radius: 12px; background: var(--fundo); padding: 8px 10px; }
+.fe-d.on { background: #E6F7EF; box-shadow: inset 4px 0 0 var(--verde); }
+.fe-dh { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--tinta-2); }
+.fe-dh b { color: var(--tinta); } .fe-dh em { font-style: normal; font-weight: 800; color: #07724A; }
+.fe-v { display: flex; align-items: center; gap: 8px; padding: 6px 0 0; font-size: 13px; color: var(--tinta); text-decoration: none; }
+.fe-pl { font-weight: 800; font-size: 11.5px; background: #fff; border: 1.5px solid var(--tinta); border-radius: 5px; padding: 0 5px; flex: none; }
+.fe-rg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fe-v b { font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 3px; }
+.fe-v b.falta { color: var(--pinto-esc); }
+.fe-v svg { width: 14px; height: 14px; color: var(--ambar); flex: none; }
+.fe-avtx { display: block; color: #8A4B00; font-size: 11.5px; font-weight: 600; padding: 2px 0 0; }
 
 /* ---------- Nota fiscal anexada ---------- */
 .nf-anexo { margin-top: 4px; }
@@ -3261,8 +3285,9 @@ function resumoMes(ym) {
     [[v.motorista_id, v.motorista], [v.motorista2_id, v.motorista2]].forEach(function (mm, j) {
       if (j && !mm[0]) return;
       var nome = (motorista(mm[0]) || {}).nome || mm[1] || 'Sem motorista';
-      var m = r.porMotorista[nome] = r.porMotorista[nome] || { viagens: 0, km: 0, pint: 0, apelido: apelido(mm[0], mm[1]) || 'Sem motorista' };
+      var m = r.porMotorista[nome] = r.porMotorista[nome] || { viagens: 0, km: 0, pint: 0, lista: [], apelido: apelido(mm[0], mm[1]) || 'Sem motorista' };
       m.viagens++; m.pint += p; if (km !== null) m.km += km;
+      m.lista.push({ v: v, km: km, p: p, n: entregue(v).length });
     });
   });
   (DB.ocorrencias || []).forEach(function (o) { if (String(o.data_hora).slice(0, 7) === ym) r.ocorrencias[o.tipo] = (r.ocorrencias[o.tipo] || 0) + 1; });
@@ -3271,7 +3296,94 @@ function resumoMes(ym) {
     .sort(function (a, b) { return (b.km - a.km) || (b.viagens - a.viagens); });
   r.motoristas = Object.keys(r.porMotorista).map(function (k) { return Object.assign({ nome: k }, r.porMotorista[k]); })
     .sort(function (a, b) { return (b.viagens - a.viagens) || (b.km - a.km); });
+  // diárias extras: 1 a cada 1.000 km na mesma viagem ou no mesmo dia (soma das viagens do dia do motorista)
+  r.diarias = 0;
+  r.motoristas.forEach(function (m) {
+    var dias = {};
+    m.lista.sort(function (a, b) { return ordemV(a.v).localeCompare(ordemV(b.v)); }).forEach(function (it) {
+      var d = String(it.v.data).slice(0, 10), g = dias[d] = dias[d] || { data: d, itens: [], km: 0, semKm: 0 };
+      g.itens.push(it); if (it.km === null) g.semKm++; else g.km += it.km;
+    });
+    m.dias = Object.keys(dias).sort().map(function (k) { var g = dias[k]; g.extras = Math.floor(g.km / 1000); return g; });
+    m.diarias = m.dias.reduce(function (a, g) { return a + g.extras; }, 0);
+    m.semKm = m.lista.filter(function (it) { return it.km === null; }).length;
+    r.diarias += m.diarias;
+  });
+  r.semKm = fin.filter(function (v) { return kmV(v) === null; }).length;
   return r;
+}
+
+/** Fechamento por motorista: dia a dia, KM e diárias extras (para o lançamento). */
+function diaCurto(iso) { var d = dataDe(iso); return DIAS_C[d.getDay()] + ' ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1); }
+function plural(n, um, varios) { return n + ' ' + (n === 1 ? um : varios); }
+function fechamentoHtml(r) {
+  if (!r.motoristas.length) return '';
+  var an = kmAnalise(), nMot = r.motoristas.filter(function (m) { return m.nome !== 'Sem motorista'; }).length;
+  var s = '<div class="grafico" id="fechamento"><h3>Fechamento por motorista</h3><p>Diária extra: 1 a cada 1.000 km rodados na mesma viagem ou no mesmo dia (soma das viagens do dia). Toque no motorista para ver dia a dia.</p>' +
+    '<div class="fe-tot"><div><b class="num">' + r.diarias + '</b><small>diárias extras</small></div><div><b class="num">' + nMot + '</b><small>motoristas</small></div>' +
+    '<div class="' + (r.semKm ? 'fe-alerta' : '') + '"><b class="num">' + r.semKm + '</b><small>viagens sem KM</small></div></div>';
+  if (r.semKm) s += '<p class="aviso-res">' + ic('alerta') + 'Viagem sem KM não entra na conta da diária extra. Confira antes de fechar (toque na viagem para abrir).</p>';
+  s += '<button class="btn cheio" id="fe-csv" style="margin:10px 0 6px">' + ic('planilha') + 'Baixar o fechamento (Excel)</button>';
+  r.motoristas.forEach(function (m) {
+    s += '<details class="fe-mot"><summary><span class="res-nome"><span class="av">' + esc(iniciais(m.nome)) + '</span><span>' + esc(m.nome) +
+      '<small>' + plural(m.viagens, 'viagem', 'viagens') + ' | ' + plural(m.dias.length, 'dia', 'dias') + ' | ' + fmt(m.km) + ' km' + (m.semKm ? ' | ' + m.semKm + ' sem KM' : '') + '</small></span></span>' +
+      '<span class="fe-badge' + (m.diarias ? ' on' : '') + '">' + (m.diarias ? '+' + plural(m.diarias, 'diária', 'diárias') : 'sem extra') + '</span></summary>';
+    m.dias.forEach(function (g) {
+      s += '<div class="fe-d' + (g.extras ? ' on' : '') + '"><div class="fe-dh"><b>' + diaCurto(g.data) + '</b><span>' + (g.itens.length > 1 ? g.itens.length + ' viagens | ' : '') +
+        (g.km ? fmt(g.km) + ' km' : 'sem KM') + (g.extras ? ' <em>+' + plural(g.extras, 'diária', 'diárias') + '</em>' : '') + '</span></div>';
+      g.itens.forEach(function (it) {
+        var v = it.v, av = an[v.id] && an[v.id].avisos.length;
+        s += '<a class="fe-v" href="#viagem/' + esc(v.id) + '"' + (av ? ' title="' + esc(an[v.id].avisos.join(' | ')) + '"' : '') + '>' + (v.placa ? '<span class="fe-pl">' + esc(v.placa) + '</span>' : '') +
+          '<span class="fe-rg">' + esc(v.regiao || 'Sem região') + (v.motorista2 ? ' (em dupla)' : '') + '</span><b class="' + (it.km === null ? 'falta' : '') + '">' + (it.km === null ? 'sem KM' : fmt(it.km) + ' km') + (av ? ic('alerta') : '') + '</b></a>' + (av ? '<small class="fe-avtx">' + esc(an[v.id].avisos.join(' | ')) + '</small>' : '');
+      });
+      s += '</div>';
+    });
+    s += '</details>';
+  });
+  return s + '</div>';
+}
+
+/** Planilha (CSV que abre no Excel) com o resumo por motorista e o detalhe de cada viagem. */
+function baixarFechamento(ym) {
+  var r = resumoMes(ym), an = kmAnalise(), L = [];
+  var q = function (x) { x = x === null || x === undefined ? '' : String(x); return /[;"\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; };
+  var lin = function (a) { L.push(a.map(q).join(';')); };
+  var br = function (iso) { var p = String(iso).slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; };
+  lin(['Fechamento de diárias extras - Operação ' + DB.config.operacao + ' - ' + nomeMes(ym)]);
+  lin(['Regra: 1 diária extra a cada 1.000 km rodados na mesma viagem ou no mesmo dia (soma das viagens do dia)']);
+  if (r.abertas) lin([r.abertas + ' viagem(ns) do mês ainda sem finalizar não entram']);
+  lin([]);
+  lin(['RESUMO POR MOTORISTA']);
+  lin(['Motorista', 'Viagens', 'Dias com viagem', 'KM rodado', 'Diárias extras', 'Viagens sem KM', 'Pintinhos']);
+  var t = [0, 0, 0, 0, 0, 0];
+  r.motoristas.forEach(function (m) {
+    var x = [m.viagens, m.dias.length, m.km, m.diarias, m.semKm, m.pint]; x.forEach(function (n, i) { t[i] += n; });
+    lin([m.nome].concat(x));
+  });
+  lin(['TOTAL'].concat(t));
+  lin([]);
+  lin(['DETALHE DIA A DIA']);
+  lin(['Motorista', 'Data', 'Dia da semana', 'Viagem', 'Placa', 'Destino', 'Origem', 'Entregas', 'Pintinhos', 'KM inicial', 'KM final', 'KM rodado', 'KM do dia', 'Diárias extras do dia', 'Observação']);
+  r.motoristas.forEach(function (m) {
+    m.dias.forEach(function (g) {
+      g.itens.forEach(function (it, i) {
+        var v = it.v, obs = [];
+        if (it.km === null) obs.push('Sem KM');
+        if (an[v.id] && an[v.id].avisos.length) obs = obs.concat(an[v.id].avisos);
+        if (v.motorista2) obs.push('Em dupla');
+        if (importada(v)) obs.push('Importada da planilha');
+        lin([m.nome, br(g.data), DIAS[dataDe(g.data).getDay()], v.id, v.placa || '', v.regiao || '', v.origem || '', it.n, it.p,
+          v.km_inicial === '' ? '' : v.km_inicial, v.km_final === '' ? '' : v.km_final, it.km === null ? '' : it.km,
+          i === 0 ? g.km : '', i === 0 ? g.extras : '', obs.join(' | ')]);
+      });
+    });
+  });
+  var blob = new Blob(['﻿' + L.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = 'Fechamento-diarias-' + chave(DB.config.operacao).replace(/[^a-z0-9]+/g, '') + '-' + ym + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+  toast('Fechamento baixado. Abre direto no Excel.');
 }
 
 TELAS.resumo = function () {
@@ -3297,6 +3409,7 @@ TELAS.resumo = function () {
     return '<div class="res-lin"><div class="res-top"><span class="res-nome"><span class="av">' + esc(iniciais(m.nome)) + '</span>' + esc(m.nome) + '</span><b class="num">' + m.viagens + (m.viagens > 1 ? ' viagens' : ' viagem') + '</b></div>' +
       '<div class="tr marinho"><i style="width:' + Math.max(3, Math.round(m.viagens / mxM * 100)) + '%"></i></div><small>' + (m.km ? fmt(m.km) + ' km | ' : '') + fmt(m.pint) + ' pintinhos</small></div>';
   }).join(''));
+  s += fechamentoHtml(r);
   var org = Object.keys(r.porOrigem), cores = ['#1665C1', '#FFC83D', '#6E56CF', '#0FA36B'];
   if (org.length) s += '<div class="grafico"><h3>Onde carregou</h3><p>Pintinhos entregues por fornecedor.</p><div class="divisao">' + org.map(function (k, i) { return '<i style="width:' + (r.pint ? r.porOrigem[k] / r.pint * 100 : 0) + '%;background:' + cores[i % 4] + '"></i>'; }).join('') + '</div><div class="legenda">' +
     org.map(function (k, i) { return '<span><i style="background:' + cores[i % 4] + '"></i>' + esc(k) + ' <b>' + Math.round(r.porOrigem[k] / r.pint * 100) + '%</b> (' + fmt(r.porOrigem[k]) + ')</span>'; }).join('') + '</div></div>';
@@ -3305,6 +3418,8 @@ TELAS.resumo = function () {
 };
 TELAS.resumo.depois = function (rr, el) {
   el.querySelectorAll('[data-mes]').forEach(function (b) { b.onclick = function () { PREF.resumoMes = b.dataset.mes; salvarPref(); desenhar(); }; });
+  var csv = el.querySelector('#fe-csv');
+  if (csv) csv.onclick = function () { var ms = mesesComDados(); baixarFechamento(PREF.resumoMes && ms.indexOf(PREF.resumoMes) >= 0 ? PREF.resumoMes : ms[0]); };
   el.querySelector('#res-zap').onclick = function () {
     var ms = mesesComDados(), ym = PREF.resumoMes && ms.indexOf(PREF.resumoMes) >= 0 ? PREF.resumoMes : ms[0];
     abrirImagemZap('Resumo de ' + nomeMes(ym), 'Cartão com a marca Andrioni, pronto para mandar.', function () { return gerarResumo(ym); }, 'Resumo-' + DB.config.operacao + '-' + ym + '.png');
@@ -3397,6 +3512,7 @@ function gerarResumo(ym) {
     if (!r.comKm && r.viagens) notas.push('KM ainda não lançado neste mês');
     if (r.canceladas) notas.push(r.canceladas + (r.canceladas > 1 ? ' viagens canceladas' : ' viagem cancelada'));
     if (r.nOcorrencias) notas.push(r.nOcorrencias + (r.nOcorrencias > 1 ? ' ocorrências' : ' ocorrência'));
+    if (r.diarias) notas.push(plural(r.diarias, 'diária extra', 'diárias extras'));
     if (notas.length) { c.fillStyle = '#5E6B7D'; c.font = '600 24px ' + F_B; c.fillText(notas.join('   |   '), M + 6, y + 18); y += 40; }
     y += 18;
 
@@ -3435,7 +3551,7 @@ function gerarResumo(ym) {
       c.fillText(nmx, x0 + 72, y0 + 43);
       c.font = '800 36px ' + F_T; var vt = x.viagens + (x.viagens > 1 ? ' viagens' : ' viagem'), vw = c.measureText(vt).width; c.fillText(vt, x0 + w - vw, y0 + 44);
       barra(x0 + 72, y0 + 62, w - 72, x.viagens / mxM, '#0A2140');
-      c.fillStyle = '#5E6B7D'; c.font = '600 23px ' + F_B; c.fillText((x.km ? fmt(x.km) + ' km   |   ' : '') + fmt(x.pint) + ' pintinhos', x0 + 72, y0 + 106);
+      c.fillStyle = '#5E6B7D'; c.font = '600 23px ' + F_B; c.fillText((x.km ? fmt(x.km) + ' km   |   ' : '') + fmt(x.pint) + ' pintinhos' + (x.diarias ? '   |   +' + plural(x.diarias, 'diária extra', 'diárias extras') : ''), x0 + 72, y0 + 106);
     });
     var org = Object.keys(r.porOrigem), cores = ['#1665C1', '#FFC83D', '#6E56CF', '#0FA36B'];
     if (org.length && r.pint) bloco('Onde carregou', 'Pintinhos entregues por fornecedor', [0], 60 + org.length * 44, function (_, x0, y0, w) {
