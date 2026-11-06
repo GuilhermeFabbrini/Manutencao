@@ -644,7 +644,7 @@ function ativo(x) { return String(x.ativo || 'SIM').toUpperCase() !== 'NÃO' && 
 function frotaPropria() { return DB.caminhoes.filter(function (c) { return ativo(c) && chave(c.operacao).indexOf('descalvado') === 0; }); }
 function vivas(vs) { return vs.filter(function (v) { return v.status !== 'Cancelada'; }); }
 function importada(v) { return v.criado_por === 'Importado da planilha'; }
-function origemCurta(o) { return String(o || '').replace('Pluma ', 'Pluma ').replace('Zanqueta Guareí', 'Zanqueta'); }
+function origemCurta(o) { return String(o || '').replace('Pluma ', 'Pluma ').replace('Zanqueta Guareí', 'Zanqueta').replace('Incubatório Ipiguá', 'Ipiguá'); }
 
 /* ============================================================ ícones (traço 24x24) */
 var IC = {
@@ -783,6 +783,8 @@ function chamarUma(acao, dados) {
 function aplicar(d) {
   if (!d || d.mesma) { if (d && d.mesma) DB_LOCAL = false; return false; }
   DB = d; VERSAO = d.versao; ULTIMA_SINC = Date.now(); SINC_ERRO = false; DB_LOCAL = false;
+  /* Apoio a Ipiguá: caminhões de Descalvado também carregam no Incubatório Ipiguá */
+  if (DB.config && Array.isArray(DB.config.origens) && DB.config.origens.indexOf('Incubatório Ipiguá') < 0) DB.config.origens.push('Incubatório Ipiguá');
   DB.viagens.sort(function (a, b) { return ordemV(a).localeCompare(ordemV(b)); });
   try { localStorage.setItem('rv_db', JSON.stringify(d)); localStorage.setItem('rv_db_em', String(Date.now())); } catch (e) {}
   return true;
@@ -1485,7 +1487,7 @@ function histItem(x) {
 }
 
 function linkMaps(origem, cidades) {
-  var o = chave(origem).indexOf('zanqueta') >= 0 ? 'Guareí, SP' : 'Descalvado, SP';
+  var k = chave(origem), o = k.indexOf('zanqueta') >= 0 ? 'Guareí, SP' : (k.indexOf('ipigu') >= 0 ? 'Ipiguá, SP' : 'Descalvado, SP');
   var ps = [o].concat((cidades || []).filter(Boolean).filter(function (c, i, a) { return a.indexOf(c) === i; }));
   return 'https://www.google.com/maps/dir/' + ps.map(function (p) { return encodeURIComponent(p + (p.indexOf(',') < 0 ? ', Brasil' : '')); }).join('/');
 }
