@@ -221,6 +221,10 @@ main { padding: 16px 16px calc(96px + var(--safe-b)); max-width: 760px; margin: 
 .semana-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .semana-nav h2 { flex: 1; font-size: 18px; text-align: center; }
 .semana-nav button { width: 42px; height: 42px; border-radius: 14px; border: 0; background: var(--cartao); box-shadow: var(--sombra); display: grid; place-items: center; }
+.outra-semana { display: flex; align-items: center; gap: 10px; background: #FFF0D1; color: #8A4B00; border-radius: 14px; padding: 8px 8px 8px 12px; margin-bottom: 10px; font-size: 14px; font-weight: 700; }
+.outra-semana svg { width: 18px; height: 18px; flex: none; }
+.outra-semana span { flex: 1; }
+.outra-semana button { border: 0; border-radius: 10px; background: var(--noite); color: #fff; font-weight: 800; font-size: 14px; padding: 8px 14px; }
 .dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .dia { border: 0; background: var(--cartao); border-radius: 14px; padding: 8px 0 7px; display: flex; flex-direction: column; align-items: center; gap: 1px; box-shadow: var(--sombra); color: var(--tinta); }
 .dia small { font-size: 11.5px; font-weight: 700; color: var(--tinta-3); }
@@ -1236,6 +1240,9 @@ TELAS.agenda = function (r) {
   var d0 = dataDe(ini), d6 = dataDe(fim);
   var titulo = d0.getDate() + (d0.getMonth() !== d6.getMonth() ? ' de ' + MESES[d0.getMonth()] : '') + ' a ' + d6.getDate() + ' de ' + MESES[d6.getMonth()];
   var s = '<div class="semana-nav"><button aria-label="Semana anterior" onclick="ir(\'agenda/' + somaDias(dia, -7) + '\')">' + ic('esq') + '</button><h2>' + esc(titulo) + '</h2><button aria-label="Próxima semana" onclick="ir(\'agenda/' + somaDias(dia, 7) + '\')">' + ic('dir') + '</button></div>';
+  /* Aviso quando a agenda está em outra semana, com botão para voltar para hoje */
+  var difSem = Math.round((dataDe(ini) - dataDe(inicioSemana(h))) / 6048e5);
+  if (difSem) s += '<div class="outra-semana">' + ic('alerta', '') + '<span>' + (difSem === 1 ? 'Próxima semana' : difSem === -1 ? 'Semana passada' : difSem > 1 ? 'Daqui a ' + difSem + ' semanas' : 'Há ' + (-difSem) + ' semanas') + '</span><button onclick="ir(\'agenda/' + h + '\')">Hoje</button></div>';
   s += '<div class="dias">';
   for (var i = 0; i < 7; i++) {
     var di = somaDias(ini, i), n = vivas(daSemana.filter(function (v) { return v.data === di; })).length;
