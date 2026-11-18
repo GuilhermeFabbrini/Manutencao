@@ -597,6 +597,9 @@ var DB = null, VERSAO = '', ULTIMA_SINC = 0, SINC_ERRO = false, OCUPADO = false;
 var FORM = null, PENDENTE_ATUALIZAR = false, DB_LOCAL = false;
 var PREF = { agendaDia: '', agendaFiltro: 'todos', painelPeriodo: 'mes' };
 try { Object.assign(PREF, JSON.parse(lerLocal('rv_pref') || '{}')); } catch (e) {}
+/* Toda vez que o app abre, a Agenda começa na semana (e no dia) de hoje. */
+PREF.agendaDia = '';
+try { if (/^#agenda\//.test(location.hash)) history.replaceState(null, '', location.pathname + location.search + '#agenda'); } catch (e) {}
 
 /* ============================================================ utilitários */
 function lerLocal(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -641,6 +644,10 @@ function caminhao(p) { return (DB.caminhoes || []).find(function (c) { return c.
 function rotaDe(id) { return (DB.rotas || []).find(function (r) { return r.id === id; }); }
 function viagemDe(id) { return (DB.viagens || []).find(function (v) { return v.id === id; }); }
 function ativo(x) { return String(x.ativo || 'SIM').toUpperCase() !== 'NÃO' && String(x.ativo || 'SIM').toUpperCase() !== 'NAO'; }
+/** Motorista(s) da viagem: com dupla (viagem longa) mostra os dois. */
+function motApe(v) { return v.motorista_id ? apelido(v.motorista_id, v.motorista) + (v.motorista2_id ? ' e ' + apelido(v.motorista2_id, v.motorista2) : '') : ''; }
+function motNome(v) { return v.motorista ? (v.motorista2 ? apelido(v.motorista_id, v.motorista) + ' e ' + apelido(v.motorista2_id, v.motorista2) : v.motorista) : ''; }
+function temMot(v, id) { return !!id && (v.motorista_id === id || v.motorista2_id === id); }
 function frotaPropria() { return DB.caminhoes.filter(function (c) { return ativo(c) && chave(c.operacao).indexOf('descalvado') === 0; }); }
 function vivas(vs) { return vs.filter(function (v) { return v.status !== 'Cancelada'; }); }
 function importada(v) { return v.criado_por === 'Importado da planilha'; }
@@ -1130,7 +1137,7 @@ function cartaoViagem(v, op) {
   (v.entregas || []).forEach(function (e) { if (e.cidade && cidades.indexOf(e.cidade) < 0) cidades.push(e.cidade); });
   var mad = madrugada(v.horario);
   var hora = v.horario ? '<b class="num">' + esc(v.horario) + '</b><small>' + (mad ? 'madrugada' : esc(origemCurta(v.origem))) + '</small>' : '<b>--:--</b><small>sem horário</small>';
-  var mot = v.motorista_id ? esc(apelido(v.motorista_id, v.motorista)) : '<span class="falta">sem motorista</span>';
+  var mot = v.motorista_id ? esc(motApe(v)) : '<span class="falta">sem motorista</span>';
   return '<a class="viagem St-' + esc(v.status.replace(/\s/g, '-')) + '" href="#viagem/' + esc(v.id) + '">' +
     '<div class="hora' + (mad ? ' madrugada' : '') + '">' + (op.mostrarData ? '<small style="margin:0 0 3px">' + esc(relativo(v.data)) + '</small>' : '') + hora + '</div>' +
     '<div class="corpo"><div class="l1"><h3>' + esc(v.regiao || 'Sem região') + '</h3>' + pill(v.status) + '</div>' +
@@ -1170,7 +1177,7 @@ TELAS.hoje = function () {
   var hora = new Date().getHours();
   var sauda = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
   var doDia = function (d) { return DB.viagens.filter(function (v) { return v.data === d; }); };
-  var minhas = eu.motorista_id ? DB.viagens.filter(function (v) { return v.motorista_id === eu.motorista_id && v.data >= somaDias(h, -1) && v.status !== 'Cancelada' && v.status !== 'Finalizada'; }) : [];
+  var minhas = eu.motorista_id ? DB.viagens.filter(function (v) { return temMot(v, eu.motorista_id) && v.data >= somaDias(h, -1) && v.status !== 'Cancelada' && v.status !== 'Finalizada'; }) : [];
   var s = '<div class="saudacao"><h1>' + sauda + ', ' + esc(primeiro(eu.nome)) + '</h1><p>' + esc(dataLonga(h)) + '</p></div>';
   s += patio();
   if (minhas.length) s += '<div class="secao"><h2>Suas próximas viagens</h2></div>' + listaViagens(minhas.slice(0, 4), { mostrarData: true });
@@ -1194,9 +1201,9 @@ function estadoCaminhao(c) {
   var h = hojeISO();
   var vs = DB.viagens.filter(function (v) { return v.placa === c.placa && v.status !== 'Cancelada'; });
   var rodando = vs.filter(function (v) { return v.status === 'Em viagem'; })[0];
-  if (rodando) return { estado: 'viagem', txt: 'Na estrada', cor: '#FFC83D', v: rodando, quem: apelido(rodando.motorista_id, rodando.motorista) + ' para ' + (rodando.regiao || '') };
+  if (rodando) return { estado: 'viagem', txt: 'Na estrada', cor: '#FFC83D', v: rodando, quem: motApe(rodando) + ' para ' + (rodando.regiao || '') };
   var prox = vs.filter(function (v) { return (v.status === 'Programada' || v.status === 'Confirmada') && v.data >= h; })[0];
-  if (prox) return { estado: 'programado', txt: relativo(prox.data) + (prox.horario ? ' ' + prox.horario : ''), cor: '#6FB3EC', v: prox, quem: (apelido(prox.motorista_id, prox.motorista) || 'Sem motorista') + ' para ' + (prox.regiao || '') };
+  if (prox) return { estado: 'programado', txt: relativo(prox.data) + (prox.horario ? ' ' + prox.horario : ''), cor: '#6FB3EC', v: prox, quem: (motApe(prox) || 'Sem motorista') + ' para ' + (prox.regiao || '') };
   return { estado: 'livre', txt: 'No pátio', cor: '#3DDC97', quem: 'Sem viagem programada' };
 }
 
@@ -1221,7 +1228,7 @@ TELAS.agenda = function (r) {
   var filtro = PREF.agendaFiltro || 'todos';
   var passa = function (v) {
     if (filtro === 'todos') return true;
-    if (filtro === 'minhas') return DB.eu.motorista_id && v.motorista_id === DB.eu.motorista_id;
+    if (filtro === 'minhas') return temMot(v, DB.eu.motorista_id);
     if (filtro === 'abertas') return v.status !== 'Finalizada' && v.status !== 'Cancelada';
     return v.placa === filtro;
   };
@@ -1255,7 +1262,7 @@ TELAS.agenda.depois = function (r, el) {
 function enviarDia(dia) { abrirEnvio(DB.viagens.filter(function (v) { return v.data === dia; }), dia, false); }
 function textoViagem(v, curto) {
   var t = '🚚 *' + (v.horario || '--:--') + (madrugada(v.horario) ? ' (madrugada)' : '') + ' | ' + (v.regiao || '') + '*\n';
-  t += (v.placa || 'Sem placa') + ' com ' + (v.motorista || 'motorista a definir') + '\nCarrega em: ' + v.origem + '\n';
+  t += (v.placa || 'Sem placa') + ' com ' + (motNome(v) || 'motorista a definir') + '\nCarrega em: ' + v.origem + '\n';
   (v.entregas || []).forEach(function (e, i) {
     t += (i + 1) + '. ' + e.cidade + (e.integrado ? ' | ' + e.integrado : '') + ' | ' + fmt(e.qtd_pintinhos) + ' pintinhos' + (e.nota_fiscal ? ' | NF ' + e.nota_fiscal : '') + '\n';
     if (!curto && e.tecnico) t += '   Técnico: ' + e.tecnico + (e.telefone_tecnico ? ' ' + e.telefone_tecnico : '') + '\n';
@@ -1387,7 +1394,7 @@ TELAS.viagem = function (r) {
   s += '<div class="det-topo"><div class="caminhao">' + caminhaoSVG({ estado: v.status === 'Em viagem' ? 'viagem' : 'livre', id: 'dt', placa: v.placa }) + '</div><div class="det-st">' + pill(v.status) + '<span class="det-id">' + esc(v.id) + '</span></div>' +
     '<div class="data">' + esc(/^(Hoje|Amanhã|Ontem)$/.test(relativo(v.data)) ? relativo(v.data) + ', ' + diaNome(v.data).toLowerCase() : diaNome(v.data)) + ', ' + esc(dataBRc(v.data)) + (v.horario ? ' às ' + esc(v.horario) + (madrugada(v.horario) ? ' (madrugada)' : '') : '') + '</div>' +
     '<h1>' + esc(v.regiao || 'Sem região') + '</h1><div class="sub">Carrega em ' + esc(v.origem) + '</div>' +
-    '<div class="info"><div><small>Caminhão</small><b>' + esc(v.placa || 'A definir') + '</b></div><div><small>Motorista</small><b>' + esc(v.motorista || 'A definir') + '</b></div>' +
+    '<div class="info"><div><small>Caminhão</small><b>' + esc(v.placa || 'A definir') + '</b></div><div><small>' + (v.motorista2 ? 'Motoristas' : 'Motorista') + '</small><b>' + esc(motNome(v) || 'A definir') + '</b></div>' +
     '<div><small>Pintinhos</small><b class="num">' + fmt(totalP(v)) + '</b></div><div><small>Entregas</small><b>' + v.entregas.length + (v.entregas.length > 1 ? ' cidades' : ' cidade') + '</b></div></div></div>';
 
   // ações conforme a situação
@@ -1499,7 +1506,7 @@ TELAS.nova = function (r) {
   if (!FORM || FORM.tela !== 'nova' || FORM.chave !== 'nova/' + r.id) {
     var dataIni = /^\d{4}-\d{2}-\d{2}$/.test(r.id) ? r.id : somaDias(hojeISO(), 1);
     var rotaIni = r.tela === 'nova' && r.extra ? rotaDe(r.extra) : null;
-    FORM = { tela: 'nova', chave: 'nova/' + r.id, v: { id: '', data: dataIni, horario: '', origem: DB.config.origens[0], regiao: '', rota_id: '', placa: '', motorista_id: '', km_inicial: '', km_final: '', obs: '' }, e: [novaEntrega()] };
+    FORM = { tela: 'nova', chave: 'nova/' + r.id, v: { id: '', data: dataIni, horario: '', origem: DB.config.origens[0], regiao: '', rota_id: '', placa: '', motorista_id: '', motorista2_id: '', km_inicial: '', km_final: '', obs: '' }, e: [novaEntrega()] };
     if (rotaIni) aplicarRota(rotaIni);
   }
   return formViagem('Nova viagem');
@@ -1556,6 +1563,9 @@ function formViagem(titulo) {
     var desc = chave(m.operacao).indexOf('descalvado') === 0;
     return '<button type="button" class="escolha' + (m.id === v.motorista_id ? ' on' : '') + '" data-mot="' + esc(m.id) + '"><span class="av">' + esc(iniciais(m.nome)) + '</span>' + esc(m.apelido || primeiro(m.nome)) + (desc ? '' : '<small>apoio</small>') + '</button>';
   }).join('') + '</div></div>';
+  s += '<div class="campo"><span>2º motorista <em>(opcional, quando a viagem vai em dupla)</em></span><div class="escolhas" id="esc-mot2">' + mots.map(function (m) {
+    return '<button type="button" class="escolha' + (m.id === v.motorista2_id ? ' on' : '') + '" data-mot2="' + esc(m.id) + '"' + (m.id === v.motorista_id ? ' disabled style="opacity:.35"' : '') + '><span class="av">' + esc(iniciais(m.nome)) + '</span>' + esc(m.apelido || primeiro(m.nome)) + '</button>';
+  }).join('') + '</div></div>';
   s += '<div id="avisos-form"></div>';
   s += '<div class="secao"><h2>Entregas</h2><span class="fraco">' + FORM.e.length + (FORM.e.length > 1 ? ' cidades' : ' cidade') + '</span></div><div id="entregas">' + FORM.e.map(blocoEntrega).join('') + '</div>';
   s += '<button class="btn cheio" style="margin-top:10px" id="add-ent">' + ic('mais') + 'Adicionar outra entrega</button>';
@@ -1588,7 +1598,7 @@ function avisosForm() {
   if (v.data) {
     var outras = DB.viagens.filter(function (x) { return x.id !== v.id && x.data === v.data && x.status !== 'Cancelada'; });
     if (v.placa) { var cp = outras.filter(function (x) { return x.placa === v.placa; }); if (cp.length) out.push('O ' + v.placa + ' já tem viagem neste dia: ' + cp.map(function (x) { return (x.horario || '--:--') + ' ' + (x.regiao || ''); }).join(', ') + '.'); }
-    if (v.motorista_id) { var cm = outras.filter(function (x) { return x.motorista_id === v.motorista_id; }); if (cm.length) out.push(apelido(v.motorista_id) + ' já está em outra viagem neste dia: ' + cm.map(function (x) { return (x.horario || '--:--') + ' ' + (x.regiao || ''); }).join(', ') + '.'); }
+    [v.motorista_id, v.motorista2_id].forEach(function (mid) { if (!mid) return; var cm = outras.filter(function (x) { return temMot(x, mid); }); if (cm.length) out.push(apelido(mid) + ' já está em outra viagem neste dia: ' + cm.map(function (x) { return (x.horario || '--:--') + ' ' + (x.regiao || ''); }).join(', ') + '.'); });
     if (v.data < hojeISO() && FORM.tela === 'nova') out.push('A data escolhida já passou.');
   }
   var c = caminhao(v.placa);
@@ -1614,7 +1624,12 @@ function ligarFormViagem(el) {
   });
   el.querySelectorAll('[data-origem]').forEach(function (b) { b.onclick = function () { v.origem = b.dataset.origem; el.querySelectorAll('[data-origem]').forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
   el.querySelectorAll('[data-placa]').forEach(function (b) { b.onclick = function () { v.placa = v.placa === b.dataset.placa ? '' : b.dataset.placa; el.querySelectorAll('[data-placa]').forEach(function (x) { x.classList.toggle('on', x.dataset.placa === v.placa); }); avisosForm(); }; });
-  el.querySelectorAll('[data-mot]').forEach(function (b) { b.onclick = function () { v.motorista_id = v.motorista_id === b.dataset.mot ? '' : b.dataset.mot; el.querySelectorAll('[data-mot]').forEach(function (x) { x.classList.toggle('on', x.dataset.mot === v.motorista_id); }); avisosForm(); }; });
+  var marcarMot2 = function () {
+    if (v.motorista2_id && v.motorista2_id === v.motorista_id) v.motorista2_id = '';
+    el.querySelectorAll('[data-mot2]').forEach(function (x) { var mesmo = x.dataset.mot2 === v.motorista_id; x.disabled = mesmo; x.style.opacity = mesmo ? '.35' : ''; x.classList.toggle('on', x.dataset.mot2 === v.motorista2_id); });
+  };
+  el.querySelectorAll('[data-mot]').forEach(function (b) { b.onclick = function () { v.motorista_id = v.motorista_id === b.dataset.mot ? '' : b.dataset.mot; el.querySelectorAll('[data-mot]').forEach(function (x) { x.classList.toggle('on', x.dataset.mot === v.motorista_id); }); marcarMot2(); avisosForm(); }; });
+  el.querySelectorAll('[data-mot2]').forEach(function (b) { b.onclick = function () { if (b.disabled) return; v.motorista2_id = v.motorista2_id === b.dataset.mot2 ? '' : b.dataset.mot2; marcarMot2(); avisosForm(); }; });
   el.querySelectorAll('.bloco-entrega').forEach(function (bl) {
     var i = Number(bl.dataset.i), e = FORM.e[i];
     bl.querySelectorAll('[data-e]').forEach(function (inp) {
@@ -1885,7 +1900,7 @@ TELAS.motoristas = function () {
   var p = mesAtual();
   var ms = DB.motoristas.filter(ativo);
   var dados = ms.map(function (m) {
-    var vs = vivas(DB.viagens.filter(function (v) { return v.motorista_id === m.id && v.data >= p[0] && v.data <= p[1]; }));
+    var vs = vivas(DB.viagens.filter(function (v) { return temMot(v, m.id) && v.data >= p[0] && v.data <= p[1]; }));
     return { m: m, vs: vs, km: vs.reduce(function (a, v) { return a + (Number(v.km_rodado) || 0); }, 0), p: vs.reduce(function (a, v) { return a + totalP(v); }, 0) };
   });
   var desc = dados.filter(function (d) { return chave(d.m.operacao).indexOf('descalvado') === 0; });
@@ -1906,7 +1921,7 @@ TELAS.motoristas = function () {
 TELAS.motorista = function (r) {
   var m = motorista(r.id);
   if (!m) return '<div class="vazio"><b>Motorista não encontrado</b></div>';
-  var vs = DB.viagens.filter(function (v) { return v.motorista_id === m.id; }).slice().reverse();
+  var vs = DB.viagens.filter(function (v) { return temMot(v, m.id); }).slice().reverse();
   var fin = vs.filter(function (v) { return v.status === 'Finalizada'; });
   return '<button class="voltar" onclick="ir(\'motoristas\')">' + ic('esq') + 'Motoristas</button><div class="item"><span class="av" style="width:54px;height:54px;font-size:18px">' + esc(iniciais(m.nome)) + '</span><span class="tx"><b style="font-size:18px">' + esc(m.nome) + '</b><small>' + esc(m.funcao) + ' | ' + esc(m.operacao) + '</small><small>' + (m.matricula ? 'Matrícula ' + esc(m.matricula) : 'Sem matrícula') + (m.admissao ? ' | admissão ' + esc(dataBRc(m.admissao)) : '') + '</small></span></div>' +
     '<div class="linha-btns" style="margin-top:10px">' + (m.telefone ? '<a class="btn" href="tel:' + esc(String(m.telefone).replace(/\D/g, '')) + '">' + ic('fone') + 'Ligar</a><a class="btn" target="_blank" rel="noopener" href="' + esc(linkZap(m.telefone)) + '">' + ic('zap') + 'WhatsApp</a>' : '') + (gestor() ? '<button class="btn" onclick="editarMotorista(\'' + esc(m.id) + '\')">' + ic('lapis') + 'Editar</button>' : '') + '</div>' +
@@ -1965,7 +1980,7 @@ TELAS.painel = function () {
   var ks = Object.keys(org);
   s += '<div class="grafico"><h3>Onde carregou</h3><p>Participação de cada fornecedor no total.</p><div class="divisao">' + ks.map(function (k, i) { return '<i style="width:' + (pint ? org[k] / pint * 100 : 0) + '%;background:' + cores[i % 4] + '"></i>'; }).join('') + '</div><div class="legenda">' + ks.map(function (k, i) { return '<span><i style="background:' + cores[i % 4] + '"></i>' + esc(k) + ' <b>' + (pint ? Math.round(org[k] / pint * 100) : 0) + '%</b></span>'; }).join('') + '</div></div>';
   // por motorista
-  var pm = {}; vs.forEach(function (v) { var n = apelido(v.motorista_id, v.motorista) || 'Sem motorista'; pm[n] = (pm[n] || 0) + (km ? (Number(v.km_rodado) || 0) : 1); });
+  var pm = {}; vs.forEach(function (v) { [[v.motorista_id, v.motorista], [v.motorista2_id, v.motorista2]].forEach(function (mm, j) { if (j && !mm[0]) return; var n = apelido(mm[0], mm[1]) || 'Sem motorista'; pm[n] = (pm[n] || 0) + (km ? (Number(v.km_rodado) || 0) : 1); }); });
   s += '<div class="grafico barras-h"><h3>' + (km ? 'KM por motorista' : 'Viagens por motorista') + '</h3><p>Para manter a divisão justa entre a equipe.</p>' + barrasH(pm, function (n) { return km ? fmt(n) + ' km' : n + ' viag.'; }, '#0FA36B') + '</div>';
   var pc = {}; vs.forEach(function (v) { var n = v.placa || 'Sem placa'; pc[n] = (pc[n] || 0) + (km ? (Number(v.km_rodado) || 0) : 1); });
   s += '<div class="grafico barras-h"><h3>' + (km ? 'KM por caminhão' : 'Viagens por caminhão') + '</h3><p>Uso de cada placa no período.</p>' + barrasH(pc, function (n) { return km ? fmt(n) + ' km' : n + ' viag.'; }, '#0A2140') + '</div>';
@@ -2107,7 +2122,7 @@ function textoZap(vs, dia, unica) {
   vs.forEach(function (v) {
     L.push(linha);
     L.push('🕖 *' + (v.horario || 'Horário a definir') + (madrugada(v.horario) ? ' (madrugada)' : '') + '*  |  *' + String(v.regiao || 'Região a definir').toUpperCase() + '*');
-    L.push('🚛 ' + (v.placa ? '`' + v.placa + '`' : '_placa a definir_') + '   👤 ' + (v.motorista ? v.motorista : '_motorista a definir_'));
+    L.push('🚛 ' + (v.placa ? '`' + v.placa + '`' : '_placa a definir_') + '   👤 ' + (v.motorista ? motNome(v) : '_motorista a definir_'));
     L.push('📍 Carrega em ' + v.origem);
     L.push('');
     v.entregas.forEach(function (e, i) {
@@ -2252,7 +2267,7 @@ function gerarCartao(vs, dia, unica) {
         tx += pw + 18;
       } else { c.fillStyle = '#E5484D'; c.font = '700 26px ' + F_B; c.fillText('Placa a definir', tx, py + 34); tx += c.measureText('Placa a definir').width + 22; }
       c.fillStyle = v.motorista ? '#0E1B2E' : '#E5484D'; c.font = '700 28px ' + F_B;
-      c.fillText(v.motorista || 'Motorista a definir', tx, py + 34);
+      c.fillText(motNome(v) || 'Motorista a definir', tx, py + 34);
       c.fillStyle = '#8593A6'; c.font = '600 23px ' + F_B; c.fillText('Carrega em ' + v.origem, xi + 196, py + 82);
 
       // linha divisória tracejada
@@ -3181,7 +3196,7 @@ function cartaoOcorrencia(o, comViagem) {
     '<small>' + esc(quando(o.data_hora)) + ' | ' + esc(primeiro(o.registrado_por)) + (o.placa ? ' | ' + esc(o.placa) : '') + '</small></div>' +
     '<span class="pill ' + (aberta ? 'st-Cancelada oc-aberta' : 'st-Finalizada') + '"><i></i>' + (aberta ? 'Aberta' : 'Resolvida') + '</span></div>';
   if (o.descricao) s += '<p class="oc-desc">' + esc(o.descricao) + '</p>';
-  if (v) s += '<a class="oc-via" href="#viagem/' + esc(v.id) + '">' + ic('caminhao') + esc(relativo(v.data)) + ' | ' + esc(v.regiao || '') + ' | ' + esc(apelido(v.motorista_id, v.motorista) || 'sem motorista') + ic('dir') + '</a>';
+  if (v) s += '<a class="oc-via" href="#viagem/' + esc(v.id) + '">' + ic('caminhao') + esc(relativo(v.data)) + ' | ' + esc(v.regiao || '') + ' | ' + esc(motApe(v) || 'sem motorista') + ic('dir') + '</a>';
   s += '<div class="linha-btns" style="margin-top:8px">';
   if (o.foto_id) s += '<button class="btn peq" data-foto="' + esc(o.id) + '">' + ic('galeria') + 'Ver foto</button>';
   if (o.latitude !== '' && o.latitude !== undefined) s += '<a class="btn peq" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(o.latitude + ',' + o.longitude) + '">' + ic('pin') + 'Onde foi</a>';
@@ -3267,10 +3282,13 @@ function resumoMes(ym) {
     if (km !== null) { r.km += km; r.comKm++; }
     var c = r.porCaminhao[v.placa || 'Sem placa'] = r.porCaminhao[v.placa || 'Sem placa'] || { viagens: 0, km: 0, comKm: 0, pint: 0 };
     c.viagens++; c.pint += p; if (km !== null) { c.km += km; c.comKm++; }
-    var nome = (motorista(v.motorista_id) || {}).nome || v.motorista || 'Sem motorista';
-    var m = r.porMotorista[nome] = r.porMotorista[nome] || { viagens: 0, km: 0, pint: 0, lista: [], apelido: apelido(v.motorista_id, v.motorista) || 'Sem motorista' };
-    m.viagens++; m.pint += p; if (km !== null) m.km += km;
-    m.lista.push({ v: v, km: km, p: p, n: entregue(v).length });
+    [[v.motorista_id, v.motorista], [v.motorista2_id, v.motorista2]].forEach(function (mm, j) {
+      if (j && !mm[0]) return;
+      var nome = (motorista(mm[0]) || {}).nome || mm[1] || 'Sem motorista';
+      var m = r.porMotorista[nome] = r.porMotorista[nome] || { viagens: 0, km: 0, pint: 0, lista: [], apelido: apelido(mm[0], mm[1]) || 'Sem motorista' };
+      m.viagens++; m.pint += p; if (km !== null) m.km += km;
+      m.lista.push({ v: v, km: km, p: p, n: entregue(v).length });
+    });
   });
   (DB.ocorrencias || []).forEach(function (o) { if (String(o.data_hora).slice(0, 7) === ym) r.ocorrencias[o.tipo] = (r.ocorrencias[o.tipo] || 0) + 1; });
   r.nOcorrencias = Object.keys(r.ocorrencias).reduce(function (a, k) { return a + r.ocorrencias[k]; }, 0);
