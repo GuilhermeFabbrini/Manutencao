@@ -1954,6 +1954,11 @@ function periodoPainel() {
   if (p === 'semana') return [inicioSemana(h), somaDias(inicioSemana(h), 6), 'Esta semana'];
   if (p === 'passado') { var d = dataDe(h.slice(0, 8) + '01'); d.setDate(0); return [isoDe(d).slice(0, 8) + '01', isoDe(d), 'Mês passado']; }
   if (p === '90') return [somaDias(h, -89), h, 'Últimos 90 dias'];
+  if (p === 'livre') {
+    var a = PREF.painelIni || h.slice(0, 8) + '01', b = PREF.painelFim || h;
+    if (a > b) { var t = a; a = b; b = t; }
+    return [a, b, 'Período escolhido'];
+  }
   var d0 = dataDe(h), ult = new Date(d0.getFullYear(), d0.getMonth() + 1, 0);
   return [h.slice(0, 8) + '01', isoDe(ult), 'Este mês'];
 }
@@ -1966,7 +1971,8 @@ TELAS.painel = function () {
   var km = comKm.reduce(function (a, v) { return a + Number(v.km_rodado); }, 0);
   var s = '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><h2>Painel da operação</h2>' +
     '<a class="btn verde cheio" style="margin-top:10px" href="#resumo">' + ic('resumo') + 'Resumo do mês para enviar</a>';
-  s += '<div class="chips" style="margin-top:10px">' + [['semana', 'Esta semana'], ['mes', 'Este mês'], ['passado', 'Mês passado'], ['90', '90 dias']].map(function (o) { return '<button class="chip' + (PREF.painelPeriodo === o[0] ? ' on' : '') + '" data-per="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
+  s += '<div class="chips" style="margin-top:10px">' + [['semana', 'Esta semana'], ['mes', 'Este mês'], ['passado', 'Mês passado'], ['90', '90 dias'], ['livre', 'Escolher datas']].map(function (o) { return '<button class="chip' + (PREF.painelPeriodo === o[0] ? ' on' : '') + '" data-per="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
+  if (PREF.painelPeriodo === 'livre') s += '<div class="duas" style="margin:0 0 8px"><label class="campo"><span>De</span><input class="inp" type="date" id="pIni" value="' + ini + '"></label><label class="campo"><span>Até</span><input class="inp" type="date" id="pFim" value="' + fim + '"></label></div><button class="btn pri cheio" id="pVer" style="margin:0 0 10px">Ver período</button>';
   s += '<p class="fraco" style="margin:0 0 10px">' + dataBRc(ini) + ' a ' + dataBRc(fim) + ', sem contar canceladas.</p>';
   s += '<div class="kpis"><div class="kpi destaque">' + pinto(58) + '<div><small>Pintinhos no período</small><b class="num">' + fmt(pint) + '</b><span>' + fmt(vs.filter(function (v) { return v.status === 'Finalizada'; }).reduce(function (a, v) { return a + totalP(v); }, 0)) + ' já entregues | média de ' + fmt(vs.length ? pint / vs.length : 0) + ' por viagem</span></div></div>' +
     '<div class="kpi"><small>Viagens</small><b class="num">' + vs.length + '</b><span>' + vs.filter(function (v) { return v.status === 'Finalizada'; }).length + ' finalizadas</span></div>' +
@@ -1974,10 +1980,11 @@ TELAS.painel = function () {
     '<div class="kpi"><small>KM rodados</small><b class="num">' + fmt(km) + '</b><span>' + comKm.length + ' de ' + vs.length + ' viagens com KM</span></div>' +
     '<div class="kpi"><small>Pintinhos por km</small><b class="num">' + (km ? fmt(comKm.reduce(function (a, v) { return a + totalP(v); }, 0) / km) : '-') + '</b><span>só viagens com KM</span></div></div>';
   // por dia
-  var dias = []; for (var d = ini; d <= fim && dias.length < 100; d = somaDias(d, 1)) dias.push(d);
+  var dias = []; for (var d = ini; d <= fim && dias.length < 1500; d = somaDias(d, 1)) dias.push(d);
   var porDia = dias.map(function (d) { return vs.filter(function (v) { return v.data === d; }).reduce(function (a, v) { return a + totalP(v); }, 0); });
-  if (dias.length > 31) { var sem = {}; dias.forEach(function (d, i) { var k = inicioSemana(d); sem[k] = (sem[k] || 0) + porDia[i]; }); dias = Object.keys(sem); porDia = dias.map(function (k) { return sem[k]; }); }
-  s += '<div class="grafico"><h3>Pintinhos por ' + (dias.length > 0 && PREF.painelPeriodo === '90' ? 'semana' : 'dia') + '</h3><p>Maior: ' + fmt(Math.max.apply(null, porDia.concat([0]))) + '</p>' + colunas(dias, porDia) + '</div>';
+  var agrup = 'dia';
+  if (dias.length > 31) { agrup = dias.length > 200 ? 'mês' : 'semana'; var sem = {}; dias.forEach(function (d, i) { var k = agrup === 'mês' ? d.slice(0, 8) + '01' : inicioSemana(d); sem[k] = (sem[k] || 0) + porDia[i]; }); dias = Object.keys(sem); porDia = dias.map(function (k) { return sem[k]; }); }
+  s += '<div class="grafico"><h3>Pintinhos por ' + agrup + '</h3><p>Maior: ' + fmt(Math.max.apply(null, porDia.concat([0]))) + '</p>' + colunas(dias, porDia) + '</div>';
   // por região
   var reg = {}; vs.forEach(function (v) { reg[v.regiao || 'Sem região'] = (reg[v.regiao || 'Sem região'] || 0) + totalP(v); });
   s += '<div class="grafico barras-h"><h3>Por região</h3><p>Pintinhos entregues em cada praça.</p>' + barrasH(reg, function (n) { return fmtMil(n); }) + '</div>';
@@ -1993,7 +2000,17 @@ TELAS.painel = function () {
   s += '<div class="grafico barras-h"><h3>' + (km ? 'KM por caminhão' : 'Viagens por caminhão') + '</h3><p>Uso de cada placa no período.</p>' + barrasH(pc, function (n) { return km ? fmt(n) + ' km' : n + ' viag.'; }, '#0A2140') + '</div>';
   return s;
 };
-TELAS.painel.depois = function (r, el) { el.querySelectorAll('[data-per]').forEach(function (b) { b.onclick = function () { PREF.painelPeriodo = b.dataset.per; salvarPref(); desenhar(); }; }); };
+TELAS.painel.depois = function (r, el) {
+  el.querySelectorAll('[data-per]').forEach(function (b) { b.onclick = function () {
+    if (b.dataset.per === 'livre' && PREF.painelPeriodo !== 'livre') { var pp = periodoPainel(); PREF.painelIni = pp[0]; PREF.painelFim = pp[1]; }
+    PREF.painelPeriodo = b.dataset.per; salvarPref(); desenhar();
+  }; });
+  var a = el.querySelector('#pIni'), b = el.querySelector('#pFim'), v = el.querySelector('#pVer');
+  if (a && b && v) v.onclick = function () {
+    if (!a.value || !b.value) { toast('Preencha as duas datas.', true); return; }
+    PREF.painelIni = a.value; PREF.painelFim = b.value; salvarPref(); desenhar();
+  };
+};
 function barrasH(obj, f, cor) {
   var ks = Object.keys(obj).sort(function (a, b) { return obj[b] - obj[a]; });
   if (!ks.length) return '<p class="fraco">Sem dados no período.</p>';
