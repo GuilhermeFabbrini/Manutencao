@@ -465,6 +465,81 @@ textarea.inp { min-height: 84px; resize: vertical; }
 .rodape-app img { height: 34px; opacity: .8; display: block; margin: 0 auto 6px; }
 @media print { .topo, .nav, .faixa-fila, .demo-faixa { display: none !important; } main { padding: 0; } }
 
+/* ---------- Rastreador / mapa ao vivo ---------- */
+.seg-vivo button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.seg-vivo svg { width: 18px; height: 18px; }
+.mapa-card { margin-top: 10px; background: #fff; border-radius: 24px; box-shadow: var(--sombra-alta); overflow: hidden; position: relative; }
+.mapa-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; background: linear-gradient(180deg, #fff, #F6F9FD); border-bottom: 1px solid var(--linha); flex-wrap: wrap; }
+.mapa-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.mapa-chips::-webkit-scrollbar { display: none; }
+.mchip { border: 1.5px solid var(--linha); background: #fff; border-radius: 999px; padding: 6px 11px; font-size: 13px; font-weight: 700; color: var(--tinta-2); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.mchip i { width: 8px; height: 8px; border-radius: 50%; }
+.mchip.on { background: var(--noite); border-color: var(--noite); color: #fff; }
+.mapa-fonte { font-size: 12px; color: var(--tinta-3); font-weight: 600; white-space: nowrap; }
+.mapa-slot { width: 100%; position: relative; background: #E8EEF5; }
+.mapa-vivo { width: 100%; height: 100%; }
+.mapa-vivo.sem-fundo { background-color: #E9EFF6; background-image: linear-gradient(#D7E1EC 1px, transparent 1px), linear-gradient(90deg, #D7E1EC 1px, transparent 1px); background-size: 40px 40px; }
+.leaflet-container { font-family: var(--fonte); }
+.mk-wrap { background: none; border: 0; }
+.mk { --c: #3DDC97; position: relative; width: 46px; height: 46px; display: grid; place-items: center; }
+.mk span { position: relative; z-index: 2; min-width: 34px; height: 34px; padding: 0 5px; border-radius: 12px; background: var(--noite); color: #fff; font: 800 12.5px/34px var(--fonte-titulo); text-align: center; box-shadow: 0 0 0 3px var(--c), 0 6px 14px -4px rgba(10,33,64,.6); }
+.mk.off span { background: #5C6A7D; }
+.mk em { position: absolute; z-index: 3; right: -8px; top: -6px; background: var(--c); color: var(--noite); font: 800 10.5px/1 var(--fonte); font-style: normal; padding: 3px 5px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.mk .anel { position: absolute; inset: 4px; border-radius: 14px; background: var(--c); opacity: 0; }
+.mk.mov .anel { animation: anel 1.8s ease-out infinite; }
+@keyframes anel { 0% { transform: scale(.8); opacity: .55; } 100% { transform: scale(1.7); opacity: 0; } }
+.mk-granja { width: 30px; height: 30px; border-radius: 50% 50% 50% 6px; transform: rotate(-45deg); background: #fff; border: 2.5px solid #E88A00; display: grid; place-items: center; box-shadow: 0 4px 10px -3px rgba(0,0,0,.4); }
+.mk-granja svg { transform: rotate(45deg); width: 16px; height: 16px; color: #E88A00; }
+.mk-granja.frigo { border-color: #6E56CF; width: 34px; height: 34px; }
+.mk-granja.frigo svg { color: #6E56CF; }
+.tt-rumo { background: var(--noite) !important; color: #fff !important; border: 0 !important; border-radius: 10px !important; font: 800 11.5px var(--fonte) !important; padding: 4px 8px !important; box-shadow: 0 4px 10px -4px rgba(0,0,0,.5) !important; }
+.tt-rumo::before { display: none; }
+.pop-rv .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 16px 36px -14px rgba(10,33,64,.55); }
+.pop-rv .leaflet-popup-content { margin: 12px 14px; }
+.pop { font-size: 13.5px; min-width: 210px; }
+.pop-t { display: flex; align-items: center; gap: 8px; }
+.pop-t b { font-size: 12.5px; color: var(--tinta-2); }
+.pop-e { --c: #19B77C; margin-top: 8px; font-weight: 800; color: var(--tinta); display: flex; align-items: center; gap: 6px; }
+.pop-e i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 25%, transparent); }
+.pop-l { color: var(--tinta-2); font-size: 12.5px; margin-top: 2px; }
+.pop-v { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--linha); }
+.pop-v span { color: var(--tinta-2); font-size: 12.5px; }
+.pop-b { display: flex; gap: 12px; margin-top: 8px; font-weight: 800; font-size: 13px; }
+.frota-lista { margin-top: 10px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); padding: 4px 10px; }
+.frota-lista summary { cursor: pointer; font-weight: 800; padding: 10px 4px; display: flex; align-items: center; gap: 8px; list-style: none; }
+.frota-lista summary::-webkit-details-marker { display: none; }
+.frota-lista summary::after { content: '▾'; margin-left: auto; color: var(--tinta-3); }
+.frota-lista[open] summary::after { content: '▴'; }
+.lista-rast { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding-bottom: 8px; }
+.lista-rast > * { min-width: 0; }
+.rast-linha { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: var(--fundo); border-radius: 14px; padding: 9px 10px; text-align: left; color: inherit; }
+.rast-linha:active { transform: scale(.995); }
+.rl-frota { --c: #3DDC97; min-width: 40px; height: 32px; border-radius: 10px; background: var(--noite); color: #fff; display: grid; place-items: center; font: 800 12.5px var(--fonte-titulo); box-shadow: 0 0 0 2.5px var(--c); flex: none; padding: 0 4px; }
+.rl-meio { flex: 1; min-width: 0; }
+.rl-meio b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-meio small, .rl-dir small { display: block; color: var(--tinta-2); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-dir { text-align: right; flex: none; }
+.rl-dir b { font-size: 13.5px; display: block; }
+.mapa-pagina { display: grid; gap: 12px; }
+.mapa-pagina .lista-rast { background: #fff; border-radius: 18px; box-shadow: var(--sombra); padding: 10px; max-height: none; }
+@media (min-width: 980px) { main:has(.mapa-pagina) { max-width: 1280px; } .mapa-pagina { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } .mapa-pagina .lista-rast { max-height: calc(68vh + 50px); overflow: auto; } }
+.rast-vaga { --c: #3DDC97; display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 11px; font-weight: 700; color: #DCE8F7; background: rgba(255,255,255,.08); border-radius: 8px; padding: 2px 7px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rast-vaga i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); flex: none; }
+.rast-bloco { --c: #19B77C; margin-top: 12px; background: #fff; border-radius: 16px; padding: 12px; box-shadow: var(--sombra); border-left: 5px solid var(--c); }
+.rast-bloco.vazio-r { display: flex; gap: 8px; align-items: center; color: var(--tinta-2); border-left-color: var(--linha); font-size: 14px; }
+.rb-topo { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.rb-est { font-weight: 800; display: inline-flex; align-items: center; gap: 7px; font-size: 15.5px; }
+.rb-est i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent); }
+.rb-end { margin-top: 4px; color: var(--tinta-2); font-size: 14px; }
+.rb-dados { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 13.5px; color: var(--tinta-2); }
+.rb-dados b { color: var(--tinta); }
+.rumo { display: flex; gap: 10px; align-items: center; background: linear-gradient(90deg, #EAF3FF, #F4F8FE); color: #0F4F9C; border-radius: 14px; padding: 10px 12px; margin: 0 0 12px; font-size: 14px; }
+.rumo svg { width: 22px; height: 22px; flex: none; }
+.rumo small { display: block; color: #5B7BA6; font-size: 12px; margin-top: 1px; }
+.rumo.chegou { background: linear-gradient(90deg, #FFF0D1, #FFF8E8); color: #7A4B00; animation: chama 1.6s ease-in-out infinite; }
+@keyframes chama { 50% { box-shadow: 0 0 0 4px rgba(255,200,61,.35); } }
+@media (prefers-reduced-motion: reduce) { .mk.mov .anel, .rumo.chegou { animation: none; } }
+
 </style>
 </head>
 <body>
@@ -492,6 +567,7 @@ var NUCLEO = (function () {
       ['inicio', 'Início da viagem', 'dt'], ['chegada_granja', 'Chegada na granja', 'dt'], ['inicio_carga', 'Início do carregamento', 'dt'],
       ['saida_granja', 'Saída da granja', 'dt'], ['chegada_destino', 'Chegada no frigorífico', 'dt'], ['fim', 'Encerramento', 'dt'],
       ['km_inicial', 'KM inicial', 'n'], ['km_final', 'KM final', 'n'], ['km_rodado', 'KM rodado', 'n'],
+      ['km_rast_inicial', 'KM rastreador (início)', 'n'], ['km_rast_final', 'KM rastreador (fim)', 'n'], ['km_rast_rodado', 'KM rodado (rastreador)', 'n'],
       ['tempo_ida', 'Base → granja', 't'], ['espera_granja', 'Espera na granja', 't'], ['dur_carga', 'Carregamento', 't'],
       ['tempo_volta', 'Granja → frigorífico', 't'], ['tempo_destino', 'No frigorífico', 't'], ['dur_total', 'Tempo total', 't'],
       ['atraso_granja', 'Atraso na granja (min)', 'n'], ['ocorrencias', 'Ocorrências', 'n'], ['docs', 'Documentos', 'n'],
@@ -555,6 +631,10 @@ var NUCLEO = (function () {
     ['km_tolerancia', '30', 'Diferença aceitável entre o KM inicial e o último KM do caminhão'],
     ['tolerancia_atraso_min', '15', 'Minutos de tolerância para contar como chegada no horário'],
     ['etapa_alerta_h', '3', 'Avisar o gestor quando a viagem ficar parada na mesma etapa por mais de X horas'],
+    ['rastreador_url', 'https://script.google.com/macros/s/AKfycbxfImBmRN8s3VTSuq7uTnGRck8hWr0KSA7cgpo8xUMEFsGc4Cqh4E5lKDP_zM5DllUk/exec?action=telemetria', 'Endereço das posições da Sascar (o mesmo do painel da Manutenção)'],
+    ['vel_alerta', '80', 'Avisar o gestor quando o caminhão passar dessa velocidade (km/h, pelo rastreador)'],
+    ['km_rast_tolerancia', '15', 'Diferença aceitável (km) entre o KM rodado digitado e o do rastreador'],
+    ['destino_coord', '', 'Latitude,longitude do frigorífico (opcional: mostra no mapa e avisa a chegada)'],
     ['pasta_arquivos', '', 'Preenchido sozinho: pasta do Drive onde ficam fotos e notas'],
     ['arquivos_por_link', 'SIM', 'SIM = quem tem o link consegue ver a foto (precisa para aparecer no celular)']
   ];
@@ -593,7 +673,8 @@ var NUCLEO = (function () {
       unidade: c.unidade, operacoes: lista(c.operacoes), operacoes_com_granja: lista(c.operacoes_com_granja), destinos: lista(c.destinos),
       tipos_documento: lista(c.tipos_documento), jornada_normal_h: Number(c.jornada_normal_h) || 8, jornada_max_h: Number(c.jornada_max_h) || 10,
       interjornada_min_h: Number(c.interjornada_min_h) || 11, direcao_alerta_h: Number(String(c.direcao_alerta_h).replace(',', '.')) || 5.5,
-      km_tolerancia: Number(c.km_tolerancia) || 30, tolerancia_atraso_min: Number(c.tolerancia_atraso_min) || 15, etapa_alerta_h: Number(c.etapa_alerta_h) || 3
+      km_tolerancia: Number(c.km_tolerancia) || 30, tolerancia_atraso_min: Number(c.tolerancia_atraso_min) || 15, etapa_alerta_h: Number(c.etapa_alerta_h) || 3,
+      rastreador_url: txt(c.rastreador_url), vel_alerta: Number(c.vel_alerta) || 80, km_rast_tolerancia: Number(c.km_rast_tolerancia) || 15, destino_coord: txt(c.destino_coord)
     };
   }
   function comGranja(cfg, op) { var l = lista(cfg.operacoes_com_granja).map(chave); return l.indexOf(chave(op)) >= 0; }
@@ -621,6 +702,12 @@ var NUCLEO = (function () {
   function recalcViagem(v, cfg) {
     var ki = num(v.km_inicial), kf = num(v.km_final);
     v.km_rodado = ki !== '' && kf !== '' ? kf - ki : '';
+    var ri = num(v.km_rast_inicial), rf = num(v.km_rast_final);
+    v.km_rast_rodado = ri !== '' && rf !== '' && rf >= ri ? rf - ri : '';
+    var alr = lista(v.alertas).filter(function (a) { return a.indexOf('KM digitado') !== 0; });
+    if (v.km_rodado !== '' && v.km_rast_rodado !== '' && Math.abs(v.km_rodado - v.km_rast_rodado) > Math.max(cfg && cfg.km_rast_tolerancia || 15, v.km_rast_rodado * 0.1))
+      alr.push('KM digitado (' + v.km_rodado + ' km) diferente do rastreador (' + v.km_rast_rodado + ' km)');
+    v.alertas = alr.join('; ');
     v.tempo_ida = hm(difMin(v.inicio, v.chegada_granja));
     v.espera_granja = hm(difMin(v.chegada_granja, v.inicio_carga));
     v.dur_carga = hm(difMin(v.inicio_carga, v.saida_granja));
@@ -788,7 +875,7 @@ var NUCLEO = (function () {
     if (km === '') throw erro('Informe o KM inicial.');
     var v = { uid: uid, numero: ctx.store.proximo('Viagens'), data: dataDe(ctx.ts), status: 'Em andamento', operacao: op, placa: placa,
       destino: txt(d.destino) || lista(ctx.cfgRaw.destinos)[0] || '', hora_prevista: txt(d.hora_prevista), nf: txt(d.nf), inicio: ctx.ts, km_inicial: km,
-      obs: txt(d.obs), ocorrencias: 0, docs: 0, alertas: '', criado_por: ctx.u.nome, criado_em: ctx.agora, atualizado_em: ctx.agora,
+      obs: txt(d.obs), ocorrencias: 0, docs: 0, alertas: '', km_rast_inicial: num(d.km_rast), criado_por: ctx.u.nome, criado_em: ctx.agora, atualizado_em: ctx.agora,
       gps: d.lat ? JSON.stringify({ inicio: d.lat + ',' + d.lng }) : '' };
     preencherMotoristas(ctx, v, ctx.alvo, txt(d.motorista2_id));
     preencherIntegrado(ctx, v, txt(d.integrado_id), d.integrado_nome);
@@ -840,6 +927,7 @@ var NUCLEO = (function () {
     if (kf === '') throw erro('Informe o KM final para encerrar.');
     if (num(v.km_inicial) !== '' && kf < num(v.km_inicial)) throw erro('KM final (' + kf + ') menor que o KM inicial (' + v.km_inicial + ').');
     v.km_final = kf; v.fim = ctx.ts; v.status = 'Finalizada';
+    if (num(d.km_rast) !== '') v.km_rast_final = num(d.km_rast);
     if (d.nf) v.nf = txt(d.nf);
     if (d.obs) v.obs = (v.obs ? v.obs + ' | ' : '') + txt(d.obs);
     var g = gpsDe(v); if (d.lat) { g.fim = d.lat + ',' + d.lng; v.gps = JSON.stringify(g); }
@@ -1401,13 +1489,13 @@ function projetar(v, o) {
       if (acharV(v, d.uid_viagem)) break;
       var it = integradoDe(d.integrado_id) || {}, c = caminhaoDe(d.placa) || {}, m2 = pessoaDe(d.motorista2_id) || {};
       vg = { uid: d.uid_viagem, numero: '', data: o.ts.slice(0, 10), status: 'Em andamento', operacao: d.operacao, placa: d.placa, frota: c.frota, motorista_id: alvo, motorista: p.nome, motorista2_id: d.motorista2_id || '', motorista2: m2.nome || '',
-        integrado_id: d.integrado_id || '', integrado: it.nome || d.integrado_nome || '', cidade: it.cidade || '', tecnico: it.tecnico || '', tecnico_tel: it.telefone || '', nf: d.nf || '', destino: d.destino, hora_prevista: d.hora_prevista || '', inicio: o.ts, km_inicial: numero(d.km_inicial), ocorrencias: 0, docs: 0, alertas: '', pendente: 1 };
+        integrado_id: d.integrado_id || '', integrado: it.nome || d.integrado_nome || '', cidade: it.cidade || '', tecnico: it.tecnico || '', tecnico_tel: it.telefone || '', nf: d.nf || '', destino: d.destino, hora_prevista: d.hora_prevista || '', inicio: o.ts, km_inicial: numero(d.km_inicial), km_rast_inicial: d.km_rast || '', ocorrencias: 0, docs: 0, alertas: '', pendente: 1 };
       v.viagens.push(vg);
       if (c.placa) { var cc = v.caminhoes.filter(function (x) { return x.placa === c.placa; })[0]; if (cc) cc.km_atual = numero(d.km_inicial); }
       v.emUso.push({ placa: d.placa, motorista: p.nome, motorista_id: alvo, uid: d.uid_viagem, inicio: o.ts });
       break;
     case 'viagem_etapa': vg = acharV(v, d.viagem_uid); if (vg && !vg[d.etapa]) { vg[d.etapa] = o.ts; if (d.nf && !vg.nf) vg.nf = d.nf; vg.pendente = 1; } break;
-    case 'viagem_encerrar': vg = acharV(v, d.viagem_uid); if (vg) { vg.fim = o.ts; vg.km_final = numero(d.km_final); vg.km_rodado = vg.km_final - vg.km_inicial; if (d.nf) vg.nf = d.nf; vg.status = 'Finalizada'; vg.pendente = 1; v.emUso = v.emUso.filter(function (x) { return x.uid !== vg.uid; }); var c2 = v.caminhoes.filter(function (x) { return x.placa === vg.placa; })[0]; if (c2) c2.km_atual = vg.km_final; } break;
+    case 'viagem_encerrar': vg = acharV(v, d.viagem_uid); if (vg) { vg.fim = o.ts; vg.km_final = numero(d.km_final); vg.km_rodado = vg.km_final - vg.km_inicial; if (d.km_rast && vg.km_rast_inicial) vg.km_rast_rodado = d.km_rast - vg.km_rast_inicial; if (d.nf) vg.nf = d.nf; vg.status = 'Finalizada'; vg.pendente = 1; v.emUso = v.emUso.filter(function (x) { return x.uid !== vg.uid; }); var c2 = v.caminhoes.filter(function (x) { return x.placa === vg.placa; })[0]; if (c2) c2.km_atual = vg.km_final; } break;
     case 'viagem_editar': vg = acharV(v, d.viagem_uid); if (vg) { Object.keys(d.campos || {}).forEach(function (k) { vg[k] = d.campos[k]; }); if (d.campos.integrado_id) { var i2 = integradoDe(d.campos.integrado_id); if (i2) { vg.integrado = i2.nome; vg.cidade = i2.cidade; vg.tecnico = i2.tecnico; vg.tecnico_tel = i2.telefone; } } vg.pendente = 1; } break;
     case 'viagem_cancelar': vg = acharV(v, d.viagem_uid); if (vg) { vg.status = 'Cancelada'; v.emUso = v.emUso.filter(function (x) { return x.uid !== vg.uid; }); } break;
     case 'ocorrencia': vg = acharV(v, d.viagem_uid); v.ocorrencias.push({ uid: o.uid, numero: '', data_hora: o.ts, status: 'Aberta', tipo: d.tipo, motorista_id: alvo, motorista: p.nome, placa: d.placa || (vg ? vg.placa : ''), viagem_uid: d.viagem_uid || '', viagem: vg ? vg.numero : '', integrado: vg ? vg.integrado : '', descricao: d.descricao, foto: d.foto && d.foto.dados ? 'data:image/jpeg;base64,' + d.foto.dados : '', lat: d.lat, lng: d.lng, pendente: 1 }); if (vg) vg.ocorrencias = (Number(vg.ocorrencias) || 0) + 1; break;
@@ -1591,6 +1679,7 @@ function desenhar(topoDaPagina) {
   if (typeof POS_DESENHO === 'function') { var f = POS_DESENHO; POS_DESENHO = null; f(); }
   if (topoDaPagina) window.scrollTo(0, 0); else window.scrollTo(0, y);
   ROTA = r;
+  if (typeof ganchoRast === 'function') ganchoRast(r);
 }
 var POS_DESENHO = null;
 setInterval(function () { TICKS.forEach(function (t) { try { var el = document.getElementById(t[0]); if (el) el.innerHTML = t[1](); } catch (e) {} }); }, 15000);
@@ -1764,6 +1853,8 @@ function cartaoViagemAtual(vg) {
     '<div class="meta"><span>KM inicial <b class="num">' + fmt(vg.km_inicial) + '</b></span>' + (vg.hora_prevista ? '<span>Previsto na granja <b>' + esc(vg.hora_prevista) + '</b></span>' : '') + (vg.nf ? '<span>NF <b>' + esc(vg.nf) + '</b></span>' : '') + (vg.motorista2 ? '<span>Dupla <b>' + esc(primeiro(vg.motorista2)) + '</b></span>' : '') + '</div>' +
     passosHtml(vg) +
     '<div class="tempo-etapa">' + esc(ondeEsta(vg)) + ' há ' + tick('tk-et', function () { return '<b>' + hmCurto(minEntre(vg[atual])) + '</b>'; }) + '</div>';
+  var rumo = typeof rumoViagem === 'function' ? rumoViagem(vg) : null;
+  if (rumo) h += '<div class="rumo' + (rumo.chegou ? ' chegou' : '') + '">' + ic('pin') + '<span>' + (rumo.chegou ? 'O rastreador mostra que você já está no ' + (rumo.nome === 'granja' ? 'local da granja' : 'frigorífico') + '. Marque a chegada!' : 'Faltam <b>' + fmtKm(rumo.dist) + '</b> até a ' + rumo.nome + ' · chega em ~<b>' + hmCurto(rumo.eta) + '</b>') + '<small>🛰 rastreador · ' + idadeTxt(idadeRast(rumo.r)) + '</small></span></div>';
   if (prox) h += '<button class="btn ' + (prox === 'fim' ? 'verde' : 'pri') + ' gigante cheio" id="bt-etapa" onclick="marcarEtapa(\'' + vg.uid + '\',\'' + prox + '\')">' + ic(prox === 'fim' ? 'bandeira' : 'ok') + esc(PROXIMA[prox]) + '</button>';
   h += '<div class="grade-acoes">' +
     (link ? '<a class="acao" href="' + esc(link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Rota</a>' : '<button class="acao" disabled>' + ic('mapa') + 'Sem rota</button>') +
@@ -1781,8 +1872,8 @@ function marcarEtapa(uid, etapa) {
   if (etapa === 'saida_granja') return formSaidaGranja(uid);
   var ts = agoraTs(), bt = document.getElementById('bt-etapa');
   if (bt) { bt.disabled = true; bt.innerHTML = '<span class="roda" style="width:20px;height:20px;border-width:3px"></span> Marcando ' + ts.slice(11, 16) + '…'; }
-  gpsRapido().then(function (g) {
-    registrar('viagem_etapa', Object.assign({ viagem_uid: uid, etapa: etapa }, g || {}), PROXIMA[etapa].replace('Cheguei', 'Chegada') + ' às ' + ts.slice(11, 16), ts);
+  gpsComRast(vg.placa).then(function (g) {
+    registrar('viagem_etapa', anexarRast(vg.placa, Object.assign({ viagem_uid: uid, etapa: etapa }, g || {})), PROXIMA[etapa].replace('Cheguei', 'Chegada') + ' às ' + ts.slice(11, 16), ts);
   });
 }
 function formSaidaGranja(uid) {
@@ -1797,8 +1888,8 @@ function formSaidaGranja(uid) {
       f.querySelector('#ok').onclick = function () {
         var nf = f.querySelector('#nf').value.trim();
         fecharFolha();
-        gpsRapido().then(function (g) {
-          registrar('viagem_etapa', Object.assign({ viagem_uid: uid, etapa: 'saida_granja', nf: nf }, g || {}), 'Saída da granja às ' + ts.slice(11, 16), ts);
+        gpsComRast(vg.placa).then(function (g) {
+          registrar('viagem_etapa', anexarRast(vg.placa, Object.assign({ viagem_uid: uid, etapa: 'saida_granja', nf: nf }, g || {})), 'Saída da granja às ' + ts.slice(11, 16), ts);
           if (foto) registrar('documento', { viagem_uid: uid, tipo: 'Nota fiscal', nf: nf, arquivo: { mime: foto.mime, dados: foto.dados, nome: foto.nome } });
         });
       };
@@ -1809,7 +1900,7 @@ function formEncerrar(uid) {
   abrirFolha(cabFolha('Encerrar viagem', esc(vg.integrado || vg.operacao) + ' · ' + esc(vg.placa) + ' · fim às ' + ts.slice(11, 16)) +
     (proximaEtapa(vg) && proximaEtapa(vg) !== 'fim' ? '<div class="aviso-form">' + ic('alerta') + '<span>Algumas etapas não foram marcadas (' + etapasDe(vg).filter(function (e) { return !vg[e[0]] && e[0] !== 'fim'; }).map(function (e) { return e[1].toLowerCase(); }).join(', ') + '). Tudo bem, mas marque sempre que der: é isso que mostra para a JBS onde o tempo foi perdido.</span></div>' : '') +
     '<label class="campo"><span>KM final (painel do caminhão)</span><input class="inp grande num" id="kmf" inputmode="numeric" placeholder="000000" autocomplete="off"></label>' +
-    '<div class="km-dica">KM inicial <b>' + fmt(vg.km_inicial) + '</b> · rodado <b id="rod">—</b></div>' +
+    '<div class="km-dica">KM inicial <b>' + fmt(vg.km_inicial) + '</b> · rodado <b id="rod">—</b></div>' + dicaKmRast(vg) +
     (precisaNF ? '<label class="campo"><span>Nº da nota fiscal</span><input class="inp" id="nf" inputmode="numeric" placeholder="Número da NF"></label><label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;font-weight:600"><input type="checkbox" id="semnf"> Ainda não tenho o número da NF</label>' : '') +
     '<label class="campo"><span>Observação <em>(opcional)</em></span><input class="inp" id="obs" placeholder="Algo que o analista precisa saber?"></label>' +
     '<div class="botoes-folha"><button class="btn verde gigante cheio" id="ok">' + ic('bandeira') + 'Encerrar viagem</button></div>',
@@ -1824,14 +1915,19 @@ function formEncerrar(uid) {
         if (nfEl && !nf && !f.querySelector('#semnf').checked) return toast('Digite o número da NF ou marque que ainda não tem.', true);
         var seguir = function () {
           fecharFolha();
-          gpsRapido().then(function (g) {
-            registrar('viagem_encerrar', Object.assign({ viagem_uid: uid, km_final: k, nf: nf, obs: f.querySelector('#obs').value.trim() }, g || {}), 'Viagem encerrada: ' + fmt(k - vg.km_inicial) + ' km. Valeu!', ts);
+          gpsComRast(vg.placa).then(function (g) {
+            registrar('viagem_encerrar', anexarRast(vg.placa, Object.assign({ viagem_uid: uid, km_final: k, nf: nf, obs: f.querySelector('#obs').value.trim() }, g || {}), true), 'Viagem encerrada: ' + fmt(k - vg.km_inicial) + ' km. Valeu!', ts);
           });
         };
         if (k - vg.km_inicial > 700) confirmar('Confere o KM?', 'Deu <b>' + fmt(k - vg.km_inicial) + ' km</b> rodados nessa viagem. Está certo?', 'Sim, está certo').then(function (s) { if (s) seguir(); });
         else seguir();
       };
     });
+}
+function dicaKmRast(vg) {
+  var r = typeof rastDe === 'function' ? rastDe(vg.placa) : null, ki = Number(vg.km_rast_inicial);
+  if (!r || !ki || idadeRast(r) > 30 || r.km < ki) return '';
+  return '<div class="aviso-form info">' + ic('pin') + '<span>O rastreador contou <b>~' + fmt(r.km - ki) + ' km</b> nesta viagem. Se o seu número ficar muito diferente, confira o painel.</span></div>';
 }
 function formCorrigir(uid) {
   var vg = acharV(V(), uid);
@@ -1931,8 +2027,8 @@ function formViagem(paraMotorista) {
         var seguir = function () {
           PREF.placa = g ? PREF.placa : st.placa; salvarPref();
           fecharFolha();
-          gpsRapido().then(function (gp) {
-            Object.assign(dados, gp || {});
+          gpsComRast(st.placa).then(function (gp) {
+            Object.assign(dados, gp || {}); anexarRast(st.placa, dados, true);
             if (!jornadaAbertaDe(V(), st.mot)) { registrar('jornada_inicio', { placa: st.placa, motorista_id: g ? st.mot : undefined }, '', ts); }
             registrar('viagem_iniciar', dados, 'Viagem iniciada às ' + ts.slice(11, 16) + '. Boa viagem!', ts);
             if (g) ir('viagens'); else window.scrollTo(0, 0);
@@ -1967,7 +2063,7 @@ function formOcorrencia(uidViagem) {
         var desc = f.querySelector('#desc').value.trim();
         if (st.tipo === 'Outro' && !desc) return toast('Conte rapidinho o que aconteceu.', true);
         fecharFolha();
-        registrar('ocorrencia', Object.assign({ tipo: st.tipo, descricao: desc, viagem_uid: vg ? vg.uid : '', placa: placa, foto: st.foto ? { mime: st.foto.mime, dados: st.foto.dados } : null }, st.gps || {}), 'Ocorrência enviada. O analista já recebe.', ts);
+        registrar('ocorrencia', anexarRast(placa, Object.assign({ tipo: st.tipo, descricao: desc, viagem_uid: vg ? vg.uid : '', placa: placa, foto: st.foto ? { mime: st.foto.mime, dados: st.foto.dados } : null }, st.gps || {})), 'Ocorrência enviada. O analista já recebe.', ts);
       };
     });
 }
@@ -2064,7 +2160,9 @@ function telaViagemDetalhe(uid) {
       intervaloHtml(vg.chegada_destino, vg.fim, 'no frigorífico', 90) + marcoHtml(vg, 'fim', 'Encerramento');
   } else h += marcoHtml(vg, 'inicio', 'Início da viagem') + intervaloHtml(vg.inicio, vg.fim, 'duração', 0) + marcoHtml(vg, 'fim', 'Encerramento');
   h += '</div></div>';
-  h += '<div class="secao"><h2>Quilometragem</h2></div><div class="km-bloco"><div><small>KM inicial</small><b class="num">' + fmt(vg.km_inicial) + '</b></div><div><small>KM final</small><b class="num">' + fmt(vg.km_final) + '</b></div><div class="rodado"><small>Rodado</small><b class="num">' + (vg.km_final !== '' && vg.km_final !== undefined ? fmt(vg.km_final - vg.km_inicial) : '—') + '</b></div></div>';
+  h += '<div class="secao"><h2>Quilometragem</h2></div><div class="km-bloco"><div><small>KM inicial</small><b class="num">' + fmt(vg.km_inicial) + '</b></div><div><small>KM final</small><b class="num">' + fmt(vg.km_final) + '</b></div><div class="rodado"><small>Rodado</small><b class="num">' + (vg.km_final !== '' && vg.km_final !== undefined ? fmt(vg.km_final - vg.km_inicial) : '—') + '</b></div></div>' +
+    (vg.km_rast_rodado !== '' && vg.km_rast_rodado !== undefined && vg.km_rast_rodado !== null ? '<p class="fraco" style="margin:8px 2px 0">🛰 Pelo rastreador: <b>' + fmt(vg.km_rast_rodado) + ' km</b>' + (vg.km_final !== '' && Math.abs((vg.km_final - vg.km_inicial) - vg.km_rast_rodado) > (V().config.km_rast_tolerancia || 15) ? ' · <span style="color:#B42318;font-weight:700">diferença de ' + fmt(Math.abs((vg.km_final - vg.km_inicial) - vg.km_rast_rodado)) + ' km</span>' : ' · confere ✓') + '</p>' : '') +
+    (gestor() && vg.status === 'Em andamento' ? '<div style="margin-top:10px">' + blocoRast(vg.placa) + '</div>' : '');
   h += '<div class="secao"><h2>Documentos</h2>' + (g || minha ? '<button class="link" onclick="formDocumento(\'' + uid + '\')">+ Enviar</button>' : '') + '</div>' +
     (docs.length ? '<div class="fotos">' + docs.map(function (d) { var mi = miniatura(d.arquivo); return '<button class="foto" onclick="verFoto(\'' + esc(d.arquivo) + '\')">' + (mi ? '<img loading="lazy" alt="" src="' + esc(mi) + '">' : '<span class="sem">' + ic('doc') + '</span>') + '<span>' + esc(d.tipo + (d.nf ? ' ' + d.nf : '')) + '</span></button>'; }).join('') + '</div>' : '<div class="vazio" style="padding:14px">Nenhum documento enviado.</div>');
   h += '<div class="secao"><h2>Ocorrências</h2>' + (g || minha ? '<button class="link" onclick="formOcorrencia(\'' + uid + '\')">+ Registrar</button>' : '') + '</div>' + (ocs.length ? '<div class="lista">' + ocs.map(cartaoOcorrencia).join('') + '</div>' : '<div class="vazio" style="padding:14px">Sem ocorrências.</div>');
@@ -2167,6 +2265,7 @@ function alertasAgora(v) {
   (v.viagens || []).filter(function (x) { return x.data === hoje && x.alertas && x.status !== 'Cancelada'; }).forEach(function (x) {
     out.push({ g: 0, t: (x.numero || x.placa) + ': ' + x.alertas.split(';')[0], s: apelido(x.motorista_id, x.motorista) + ' · ' + x.placa + ' · ' + (x.integrado || x.operacao) + (x.alertas.split(';').length > 1 ? ' (+' + (x.alertas.split(';').length - 1) + ')' : ''), a: '#viagem/' + x.uid });
   });
+  if (typeof alertasRast === 'function') out = out.concat(alertasRast(v));
   return out.sort(function (a, b) { return b.g - a.g; });
 }
 function alertaHtml(a) { return '<a class="alerta ' + (a.g === 2 ? 'grave' : a.g === 0 ? 'info' : '') + '" href="' + a.a + '">' + ic('alerta') + '<div><b>' + esc(a.t) + '</b><span>' + esc(a.s) + '</span></div></a>'; }
@@ -2182,18 +2281,29 @@ function telaAoVivo() {
   var h = '<div class="saudacao"><h1>' + saudacao() + ', ' + esc(v.eu.apelido.split(' ')[0]) + '</h1><p>' + dataLonga(hoje) + ' · atualizado ' + tick('tk-at', function () { var s = Math.round((Date.now() - ULTIMA_SINC) / 1000); return s < 60 ? 'agora' : 'há ' + Math.round(s / 60) + ' min'; }) + '</p></div>';
   h += '<div class="kpis"><div class="kpi destaque"><b class="num">' + abertas.length + '</b><small>em viagem agora</small></div><div class="kpi"><b class="num">' + deHoje.length + '</b><small>viagens hoje (' + finHoje.length + ' encerradas)</small></div>' +
     '<div class="kpi"><b class="num">' + fmt(km) + '</b><small>km rodados hoje</small></div><a class="kpi' + (ocAb.length ? ' vermelho' : '') + '" href="#ocorrencias" style="text-decoration:none;color:inherit"><b class="num">' + ocAb.length + '</b><small>ocorrências abertas</small></a></div>';
-  // pátio
-  var cams = (v.caminhoes || []).filter(ativo).slice().sort(function (a, b) { return (Number(a.frota) || 9999) - (Number(b.frota) || 9999); });
-  var ultimaDe = function (placa) { var l = (v.viagens || []).filter(function (x) { return x.placa === placa && x.status === 'Finalizada'; }); return l[l.length - 1]; };
-  h += '<section class="patio"><div class="cab"><h3>Frota ao vivo</h3><small>' + abertas.length + ' de ' + cams.length + ' rodando · ' + jAt.length + ' motoristas em jornada</small></div>' +
-    '<div class="legenda"><span><i style="background:' + COR_ESTADO.viagem + '"></i>na estrada</span><span><i style="background:' + COR_ESTADO.granja + '"></i>na granja</span><span><i style="background:' + COR_ESTADO.destino + '"></i>no frigorífico</span><span><i style="background:' + COR_ESTADO.livre + '"></i>livre</span></div><div class="vagas">';
-  h += cams.map(function (c, i) {
-    var vg = abertas.filter(function (x) { return x.placa === c.placa; })[0], est = estadoCaminhao(vg), u = !vg && ultimaDe(c.placa);
-    var estTxt = vg ? { granja: 'Na granja', destino: 'Frigorífico', viagem: 'Na estrada' }[est] + ' · ' + hmCurto(minEntre(vg[etapaAtual(vg)])) : 'Livre';
-    var quem = vg ? esc(apelido(vg.motorista_id, vg.motorista)) + '<br>' + esc(String(vg.integrado || vg.operacao).split(' ').slice(0, 2).join(' ')) : (u ? 'última ' + esc(relativo(u.fim || u.data).toLowerCase()) + ' ' + hora(u.fim) : '&nbsp;');
-    return '<button class="vaga ' + (vg ? 'viagem' : '') + '" onclick="folhaCaminhao(\'' + c.placa + '\')">' + frangueiraSVG({ estado: vg ? est : 'livre', carregado: vg && (vg.saida_granja || vg.inicio_carga) && !vg.chegada_destino, id: 'p' + i, placa: c.placa }) +
-      placaHtml(c.placa) + '<span class="estado"><i style="background:' + COR_ESTADO[vg ? est : 'livre'] + '"></i>' + estTxt + '</span><span class="quem">' + (c.frota ? '<b>' + esc(c.frota) + '</b> · ' : '') + quem + '</span></button>';
-  }).join('') + '</div></section>';
+  var modo = PREF.vivo || 'mapa', h2 = '';
+  h += '<div class="seg seg-vivo" style="margin-top:14px"><button data-vivo="mapa" class="' + (modo === 'mapa' ? 'on' : '') + '">' + ic('mapa') + ' Mapa ao vivo</button><button data-vivo="patio" class="' + (modo === 'patio' ? 'on' : '') + '">' + ic('caminhao') + ' Pátio 3D</button></div>';
+  if (modo === 'mapa') {
+    h += '<div class="mapa-card">' + cabMapaHtml(v) + slotMapa('min(58vh, 520px)') + '</div>';
+    h += '<details class="frota-lista"><summary>' + ic('caminhao') + ' Todos os caminhões <span class="fraco">(' + (v.caminhoes || []).filter(ativo).length + ')</span></summary><div class="lista-rast" id="lista-rast">' + listaRastHtml(v) + '</div></details>';
+  } else {
+    var cams = (v.caminhoes || []).filter(ativo).slice().sort(function (a, b) { return (Number(a.frota) || 9999) - (Number(b.frota) || 9999); });
+    var ultimaDe = function (placa) { var l = (v.viagens || []).filter(function (x) { return x.placa === placa && x.status === 'Finalizada'; }); return l[l.length - 1]; };
+    h2 += '<section class="patio"><div class="cab"><h3>Frota ao vivo</h3><small>' + abertas.length + ' de ' + cams.length + ' rodando · ' + jAt.length + ' motoristas em jornada</small></div>' +
+      '<div class="legenda"><span><i style="background:' + COR_ESTADO.viagem + '"></i>na estrada</span><span><i style="background:' + COR_ESTADO.granja + '"></i>na granja</span><span><i style="background:' + COR_ESTADO.destino + '"></i>no frigorífico</span><span><i style="background:' + COR_ESTADO.livre + '"></i>livre</span></div><div class="vagas">';
+    h2 += cams.map(function (c, i) {
+      var vg = abertas.filter(function (x) { return x.placa === c.placa; })[0], est = estadoCaminhao(vg), u = !vg && ultimaDe(c.placa);
+      var estTxt = vg ? { granja: 'Na granja', destino: 'Frigorífico', viagem: 'Na estrada' }[est] + ' · ' + hmCurto(minEntre(vg[etapaAtual(vg)])) : 'Livre';
+      var quem = vg ? esc(apelido(vg.motorista_id, vg.motorista)) + '<br>' + esc(String(vg.integrado || vg.operacao).split(' ').slice(0, 2).join(' ')) : (u ? 'última ' + esc(relativo(u.fim || u.data).toLowerCase()) + ' ' + hora(u.fim) : '&nbsp;');
+      return '<button class="vaga ' + (vg ? 'viagem' : '') + '" onclick="folhaCaminhao(\'' + c.placa + '\')">' + frangueiraSVG({ estado: vg ? est : 'livre', carregado: vg && (vg.saida_granja || vg.inicio_carga) && !vg.chegada_destino, id: 'p' + i, placa: c.placa }) +
+        placaHtml(c.placa) + '<span class="estado"><i style="background:' + COR_ESTADO[vg ? est : 'livre'] + '"></i>' + estTxt + '</span><span class="quem">' + (c.frota ? '<b>' + esc(c.frota) + '</b> · ' : '') + quem + '</span>' + rastVagaHtml(c.placa) + '</button>';
+    }).join('') + '</div></section>';
+    h += h2;
+  }
+  POS_DESENHO = function () {
+    document.querySelectorAll('[data-vivo]').forEach(function (b) { b.onclick = function () { PREF.vivo = b.dataset.vivo; salvarPref(); desenhar(); }; });
+    if (modo === 'mapa') { ligarCabMapa(); montarMapa(); }
+  };
   var al = alertasAgora(v);
   h += '<div class="secao"><h2>Precisa de atenção</h2>' + (al.length ? '<span class="fraco">' + al.length + '</span>' : '') + '</div>' +
     (al.length ? '<div class="lista">' + al.slice(0, 8).map(alertaHtml).join('') + (al.length > 8 ? '<p class="fraco" style="text-align:center">+ ' + (al.length - 8) + ' outros</p>' : '') + '</div>' : '<div class="vazio" style="padding:16px"><b>Tudo em ordem</b>Nenhuma jornada estourada, viagem parada ou alerta agora.</div>');
@@ -2203,11 +2313,25 @@ function telaAoVivo() {
   h += '<div class="atalhos" style="margin-top:16px"><a class="atalho" href="#indicadores"><span class="ico" style="background:#E3EEFF;color:#1665C1">' + ic('grafico') + '</span><span><b>Indicadores</b><small>Onde o tempo está indo</small></span></a><a class="atalho" href="#mapa"><span class="ico" style="background:#DBF4E8;color:#08794F">' + ic('mapa') + '</span><span><b>Mapa</b><small>Caminhões e granjas</small></span></a></div>';
   return h;
 }
+function rastVagaHtml(placa) {
+  var r = rastDe(placa); if (!r) return '';
+  var e = estadoRast(r);
+  return '<span class="rast-vaga" style="--c:' + ESTADO_RAST[e][1] + '"><i></i>' + esc(e === 'mov' ? r.vel + ' km/h' : e === 'off' ? 'sem sinal' : ESTADO_RAST[e][0].toLowerCase()) + (cidadeRast(r) && e !== 'off' ? ' · ' + esc(cidadeRast(r).split('/')[0]) : '') + '</span>';
+}
+function blocoRast(placa) {
+  var r = rastDe(placa);
+  if (!r) return '<div class="rast-bloco vazio-r">' + ic('pin') + '<span>' + (RAST.quando ? 'Esse caminhão não aparece no rastreador.' : 'Carregando o rastreador…') + '</span></div>';
+  var e = estadoRast(r);
+  return '<div class="rast-bloco" style="--c:' + ESTADO_RAST[e][1] + '"><div class="rb-topo"><span class="rb-est"><i></i>' + esc(textoRast(r)) + '</span><span class="fraco">🛰 Sascar · ' + esc(idadeTxt(idadeRast(r))) + '</span></div>' +
+    '<div class="rb-end">' + esc(r.end || '—') + '</div><div class="rb-dados"><span>Ignição <b>' + (r.ign ? 'ligada' : 'desligada') + '</b></span><span>Hodômetro <b class="num">' + fmt(r.km) + ' km</b></span></div>' +
+    '<div class="linha-btns" style="margin-top:10px"><button class="mini" onclick="fecharFolha(true);focarCaminhao(\'' + placa + '\')">' + ic('mapa') + 'Ver no mapa</button><a class="mini" target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + r.lat + ',' + r.lng + '">' + ic('link') + 'Google Maps</a></div></div>';
+}
 function folhaCaminhao(placa) {
   var v = V(), c = caminhaoDe(placa) || { placa: placa }, vg = (v.viagens || []).filter(function (x) { return x.placa === placa && x.status === 'Em andamento'; })[0];
   var ult = (v.viagens || []).filter(function (x) { return x.placa === placa && x.status !== 'Cancelada'; }).slice(-5).reverse();
   var mes = (v.viagens || []).filter(function (x) { return x.placa === placa && x.data && x.data.slice(0, 7) === hojeISO().slice(0, 7); });
   abrirFolha(cabFolha(esc(placa) + (c.frota ? ' · frota ' + esc(c.frota) : ''), esc([c.modelo, c.ano, c.proprietario].filter(Boolean).join(' · '))) +
+    blocoRast(placa) +
     '<div class="km-bloco" style="margin-top:12px"><div><small>KM atual</small><b class="num">' + fmt(c.km_atual) + '</b></div><div><small>Viagens no mês</small><b class="num">' + mes.length + '</b></div><div class="rodado"><small>KM no mês</small><b class="num">' + fmt(mes.reduce(function (s, x) { return s + (Number(x.km_rodado) || 0); }, 0)) + '</b></div></div>' +
     '<div class="secao"><h2>' + (vg ? 'Viagem atual' : 'Últimas viagens') + '</h2></div><div class="lista">' + (vg ? cartaoViagem(vg) : '') + ult.filter(function (x) { return x !== vg; }).map(cartaoViagem).join('') + '</div>' +
     '<div class="botoes-folha"><button class="btn branco cheio" onclick="fecharFolha();formCadastro(\'caminhoes\',\'' + placa + '\')">' + ic('lapis') + 'Editar cadastro / KM</button></div>',
@@ -2368,7 +2492,7 @@ function telaMais() {
   var semGps = (v.integrados || []).filter(function (i) { return ativo(i) && !i.latitude && !i.link_rota; }).length;
   return '<div class="secao" style="margin-top:4px"><h2>Mais</h2></div><div class="menu-lista">' +
     it('#indicadores', 'grafico', 'background:#E3EEFF;color:#1665C1', 'Indicadores', 'Tempos por etapa, pontualidade, granjas que mais seguram') +
-    it('#mapa', 'mapa', 'background:#DBF4E8;color:#08794F', 'Mapa', 'Onde cada caminhão marcou a última etapa') +
+    it('#mapa', 'mapa', 'background:#DBF4E8;color:#08794F', 'Frota no mapa', 'Posição ao vivo pelo rastreador Sascar') +
     it('#documentos', 'doc', 'background:#FFF3D1;color:#7A4B00', 'Documentos fiscais', 'NF, GTA e tickets enviados pelos motoristas') +
     '</div><div class="secao"><h2>Cadastros</h2></div><div class="menu-lista">' +
     it('#cad/equipe', 'pessoas', '', 'Motoristas e gestores', (v.equipe || []).filter(function (e) { return ativo(e) && e.perfil === 'Motorista'; }).length + ' motoristas ativos') +
@@ -2459,34 +2583,272 @@ function formCadastro(tipo, chaveReg) {
     });
 }
 
-/* ============================================================ MAPA */
-function gpsUltimo(x) { var g = {}; try { g = JSON.parse(x.gps || '{}') || {}; } catch (e) {} var ks = ['fim', 'chegada_destino', 'saida_granja', 'inicio_carga', 'chegada_granja', 'inicio']; for (var i = 0; i < ks.length; i++) if (g[ks[i]]) return { e: ks[i], c: g[ks[i]].split(',').map(Number) }; return null; }
+
+/* Rota Viva Frango — Passos | rastreador Sascar: posições ao vivo, mapa e conferências */
+
+var RAST = { d: {}, quando: 0, carregando: null, erro: '' };
+var ESTADO_RAST = { mov: ['Rodando', '#19B77C'], lig: ['Parado, ligado', '#F59E0B'], par: ['Desligado', '#8593A6'], off: ['Sem sinal', '#E5484D'], sem: ['Sem rastreador', '#B9C3D0'] };
+var BASE_PASSOS = [-20.7315, -46.5722], DESTINO_DEMO = [-20.7262, -46.6005];
+
+function rastUrl() { return (DB && DB.config && DB.config.rastreador_url) || ''; }
+function carregarRast(forcar, idadeMax) {
+  if (!forcar && Date.now() - RAST.quando < (idadeMax || 25000)) return Promise.resolve(RAST.d);
+  if (RAST.carregando) return RAST.carregando;
+  if (DEMO) { RAST.d = rastDemo(); RAST.quando = Date.now(); return Promise.resolve(RAST.d); }
+  var u = rastUrl();
+  if (!u) return Promise.resolve(RAST.d);
+  var limite = new Promise(function (ok, erro) { setTimeout(function () { erro(new Error('demorou')); }, 20000); });
+  limite.catch(function () {});
+  RAST.carregando = Promise.race([fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + 'cb=rv&_=' + Date.now(), { credentials: 'omit' }).then(function (r) { return r.text(); }), limite])
+    .then(function (t) {
+      var i = t.indexOf('('), j = t.lastIndexOf(')');
+      var js = JSON.parse(i >= 0 && j > i && t.charAt(0) !== '{' ? t.slice(i + 1, j) : t);
+      var d = {};
+      (js.veiculos || js.frota || []).forEach(function (x) {
+        if (!x || !x.placa) return;
+        var p = String(x.placa).trim().toUpperCase().replace(/-\d+$/, '').replace(/[^A-Z0-9]/g, '');
+        var lat = Number(x.lat), lng = Number(x.lon !== undefined ? x.lon : x.lng);
+        if (isNaN(lat) || isNaN(lng)) return;
+        d[p] = { lat: lat, lng: lng, km: parseInt(x.km, 10) || 0, vel: parseInt(x.vel, 10) || 0, ign: !!x.ign, ts: Number(x.ts) || Date.parse(x.ts) || Date.now(), end: String(x.end || x.endereco || '') };
+      });
+      RAST.d = d; RAST.quando = Date.now(); RAST.erro = '';
+      return d;
+    })
+    .catch(function () { RAST.erro = 'Rastreador sem resposta agora'; RAST.quando = Date.now() - 15000; return RAST.d; })
+    .then(function (d) { RAST.carregando = null; return d; });
+  return RAST.carregando;
+}
+/** posição do caminhão (aceita placa com 1 letra trocada no cadastro da Sascar) */
+function rastDe(placa) {
+  if (!placa) return null;
+  if (RAST.d[placa]) return RAST.d[placa];
+  var ks = Object.keys(RAST.d);
+  for (var i = 0; i < ks.length; i++) {
+    var k = ks[i]; if (k.length !== placa.length) continue;
+    var dif = 0; for (var c = 0; c < k.length && dif < 2; c++) if (k[c] !== placa[c]) dif++;
+    if (dif === 1) return RAST.d[k];
+  }
+  return null;
+}
+function idadeRast(r) { return r ? Math.max(0, Math.round((Date.now() - r.ts) / 60000)) : null; }
+function estadoRast(r) { if (!r) return 'sem'; if (idadeRast(r) > 180) return 'off'; if (r.ign && r.vel >= 5) return 'mov'; return r.ign ? 'lig' : 'par'; }
+function textoRast(r) {
+  var e = estadoRast(r);
+  if (e === 'mov') return r.vel + ' km/h';
+  if (e === 'off') return 'Sem sinal há ' + idadeTxt(idadeRast(r));
+  return ESTADO_RAST[e][0];
+}
+function idadeTxt(m) { if (m === null) return '—'; if (m < 1) return 'agora'; if (m < 60) return m + ' min'; if (m < 1440) return Math.floor(m / 60) + 'h' + (m % 60 ? pad(m % 60) : ''); return Math.floor(m / 1440) + ' dia' + (m >= 2880 ? 's' : ''); }
+function cidadeRast(r) { if (!r || !r.end) return ''; var c = r.end.split(' - ')[0].replace(/^\//, ''); return c || r.end; }
+function ruaRast(r) { if (!r || !r.end) return ''; var p = r.end.split(' - '); return p.slice(1).join(' - '); }
+function distKm(a, b) {
+  if (!a || !b) return null;
+  var R = 6371, dLat = (b[0] - a[0]) * Math.PI / 180, dLng = (b[1] - a[1]) * Math.PI / 180;
+  var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a[0] * Math.PI / 180) * Math.cos(b[0] * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+function coordIntegrado(it) { if (!it) return null; var a = Number(String(it.latitude).replace(',', '.')), b = Number(String(it.longitude).replace(',', '.')); return isNaN(a) || isNaN(b) || !a ? null : [a, b]; }
+function coordDestino() { var s = (DB.config && DB.config.destino_coord) || ''; var p = s.split(',').map(function (x) { return Number(x.trim()); }); return p.length === 2 && !isNaN(p[0]) && p[0] ? p : (DEMO ? DESTINO_DEMO : null); }
+function fmtKm(k) { return k === null || k === undefined ? '—' : k < 1 ? Math.round(k * 1000) + ' m' : (k < 10 ? k.toFixed(1).replace('.', ',') : Math.round(k)) + ' km'; }
+/** distância e previsão até o próximo ponto da viagem (granja ou frigorífico) */
+function rumoViagem(vg) {
+  var r = rastDe(vg.placa); if (!r || idadeRast(r) > 60) return null;
+  var e = etapaAtual(vg), alvo = null, nome = '';
+  if (comGranja(vg.operacao) && e === 'inicio') { alvo = coordIntegrado(integradoDe(vg.integrado_id)); nome = 'granja'; }
+  else if (e === 'saida_granja') { alvo = coordDestino(); nome = 'frigorífico'; }
+  if (!alvo) return null;
+  var d = distKm([r.lat, r.lng], alvo), vel = r.vel > 25 ? r.vel : 55;
+  return { dist: d, eta: Math.round(d * 1.3 / vel * 60), nome: nome, alvo: alvo, r: r, chegou: d < 0.5 };
+}
+/** completa a ação com a posição e o KM do rastreador (quando o GPS do celular falhar) */
+function anexarRast(placa, d, comKm) {
+  var r = rastDe(placa); if (!r) return d;
+  var idade = idadeRast(r);
+  if (idade <= 20 && !d.lat) { d.lat = r.lat.toFixed(6); d.lng = r.lng.toFixed(6); d.prec = idade <= 5 ? 60 : 500; d.gps_fonte = 'rastreador'; }
+  if (comKm && idade <= 30 && r.km) d.km_rast = r.km;
+  return d;
+}
+function gpsComRast(placa) {
+  var ate = new Promise(function (ok) { setTimeout(ok, 7000); });
+  return Promise.all([gpsRapido(), Promise.race([carregarRast(false, 60000), ate])]).then(function (x) { return x[0]; });
+}
+
+/* ------------------------------------------------------------ demonstração: caminhões andando de verdade */
+function rastDemo() {
+  var v = V(), d = {}, agora = Date.now();
+  var mistura = function (a, b, f) { return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]; };
+  (v.caminhoes || []).forEach(function (c, i) {
+    var vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0];
+    var base = [BASE_PASSOS[0] + (i % 4) * 0.0004, BASE_PASSOS[1] + Math.floor(i / 4) * 0.0005];
+    var pos = base, vel = 0, ign = false, km = (Number(c.km_atual) || 100000) + 31250 + i * 7;
+    if (vg) {
+      var e = etapaAtual(vg), it = integradoDe(vg.integrado_id), g = coordIntegrado(it) || [-20.85 + (i % 5) * 0.05, -46.9 + (i % 3) * 0.08];
+      var desde = (agora - tsMs(vg[e])) / 60000;
+      if (e === 'inicio') { var f = Math.min(.97, desde / 75); pos = mistura(BASE_PASSOS, g, f); vel = 52 + (i * 7) % 30; ign = true; km += Math.round(f * 40); }
+      else if (e === 'chegada_granja' || e === 'inicio_carga') { pos = [g[0] + .0006, g[1] + .0004]; vel = 0; ign = e === 'chegada_granja' && i % 2 === 0; km += 42; }
+      else if (e === 'saida_granja') { var f2 = Math.min(.96, desde / 70); pos = mistura(g, DESTINO_DEMO, f2); vel = 61 + (i * 5) % 25; ign = true; km += 42 + Math.round(f2 * 40); }
+      else if (e === 'chegada_destino') { pos = [DESTINO_DEMO[0] + i * .0002, DESTINO_DEMO[1]]; vel = 0; ign = false; km += 85; }
+      if (i === 4 && vel) vel = 88;
+    }
+    var ts = agora - (i * 37000) % 240000;
+    if (c.placa === 'TKL6D24') { ts = agora - 40 * 86400000; pos = [-21.1397, -47.7594]; ign = false; vel = 0; }
+    d[c.placa] = { lat: pos[0], lng: pos[1], km: km, vel: vel, ign: ign, ts: ts, end: vel ? 'Rod MG-050' : 'Passos/MG - Rod MG-050' };
+  });
+  return d;
+}
+
+/* ============================================================ MAPA AO VIVO (Leaflet) */
+var MAPA = { el: null, map: null, marc: {}, extras: null, ajustado: false, semFundo: false, filtro: 'todos' };
 function carregarLeaflet() {
   if (window.L) return Promise.resolve();
-  return new Promise(function (ok, erro) {
-    var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
-    var s = document.createElement('script'); s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; s.onload = ok; s.onerror = erro; document.head.appendChild(s);
+  if (carregarLeaflet.p) return carregarLeaflet.p;
+  carregarLeaflet.p = new Promise(function (ok, erro) {
+    var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.appendChild(css);
+    var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; s.onload = ok; s.onerror = function () { carregarLeaflet.p = null; erro(); }; document.head.appendChild(s);
   });
+  return carregarLeaflet.p;
+}
+function corViagem(vg) { return vg ? COR_ESTADO[estadoCaminhao(vg)] : COR_ESTADO.livre; }
+function iconeCaminhao(c, r, vg) {
+  var e = estadoRast(r), cor = e === 'off' ? '#E5484D' : corViagem(vg);
+  var rot = c.frota || c.placa.slice(-4);
+  return L.divIcon({ className: 'mk-wrap', iconSize: [46, 46], iconAnchor: [23, 23], popupAnchor: [0, -20],
+    html: '<div class="mk ' + e + (vg ? ' vg' : '') + '" style="--c:' + cor + '"><i class="anel"></i><span>' + esc(rot) + '</span>' + (e === 'mov' ? '<em>' + r.vel + '</em>' : '') + '</div>' });
+}
+function popupCaminhao(c, r, vg) {
+  var m = vg ? apelido(vg.motorista_id, vg.motorista) : '', rumo = vg ? rumoViagem(vg) : null;
+  return '<div class="pop"><div class="pop-t">' + placaHtml(c.placa) + (c.frota ? '<b>frota ' + esc(c.frota) + '</b>' : '') + '</div>' +
+    '<div class="pop-e" style="--c:' + ESTADO_RAST[estadoRast(r)][1] + '"><i></i>' + esc(textoRast(r)) + ' · ' + esc(idadeTxt(idadeRast(r))) + '</div>' +
+    '<div class="pop-l">' + esc(r.end || '') + '</div>' +
+    (vg ? '<div class="pop-v"><b>' + esc(m) + '</b> · ' + esc(vg.integrado || vg.operacao) + '<br><span>' + esc(ondeEsta(vg)) + ' há ' + hmCurto(minEntre(vg[etapaAtual(vg)])) + (rumo ? ' · a ' + fmtKm(rumo.dist) + ' da ' + rumo.nome : '') + '</span></div>' : '<div class="pop-v"><span>Sem viagem aberta</span></div>') +
+    '<div class="pop-b">' + (vg ? '<a href="#viagem/' + esc(vg.uid) + '">Ver viagem</a>' : '') + '<a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + r.lat + ',' + r.lng + '">Google Maps</a></div></div>';
+}
+function slotMapa(alt, cls) { return '<div class="mapa-slot ' + (cls || '') + '" id="slot-mapa" style="height:' + alt + '"><div class="carregando" style="min-height:100%"><div class="roda"></div>Abrindo o mapa…</div></div>'; }
+function montarMapa() {
+  var slot = document.getElementById('slot-mapa'); if (!slot) return;
+  carregarLeaflet().then(function () {
+    slot = document.getElementById('slot-mapa'); if (!slot) return;
+    if (!MAPA.el) { MAPA.el = document.createElement('div'); MAPA.el.className = 'mapa-vivo'; }
+    slot.innerHTML = ''; slot.appendChild(MAPA.el);
+    if (!MAPA.map) {
+      MAPA.map = L.map(MAPA.el, { zoomControl: false, attributionControl: true, preferCanvas: false }).setView(BASE_PASSOS, 10);
+      L.control.zoom({ position: 'bottomright' }).addTo(MAPA.map);
+      var tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '© OpenStreetMap · © CARTO' });
+      var erros = 0; tiles.on('tileerror', function () { if (++erros > 3 && !MAPA.semFundo) { MAPA.semFundo = true; MAPA.el.classList.add('sem-fundo'); } });
+      tiles.addTo(MAPA.map);
+      MAPA.extras = L.layerGroup().addTo(MAPA.map);
+    }
+    setTimeout(function () { MAPA.map.invalidateSize(); }, 30);
+    carregarRast(false).then(atualizarMapa);
+  }, function () { slot.innerHTML = '<div class="vazio" style="height:100%;display:grid;place-items:center">Não consegui abrir o mapa (sem internet?).</div>'; });
+}
+function atualizarMapa() {
+  if (!MAPA.map || !window.L) return;
+  var v = V(), pts = [], vistos = {};
+  var abertas = (v.viagens || []).filter(function (x) { return x.status === 'Em andamento'; });
+  MAPA.extras.clearLayers();
+  (v.caminhoes || []).filter(ativo).forEach(function (c) {
+    var r = rastDe(c.placa); if (!r) return;
+    var vg = abertas.filter(function (x) { return x.placa === c.placa; })[0];
+    if (!filtroMapaOk(r, vg)) { if (MAPA.marc[c.placa]) { MAPA.map.removeLayer(MAPA.marc[c.placa]); delete MAPA.marc[c.placa]; } return; }
+    vistos[c.placa] = 1;
+    var ll = [r.lat, r.lng], m = MAPA.marc[c.placa];
+    if (!m) { m = L.marker(ll, { icon: iconeCaminhao(c, r, vg), riseOnHover: true }).addTo(MAPA.map); MAPA.marc[c.placa] = m; }
+    else { m.setLatLng(ll); m.setIcon(iconeCaminhao(c, r, vg)); }
+    m.setZIndexOffset(vg ? 500 : 0);
+    var aberto = m.isPopupOpen && m.isPopupOpen();
+    m.bindPopup(popupCaminhao(c, r, vg), { maxWidth: 270, className: 'pop-rv' });
+    if (aberto) m.openPopup();
+    if (estadoRast(r) !== 'off') pts.push(ll);
+    if (vg) {
+      var rumo = rumoViagem(vg), it = integradoDe(vg.integrado_id), g = coordIntegrado(it);
+      if (g && ['inicio', 'chegada_granja', 'inicio_carga'].indexOf(etapaAtual(vg)) >= 0) {
+        L.marker(g, { icon: L.divIcon({ className: 'mk-wrap', iconSize: [30, 30], iconAnchor: [15, 28], html: '<div class="mk-granja">' + ic('granja') + '</div>' }) }).bindTooltip(esc(vg.integrado), { direction: 'top', offset: [0, -24] }).addTo(MAPA.extras);
+      }
+      if (rumo) L.polyline([ll, rumo.alvo], { color: corViagem(vg), weight: 3, dashArray: '6 8', opacity: .9 }).addTo(MAPA.extras)
+        .bindTooltip(fmtKm(rumo.dist) + ' até a ' + rumo.nome + ' · ~' + hmCurto(rumo.eta), { sticky: true, direction: 'top', className: 'tt-rumo' });
+    }
+  });
+  Object.keys(MAPA.marc).forEach(function (p) { if (!vistos[p]) { MAPA.map.removeLayer(MAPA.marc[p]); delete MAPA.marc[p]; } });
+  var dst = coordDestino();
+  if (dst) L.marker(dst, { icon: L.divIcon({ className: 'mk-wrap', iconSize: [34, 34], iconAnchor: [17, 30], html: '<div class="mk-granja frigo">' + ic('fabrica') + '</div>' }) }).bindTooltip('Frigorífico', { direction: 'top', offset: [0, -26] }).addTo(MAPA.extras);
+  if (!MAPA.ajustado && pts.length) { MAPA.map.fitBounds(pts, { padding: [40, 40], maxZoom: 12 }); MAPA.ajustado = true; }
+}
+function filtroMapaOk(r, vg) {
+  var e = estadoRast(r);
+  switch (MAPA.filtro) { case 'viagem': return !!vg; case 'mov': return e === 'mov'; case 'par': return e === 'par' || e === 'lig'; case 'off': return e === 'off'; default: return true; }
+}
+function focarCaminhao(placa) {
+  var r = rastDe(placa);
+  if (!r) return toast('Esse caminhão não aparece no rastreador.', true);
+  if (rotaAtual() !== 'mapa' && rotaAtual() !== 'aovivo') { ir('mapa'); setTimeout(function () { focarCaminhao(placa); }, 900); return; }
+  if (!MAPA.map) return;
+  if (!MAPA.marc[placa]) { MAPA.filtro = 'todos'; atualizarMapa(); }
+  MAPA.map.flyTo([r.lat, r.lng], 14, { duration: .8 });
+  setTimeout(function () { if (MAPA.marc[placa]) MAPA.marc[placa].openPopup(); }, 850);
+  var s = document.getElementById('slot-mapa'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function centralizarMapa() { MAPA.ajustado = false; atualizarMapa(); }
+function contagemRast(v) {
+  var c = { mov: 0, lig: 0, par: 0, off: 0, sem: 0 };
+  (v.caminhoes || []).filter(ativo).forEach(function (x) { c[estadoRast(rastDe(x.placa))]++; });
+  return c;
+}
+function cabMapaHtml(v) {
+  var c = contagemRast(v), at = RAST.quando ? idadeTxt(Math.round((Date.now() - RAST.quando) / 60000)) : '—';
+  return '<div class="mapa-cab"><div class="mapa-chips">' +
+    [['todos', 'Todos', ''], ['viagem', 'Em viagem', ''], ['mov', c.mov + ' rodando', 'mov'], ['par', (c.par + c.lig) + ' parados', 'par'], ['off', c.off + ' sem sinal', 'off']].map(function (f) {
+      return '<button class="mchip' + (MAPA.filtro === f[0] ? ' on' : '') + '" data-mf="' + f[0] + '">' + (f[2] ? '<i style="background:' + ESTADO_RAST[f[2]][1] + '"></i>' : '') + f[1] + '</button>';
+    }).join('') + '</div><span class="mapa-fonte">' + (RAST.erro ? '⚠ ' + esc(RAST.erro) : '🛰 Sascar · ' + (at === 'agora' ? 'agora' : 'há ' + at)) + '</span></div>';
+}
+function ligarCabMapa() {
+  document.querySelectorAll('[data-mf]').forEach(function (b) { b.onclick = function () { MAPA.filtro = b.dataset.mf; document.querySelectorAll('[data-mf]').forEach(function (x) { x.classList.toggle('on', x === b); }); atualizarMapa(); var l = document.getElementById('lista-rast'); if (l) l.innerHTML = listaRastHtml(V()); }; });
+}
+function linhaRast(c, v) {
+  var r = rastDe(c.placa), vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0], e = estadoRast(r);
+  var rumo = vg ? rumoViagem(vg) : null;
+  return '<button class="rast-linha" onclick="focarCaminhao(\'' + c.placa + '\')"><span class="rl-frota" style="--c:' + (e === 'off' ? '#E5484D' : corViagem(vg)) + '">' + esc(c.frota || '—') + '</span><span class="rl-meio"><b>' + esc(c.placa) + (vg ? ' · ' + esc(apelido(vg.motorista_id, vg.motorista)) : '') + '</b>' +
+    '<small>' + (vg ? esc(ondeEsta(vg)) + (rumo ? ' · ' + fmtKm(rumo.dist) + ' (~' + hmCurto(rumo.eta) + ')' : '') : esc(cidadeRast(r) || 'sem posição')) + '</small></span>' +
+    '<span class="rl-dir"><b style="color:' + ESTADO_RAST[e][1] + '">' + esc(e === 'mov' ? r.vel + ' km/h' : ESTADO_RAST[e][0]) + '</b><small>' + (r ? esc(idadeTxt(idadeRast(r))) : '') + '</small></span></button>';
+}
+function listaRastHtml(v) {
+  var cams = (v.caminhoes || []).filter(ativo).filter(function (c) { var vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0]; return !rastDe(c.placa) ? MAPA.filtro === 'todos' : filtroMapaOk(rastDe(c.placa), vg); });
+  var ord = { mov: 0, lig: 1, par: 2, off: 3, sem: 4 };
+  cams.sort(function (a, b) { var va = (v.emUso || []).some(function (x) { return x.placa === a.placa; }), vb = (v.emUso || []).some(function (x) { return x.placa === b.placa; }); return (vb - va) || (ord[estadoRast(rastDe(a.placa))] - ord[estadoRast(rastDe(b.placa))]) || (Number(a.frota) - Number(b.frota)); });
+  return cams.map(function (c) { return linhaRast(c, v); }).join('') || '<div class="vazio" style="padding:14px">Nenhum caminhão nesse filtro.</div>';
 }
 function telaMapa() {
-  var h = '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><div class="secao" style="margin-top:0"><h2>Mapa</h2><span class="fraco">último ponto marcado por caminhão</span></div><div class="legenda" style="color:var(--tinta-2);padding:0"><span><i style="background:' + COR_ESTADO.viagem + '"></i>em viagem</span><span><i style="background:' + COR_ESTADO.livre + '"></i>livre (última viagem)</span><span><i style="background:#8593A6"></i>granja cadastrada</span></div><div class="mapa" id="mapa"><div class="carregando" style="min-height:100%"><div class="roda"></div>Carregando mapa…</div></div>';
-  POS_DESENHO = function () {
-    carregarLeaflet().then(function () {
-      var el = document.getElementById('mapa'); if (!el) return; el.innerHTML = '';
-      var v = V(), m = L.map(el), pts = [];
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(m);
-      (v.integrados || []).filter(function (i) { return i.latitude; }).forEach(function (i) { var c = [Number(i.latitude), Number(i.longitude)]; if (isNaN(c[0])) return; L.circleMarker(c, { radius: 4, color: '#8593A6', weight: 1, fillOpacity: .7 }).bindPopup('<b>' + esc(i.nome) + '</b><br>' + esc(i.cidade)).addTo(m); pts.push(c); });
-      (v.caminhoes || []).filter(ativo).forEach(function (c) {
-        var l = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status !== 'Cancelada' && gpsUltimo(x); }), x = l[l.length - 1]; if (!x) return;
-        var gp = gpsUltimo(x), cor = x.status === 'Em andamento' ? COR_ESTADO.viagem : COR_ESTADO.livre;
-        L.circleMarker(gp.c, { radius: 10, color: '#0A2140', weight: 2, fillColor: cor, fillOpacity: 1 }).bindPopup('<b>' + esc(c.placa) + (c.frota ? ' · ' + esc(c.frota) : '') + '</b><br>' + esc(apelido(x.motorista_id, x.motorista)) + ' · ' + esc(x.integrado || x.operacao) + '<br>' + esc(({ inicio: 'Saída', chegada_granja: 'Chegada na granja', inicio_carga: 'Carregamento', saida_granja: 'Saída da granja', chegada_destino: 'Frigorífico', fim: 'Encerrou' })[gp.e]) + ' ' + esc(quando(x[gp.e])) + '<br><a href="#viagem/' + esc(x.uid) + '">ver viagem</a>').addTo(m);
-        pts.push(gp.c);
-      });
-      if (pts.length) m.fitBounds(pts, { padding: [24, 24] }); else m.setView([-20.72, -46.61], 9);
-    }, function () { var el = document.getElementById('mapa'); if (el) el.innerHTML = '<div class="vazio" style="height:100%">Não consegui carregar o mapa agora (precisa de internet).</div>'; });
-  };
+  var v = V();
+  var h = '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><div class="secao" style="margin-top:0"><h2>Frota no mapa</h2><button class="link" onclick="centralizarMapa()">Centralizar</button></div>' +
+    '<div class="mapa-pagina"><div class="mapa-card">' + cabMapaHtml(v) + slotMapa('min(68vh, 640px)') + '</div><div class="lista-rast" id="lista-rast">' + listaRastHtml(v) + '</div></div>';
+  POS_DESENHO = function () { ligarCabMapa(); montarMapa(); };
   return h;
 }
+/* ------------------------------------------------------------ alertas que só o rastreador enxerga */
+function alertasRast(v) {
+  var out = [], cfg = v.config;
+  (v.caminhoes || []).filter(ativo).forEach(function (c) {
+    var r = rastDe(c.placa); if (!r) return;
+    var vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0];
+    var quem = vg ? apelido(vg.motorista_id, vg.motorista) : 'sem viagem aberta';
+    if (estadoRast(r) === 'mov' && r.vel > cfg.vel_alerta && idadeRast(r) <= 10) out.push({ g: 2, t: c.placa + ' a ' + r.vel + ' km/h', s: quem + ' · ' + (r.end || '') + ' (limite configurado ' + cfg.vel_alerta + ' km/h)', a: 'javascript:focarCaminhao(\'' + c.placa + '\')' });
+    if (vg && idadeRast(r) > 60) out.push({ g: 1, t: c.placa + ' sem sinal do rastreador há ' + idadeTxt(idadeRast(r)), s: quem + ' · viagem aberta (' + (vg.integrado || vg.operacao) + ')', a: '#viagem/' + vg.uid });
+    if (vg) { var rumo = rumoViagem(vg); if (rumo && rumo.chegou) out.push({ g: 0, t: apelido(vg.motorista_id, vg.motorista) + ' já está no ' + (rumo.nome === 'granja' ? 'local da granja' : 'frigorífico') + ' (rastreador)', s: 'Ainda não marcou a ' + (rumo.nome === 'granja' ? 'chegada na granja' : 'chegada no frigorífico') + ' no app · ' + c.placa, a: '#viagem/' + vg.uid }); }
+  });
+  return out;
+}
+
+/** busca posições novas quando a tela precisa (gestor: 30 s · motorista com viagem: 90 s) */
+function ganchoRast(r) {
+  if (!DB || !TOKEN) return;
+  var base = String(r || '').split('/')[0], g = gestor();
+  var precisa = g ? ['aovivo', 'mapa', 'viagem', ''].indexOf(base) >= 0 : (base === 'inicio' || base === '') && !!viagemAbertaDe(V(), V().eu.id);
+  if (!precisa || RAST.carregando || Date.now() - RAST.quando < (g ? 30000 : 90000)) return;
+  var antes = RAST.quando;
+  carregarRast(true).then(function () { if (RAST.quando !== antes) { if (MAPA.map) atualizarMapa(); redesenhar(); } });
+}
+setInterval(function () { if (document.visibilityState === 'visible' && !FORM) ganchoRast(rotaAtual()); }, 10000);
+window.addEventListener('resize', function () { if (MAPA.map) { clearTimeout(MAPA._rz); MAPA._rz = setTimeout(function () { MAPA.map.invalidateSize(); }, 150); } });
 
 /* Rota Viva Frango — Passos | indicadores, relatório para a JBS e início do app */
 
@@ -2534,6 +2896,10 @@ function calcularInd(d) {
   var ct = {};
   vs.forEach(function (x) { var c = ct[x.placa] = ct[x.placa] || { placa: x.placa, frota: x.frota, n: 0, km: 0 }; c.n++; c.km += Number(x.km_rodado) || 0; });
   I.cam = Object.keys(ct).map(function (k) { return ct[k]; }).sort(function (a, b) { return b.km - a.km; });
+  var tol = cfg.km_rast_tolerancia || 15, conf = vs.filter(function (x) { return x.km_rast_rodado !== '' && x.km_rast_rodado !== undefined && x.km_rast_rodado !== null && x.km_rodado !== '' && !isNaN(Number(x.km_rast_rodado)); });
+  var dv = conf.filter(function (x) { return Math.abs(Number(x.km_rodado) - Number(x.km_rast_rodado)) > Math.max(tol, Number(x.km_rast_rodado) * 0.1); });
+  I.conf = { n: conf.length, div: dv.length, digit: conf.reduce(function (s2, x) { return s2 + Number(x.km_rodado); }, 0), rast: conf.reduce(function (s2, x) { return s2 + Number(x.km_rast_rodado); }, 0),
+    lista: dv.slice().sort(function (a, b) { return Math.abs(b.km_rodado - b.km_rast_rodado) - Math.abs(a.km_rodado - a.km_rast_rodado); }).slice(0, 8) };
   return I;
 }
 var IND_ATUAL = null;
@@ -2560,6 +2926,8 @@ function htmlInd(I, p) {
   if (I.granjas.length) h += '<div class="secao"><h2>Granjas que mais seguram o caminhão</h2></div><div class="cartao rolagem" style="margin:0"><table class="tabela"><thead><tr><th>Integrado</th><th class="n">Viag.</th><th class="n">Espera</th><th class="n">Carreg.</th><th class="n">Atraso</th></tr></thead><tbody>' +
     I.granjas.slice(0, 10).map(function (g) { return '<tr><td><b>' + esc(g.nome) + '</b><br><span class="fraco">' + esc(g.cidade || '') + '</span></td><td class="n">' + g.n + '</td><td class="n"' + (g.espMed > 60 ? ' style="color:#B42318;font-weight:800"' : '') + '>' + hm(g.espMed) + '</td><td class="n">' + hm(g.carMed) + '</td><td class="n">' + (g.atrMed === null ? '—' : hmCurto(g.atrMed)) + '</td></tr>'; }).join('') + '</tbody></table></div>';
   if (I.ocTipos.length) { var mx = I.ocTipos[0][1]; h += '<div class="secao"><h2>Ocorrências</h2><span class="fraco">' + I.ocN + ' no período</span></div><div class="cartao"><div class="barras">' + I.ocTipos.map(function (t) { var c = tipoOc(t[0]); return '<div><span>' + esc(t[0]) + '</span><div class="tr"><i style="width:' + (t[1] / mx * 100).toFixed(0) + '%;background:' + c[2] + '"></i></div><b>' + t[1] + '</b></div>'; }).join('') + '</div></div>'; }
+  if (I.conf.n) h += '<div class="secao"><h2>Conferência de KM</h2><span class="fraco">digitado × rastreador</span></div><div class="cartao"><div class="kpis" style="margin-top:0;grid-template-columns:repeat(3,1fr)"><div class="kpi" style="box-shadow:none;background:var(--fundo)"><b>' + I.conf.n + '</b><small>viagens conferidas</small></div><div class="kpi' + (I.conf.div ? ' vermelho' : '') + '" style="box-shadow:none;background:var(--fundo)"><b>' + I.conf.div + '</b><small>com diferença</small></div><div class="kpi" style="box-shadow:none;background:var(--fundo)"><b>' + (I.conf.rast ? (I.conf.digit / I.conf.rast * 100).toFixed(0) + '%' : '—') + '</b><small>digitado ÷ rastreador</small></div></div>' +
+    (I.conf.lista.length ? '<div class="rolagem" style="margin-top:10px"><table class="tabela"><thead><tr><th>Viagem</th><th>Motorista</th><th class="n">Digitado</th><th class="n">Rastreador</th></tr></thead><tbody>' + I.conf.lista.map(function (x) { return '<tr><td><a href="#viagem/' + esc(x.uid) + '">' + esc(x.numero) + '</a><br><span class="fraco">' + esc(dataBR(x.data) + ' · ' + x.placa) + '</span></td><td>' + esc(apelido(x.motorista_id, x.motorista)) + '</td><td class="n" style="color:#B42318;font-weight:800">' + fmt(x.km_rodado) + '</td><td class="n">' + fmt(x.km_rast_rodado) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="fraco" style="margin:10px 0 0">Tudo batendo com o rastreador ✓</p>') + '</div>';
   h += '<div class="secao"><h2>Por motorista</h2></div><div class="cartao rolagem" style="margin:0"><table class="tabela"><thead><tr><th>Motorista</th><th class="n">Viag.</th><th class="n">KM</th><th class="n">Horas</th><th class="n">Extras</th><th class="n">Alertas</th></tr></thead><tbody>' +
     I.mot.map(function (m) { return '<tr><td>' + esc(apelido(m.id, m.nome)) + '</td><td class="n">' + m.n + '</td><td class="n">' + fmt(m.km) + '</td><td class="n">' + hm(m.trab) + '</td><td class="n"' + (m.ext > 600 ? ' style="color:#B42318;font-weight:800"' : '') + '>' + hm(m.ext) + '</td><td class="n">' + (m.al || '') + '</td></tr>'; }).join('') + '</tbody></table></div>';
   h += '<div class="secao"><h2>Por caminhão</h2></div><div class="cartao rolagem" style="margin:0"><table class="tabela"><thead><tr><th>Caminhão</th><th class="n">Viagens</th><th class="n">KM</th><th class="n">KM/viagem</th></tr></thead><tbody>' +
