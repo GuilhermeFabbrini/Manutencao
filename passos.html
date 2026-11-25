@@ -513,21 +513,29 @@ textarea.inp { min-height: 84px; resize: vertical; }
 .mapa-card.cheia { position: fixed; inset: 0; z-index: 140; border-radius: 0; border: 0; display: flex; flex-direction: column; }
 .mapa-card.cheia .mapa-slot { flex: 1; height: auto !important; }
 body.mapa-cheio { overflow: hidden; }
-/* marcador do caminhão: nº da frota no círculo, cor = situação, anel azul-marinho = em viagem */
+/* marcador do caminhão: ponto na cor da situação + placa (padrão Mercosul) + frota e velocidade */
 .vk-wrap { background: none; border: 0; }
-.vk { --c: #12A150; position: relative; width: 34px; height: 34px; }
-.vk-pin { position: absolute; inset: 0; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font: 800 12.5px/1 var(--fonte-titulo); letter-spacing: -.02em; border: 2.5px solid #fff; box-shadow: 0 3px 10px -2px rgba(10,33,64,.55), 0 0 0 1px rgba(10,33,64,.1); z-index: 2; transition: transform .15s; }
-.vk.longo .vk-pin { font-size: 10.5px; }
+.vk { --c: #12A150; position: relative; width: 30px; height: 30px; }
+.vk-pin { position: absolute; inset: 0; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; border: 2.5px solid #fff; box-shadow: 0 3px 10px -2px rgba(10,33,64,.55), 0 0 0 1px rgba(10,33,64,.12); z-index: 2; transition: transform .15s; }
+.vk-pin svg { width: 15px; height: 15px; }
 .vk.vg .vk-pin { box-shadow: 0 0 0 2.5px var(--noite), 0 4px 12px -2px rgba(10,33,64,.6); }
 .vk.mov .vk-pin::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; border: 2px solid var(--c); opacity: 0; animation: pulso 2s ease-out infinite; }
 @keyframes pulso { 0% { transform: scale(.7); opacity: .8; } 100% { transform: scale(1.45); opacity: 0; } }
 .vk.off .vk-pin { background: #fff; color: var(--c); border: 2px dashed var(--c); }
-.vk.par .vk-pin { background: #64748B; }
-.vk-tag { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); z-index: 1; white-space: nowrap; background: var(--noite); color: #CFE0F5; border-radius: 0 8px 8px 0; padding: 3px 7px 3px 10px; font-size: 10px; font-weight: 700; box-shadow: 0 3px 8px -3px rgba(10,33,64,.5); }
-.vk-tag b { color: #fff; font: 800 12px/1 var(--fonte-titulo); }
+.vk-tag { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); z-index: 1; display: flex; align-items: stretch; white-space: nowrap; background: #fff; border-radius: 7px; box-shadow: 0 4px 12px -4px rgba(10,33,64,.55), 0 0 0 1px rgba(10,33,64,.18); overflow: hidden; }
+.vk-placa { display: flex; flex-direction: column; justify-content: center; padding: 6px 7px 3px; font: 800 12.5px/1 'Bricolage Grotesque', var(--fonte); letter-spacing: .05em; color: #111; background: linear-gradient(#1D4FA3 0 4px, #fff 4px); min-width: 76px; text-align: center; }
+.vk-info { display: flex; align-items: center; gap: 5px; padding: 0 7px; background: var(--noite); color: #CFE0F5; font-size: 10.5px; font-weight: 700; }
+.vk-info b { color: #fff; font: 800 12px/1 var(--fonte-titulo); }
+.vk-info em { font-style: normal; color: color-mix(in srgb, var(--c) 45%, #fff); }
+.vk.lado-e .vk-tag { left: auto; right: 25px; }
+.vk.lado-c .vk-tag { left: 50%; top: auto; bottom: 35px; transform: translateX(-50%); }
+.vk.lado-b .vk-tag { left: 50%; top: 35px; transform: translateX(-50%); }
 .vk.sel .vk-pin { transform: scale(1.2); }
+.vk.sel .vk-tag { box-shadow: 0 0 0 2.5px var(--azul), 0 6px 16px -4px rgba(10,33,64,.6); }
 .vk:hover .vk-pin { transform: scale(1.12); }
-.mapa-slot.pop-aberto .mapa-ctl.topo-esq, .mapa-slot.pop-aberto .mapa-legenda { opacity: 0; pointer-events: none; }
+.leaflet-marker-icon.vk-wrap:hover { z-index: 2000 !important; }
+.mapa-slot.pop-aberto .mapa-ctl, .mapa-slot.pop-aberto .mapa-legenda { opacity: 0; pointer-events: none; }
+@media (max-width: 560px) { .pop-cab { padding: 9px 34px 9px 12px; } .pop-frota b { font-size: 20px; } .pop-est { padding-top: 8px; } .pop-grade { margin-top: 7px; } .pop-grade b { font-size: 13px; } .pop-vg { margin-top: 8px; padding: 8px 10px; } .pop-acoes { padding: 10px 12px 12px; } .pop-acoes .pa { padding: 8px; } }
 .mapa-ctl, .mapa-legenda { transition: opacity .15s; }
 .mapa-legenda .lg-vg i { width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2.5px var(--noite); }
 .mapa-legenda .lg-vel i { font-style: normal; background: var(--noite); color: #fff; border-radius: 0 5px 5px 0; padding: 0 4px; font-size: 10px; width: auto; height: auto; }
@@ -752,7 +760,7 @@ var NUCLEO = (function () {
     ['rastreador_url', '', 'Endereço das posições da Sascar (fica só na planilha: o celular nunca recebe esse endereço). Quem vê o mapa: coluna "Acesso ao rastreador" na aba Equipe'],
     ['vel_alerta', '80', 'Avisar o gestor quando o caminhão passar dessa velocidade (km/h, pelo rastreador)'],
     ['km_rast_tolerancia', '15', 'Diferença aceitável (km) entre o KM rodado digitado e o do rastreador'],
-    ['destino_coord', '', 'Latitude,longitude do frigorífico (opcional: mostra no mapa e avisa a chegada)'],
+    ['destino_coord', '', 'Local do frigorífico: cole o link do Google Maps ou "latitude, longitude" (mostra no mapa, calcula quanto falta e avisa a chegada)'],
     ['pasta_arquivos', '', 'Preenchido sozinho: pasta do Drive onde ficam fotos e notas'],
     ['arquivos_por_link', 'SIM', 'SIM = quem tem o link consegue ver a foto (precisa para aparecer no celular)']
   ];
@@ -1476,7 +1484,11 @@ function linkZap(tel, texto) { return 'https://wa.me/' + telLimpo(tel) + (texto 
 function linkTel(tel) { return 'tel:' + String(tel || '').replace(/[^\d+]/g, ''); }
 function uidNovo() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 function ativo(x) { var s = chave(x && x.ativo); return s !== 'nao' && s !== 'n' && s !== 'inativo'; }
-function gestor() { return DB && DB.eu && DB.eu.perfil !== 'Motorista'; }
+/** perfil de gestão (Analista, Coordenador, Encarregado…) */
+function ehGestor() { return !!(DB && DB.eu && chave(DB.eu.perfil || 'Motorista') !== 'motorista'); }
+/** tela de gestão ativa — o encarregado que também dirige pode usar o "modo motorista" */
+function gestor() { return ehGestor() && !PREF.modoMot; }
+function modoMotorista(liga) { PREF.modoMot = !!liga; salvarPref(); location.hash = liga ? 'inicio' : 'aovivo'; desenhar(true); toast(liga ? 'Modo motorista: sua jornada e suas viagens.' : 'De volta ao painel.'); }
 function eu() { return DB && DB.eu; }
 function pessoaDe(id) { return (DB.equipe || []).filter(function (e) { return e.id === id; })[0]; }
 function apelido(id, nome) { var p = pessoaDe(id); return p ? p.apelido || primeiro(p.nome) : primeiro(nome); }
@@ -1894,7 +1906,7 @@ function marcarSinc(estado) {
 function topoHtml() {
   var e = eu(), un = (DB.config && DB.config.unidade) || 'Passos';
   return '<header class="topo">' + (IMG.logoBranco ? '<img class="mk" alt="Andrioni" src="' + IMG.logoBranco + '">' : '') +
-    '<div class="tit"><b>Rota Viva <span>Frango</span></b><small>' + esc(un) + ' · ' + esc(e.apelido) + (gestor() ? ' · ' + esc(e.perfil) : '') + '</small></div>' +
+    '<div class="tit"><b>Rota Viva <span>Frango</span></b><small>' + esc(un) + ' · ' + esc(e.apelido) + (gestor() ? ' · ' + esc(e.perfil) : ehGestor() ? ' · modo motorista' : '') + '</small></div>' +
     '<button id="sinc" class="sinc" onclick="tocarSinc()"><i></i></button></header>';
 }
 function tocarSinc() {
@@ -1904,7 +1916,7 @@ function tocarSinc() {
 function navHtml(r) {
   var itens = gestor()
     ? [['aovivo', 'casa', 'Ao vivo'], ['viagens', 'lista', 'Viagens'], ['ocorrencias', 'alerta', 'Ocorrências'], ['jornada', 'relogio', 'Jornada'], ['mais', 'grafico', 'Mais']]
-    : [['inicio', 'casa', 'Início'], ['viagens', 'lista', 'Viagens'], ['rotas', 'mapa', 'Rotas']].concat(podeRast() ? [['mapa', 'satelite', 'Frota']] : []).concat([['perfil', 'pessoa', 'Eu']]);
+    : [['inicio', 'casa', 'Início'], ['viagens', 'lista', 'Viagens'], ['rotas', 'mapa', 'Rotas']].concat(podeRast() ? [['mapa', 'satelite', 'Frota']] : []).concat(ehGestor() ? [['painel', 'grafico', 'Painel']] : [['perfil', 'pessoa', 'Eu']]);
   var abertas = gestor() ? (V().ocorrencias || []).filter(function (o) { return o.status === 'Aberta'; }).length : 0;
   var base = r.split('/')[0];
   if (base === 'viagem') base = 'viagens';
@@ -1999,6 +2011,7 @@ function entrar() {
 }
 function sair(expirou) {
   if (typeof RAST !== 'undefined') { RAST.d = {}; RAST.quando = 0; RAST.dono = ''; }
+  if (PREF.modoMot) { PREF.modoMot = false; salvarPref(); }
   if (!expirou && FILA.length && !window.confirm('Ainda tem ' + FILA.length + ' registro(s) que não subiram para a planilha. Se sair agora, eles se perdem. Sair mesmo assim?')) return;
   TOKEN = ''; DB = null; gravarLocal(P + 'token', null); gravarLocal(P + 'db', null);
   if (!expirou) { FILA = []; salvarFila(); }
@@ -2011,6 +2024,7 @@ function telaMotorista(r) {
   var p = r.split('/');
   if (p[0] === 'viagem') return telaViagemDetalhe(p[1]);
   if (p[0] === 'viagens') return telaMinhasViagens();
+  if (p[0] === 'painel') { setTimeout(function () { modoMotorista(false); }, 0); return '<div class="carregando"><div class="roda"></div>Voltando ao painel…</div>'; }
   if (p[0] === 'rotas' || p[0] === 'contatos') return telaContatos();
   if (p[0] === 'mapa' && podeRast()) return telaMapa();
   if (p[0] === 'perfil') return telaPerfil();
@@ -2846,6 +2860,7 @@ function telaMais() {
   return '<div class="secao" style="margin-top:4px"><h2>Mais</h2></div><div class="menu-lista">' +
     it('#indicadores', 'grafico', 'background:#E3EEFF;color:#1665C1', 'Indicadores', 'Tempos por etapa, pontualidade, granjas que mais seguram') +
     (podeRast() ? it('#mapa', 'satelite', 'background:#DBF4E8;color:#08794F', 'Rastreamento da frota', 'Posição ao vivo pelo rastreador Sascar · acesso restrito') : '') +
+    '<button class="menu-item" onclick="modoMotorista(true)"><span class="ico" style="background:#FFF3D1;color:#7A4B00">' + ic('caminhao') + '</span><span>Usar como motorista<small>Sua jornada e suas viagens (para quem também dirige)</small></span><span class="seta">' + ic('dir') + '</span></button>' +
     it('#documentos', 'doc', 'background:#FFF3D1;color:#7A4B00', 'Documentos fiscais', 'NF, GTA e tickets enviados pelos motoristas') +
     '</div><div class="secao"><h2>Cadastros</h2></div><div class="menu-lista">' +
     it('#cad/equipe', 'pessoas', '', 'Motoristas e gestores', (v.equipe || []).filter(function (e) { return ativo(e) && e.perfil === 'Motorista'; }).length + ' motoristas ativos') +
@@ -2989,7 +3004,7 @@ function distKm(a, b) {
   return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 function coordIntegrado(it) { if (!it) return null; var a = Number(String(it.latitude).replace(',', '.')), b = Number(String(it.longitude).replace(',', '.')); return isNaN(a) || isNaN(b) || !a ? null : [a, b]; }
-function coordDestino() { var s = (DB.config && DB.config.destino_coord) || ''; var p = s.split(',').map(function (x) { return Number(x.trim()); }); return p.length === 2 && !isNaN(p[0]) && p[0] ? p : (DEMO ? DESTINO_DEMO : null); }
+function coordDestino() { var s = (DB.config && DB.config.destino_coord) || ''; var p = s ? NUCLEO.coordDeTexto(s) : null; return p || (DEMO ? DESTINO_DEMO : null); }
 function fmtKm(k) { return k === null || k === undefined ? '—' : k < 1 ? Math.round(k * 1000) + ' m' : (k < 10 ? k.toFixed(1).replace('.', ',') : Math.round(k)) + ' km'; }
 /** distância e previsão até o próximo ponto da viagem (granja ou frigorífico) — só no painel do rastreador */
 function rumoViagem(vg) {
@@ -3068,10 +3083,32 @@ function trocarFundo(nome) {
 }
 var IC_FROTA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7h11v9h-11z"/><path d="M13.5 10h3.8l3.2 3.2V16h-7"/><circle cx="7" cy="17" r="1.8" fill="currentColor"/><circle cx="17" cy="17" r="1.8" fill="currentColor"/></svg>';
 function iconeCaminhao(c, r, vg) {
-  var e = estadoRast(r), cor = ESTADO_RAST[e][1], rot = c.frota || c.placa.slice(-4);
-  var tag = e === 'mov' ? '<b>' + r.vel + '</b> km/h' : '';
-  return L.divIcon({ className: 'vk-wrap', iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -16],
-    html: '<div class="vk ' + e + (vg ? ' vg' : '') + (MAPA.sel === c.placa ? ' sel' : '') + (String(rot).length > 3 ? ' longo' : '') + '" style="--c:' + cor + '"><span class="vk-pin">' + esc(rot) + '</span>' + (tag ? '<span class="vk-tag">' + tag + '</span>' : '') + '</div>' });
+  var e = estadoRast(r), cor = ESTADO_RAST[e][1];
+  var info = (c.frota ? '<b>' + esc(c.frota) + '</b>' : '') + (e === 'mov' ? '<em>' + r.vel + ' km/h</em>' : e === 'off' ? '<em>sem sinal</em>' : e === 'lig' ? '<em>ligado</em>' : '');
+  return L.divIcon({ className: 'vk-wrap', iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -14],
+    html: '<div class="vk ' + e + (vg ? ' vg' : '') + (MAPA.sel === c.placa ? ' sel' : '') + '" data-placa="' + esc(c.placa) + '" style="--c:' + cor + '"><span class="vk-pin">' + IC_FROTA + '</span>' +
+      '<span class="vk-tag"><span class="vk-placa">' + esc(c.placa.slice(0, 3) + '-' + c.placa.slice(3)) + '</span>' + (info ? '<span class="vk-info">' + info + '</span>' : '') + '</span></div>' });
+}
+/** etiquetas não se cobrem: cada placa vai para o lado que estiver livre (direita, esquerda, em cima, embaixo) */
+function desembolarEtiquetas() {
+  if (!MAPA.map) return;
+  var itens = [];
+  Object.keys(MAPA.marc).forEach(function (p) {
+    var m = MAPA.marc[p], el = m.getElement && m.getElement(); if (!el) return;
+    var vk = el.querySelector('.vk'), tag = el.querySelector('.vk-tag'); if (!vk || !tag) return;
+    vk.classList.remove('lado-e', 'lado-c', 'lado-b');
+    var pt = MAPA.map.latLngToContainerPoint(m.getLatLng());
+    itens.push({ vk: vk, x: pt.x, y: pt.y, w: tag.offsetWidth || 150, h: tag.offsetHeight || 26, prio: vk.classList.contains('vg') ? 0 : vk.classList.contains('mov') ? 1 : 2 });
+  });
+  itens.sort(function (a, b) { return a.prio - b.prio || a.y - b.y; });
+  var ocupado = itens.map(function (it) { return [it.x - 16, it.y - 16, it.x + 16, it.y + 16]; }), colide = function (r) { return ocupado.some(function (o) { return r[0] < o[2] && r[2] > o[0] && r[1] < o[3] && r[3] > o[1]; }); };
+  itens.forEach(function (it) {
+    var op = [['', [it.x + 13, it.y - it.h / 2, it.x + 13 + it.w, it.y + it.h / 2]], ['lado-e', [it.x - 13 - it.w, it.y - it.h / 2, it.x - 13, it.y + it.h / 2]],
+      ['lado-c', [it.x - it.w / 2, it.y - 20 - it.h, it.x + it.w / 2, it.y - 20]], ['lado-b', [it.x - it.w / 2, it.y + 20, it.x + it.w / 2, it.y + 20 + it.h]]];
+    var esc0 = op.filter(function (o) { return !colide(o[1]); })[0] || op[0];
+    if (esc0[0]) it.vk.classList.add(esc0[0]);
+    ocupado.push(esc0[1]);
+  });
 }
 function popupCaminhao(c, r, vg) {
   var e = estadoRast(r), m = vg ? apelido(vg.motorista_id, vg.motorista) : '', rumo = vg ? rumoViagem(vg) : null;
@@ -3090,7 +3127,7 @@ function controlesMapa() {
   var f = PREF.fundo || 'claro';
   return '<div class="mapa-ctl topo-dir"><div class="mseg">' + ['claro', 'ruas', 'satelite'].map(function (k) { return '<button data-fundo="' + k + '" class="' + (f === k ? 'on' : '') + '">' + FUNDOS[k].nome + '</button>'; }).join('') + '</div></div>' +
     '<div class="mapa-ctl topo-esq"><button class="mbtn" onclick="centralizarMapa()" title="Ver a frota inteira" aria-label="Ver a frota inteira">' + ic('alvo') + '</button><button class="mbtn" onclick="telaCheiaMapa()" title="Tela cheia" aria-label="Tela cheia" id="bt-cheia">' + ic(MAPA.cheia ? 'recolher' : 'expandir') + '</button></div>' +
-    '<div class="mapa-legenda">' + ['mov', 'lig', 'par', 'off'].map(function (k) { return '<span><i style="background:' + ESTADO_RAST[k][1] + '"></i>' + ESTADO_RAST[k][0].replace(', ligado', '') + '</span>'; }).join('') + '<span class="lg-vg"><i></i>Em viagem</span><span class="lg-vel"><i>62</i>km/h</span></div>';
+    '<div class="mapa-legenda">' + ['mov', 'lig', 'par', 'off'].map(function (k) { return '<span><i style="background:' + ESTADO_RAST[k][1] + '"></i>' + ESTADO_RAST[k][0].replace(', ligado', '') + '</span>'; }).join('') + '<span class="lg-vg"><i></i>Em viagem</span></div>';
 }
 function montarMapa() {
   var slot = document.getElementById('slot-mapa'); if (!slot) return;
@@ -3105,6 +3142,7 @@ function montarMapa() {
       L.control.zoom({ position: 'bottomright', zoomInTitle: 'Aproximar', zoomOutTitle: 'Afastar' }).addTo(MAPA.map);
       MAPA.extras = L.layerGroup().addTo(MAPA.map);
       MAPA.map.on('popupclose', function () { MAPA.sel = ''; var sl = document.getElementById('slot-mapa'); if (sl) sl.classList.remove('pop-aberto'); });
+      MAPA.map.on('zoomend', function () { setTimeout(desembolarEtiquetas, 0); });
       MAPA.map.on('popupopen', function () { var sl = document.getElementById('slot-mapa'); if (sl) sl.classList.add('pop-aberto'); });
     }
     trocarFundo(PREF.fundo && FUNDOS[PREF.fundo] ? PREF.fundo : 'claro');
@@ -3135,7 +3173,7 @@ function atualizarMapa() {
     else { m.setLatLng(ll); m.setIcon(iconeCaminhao(c, r, vg)); }
     m.setZIndexOffset(MAPA.sel === c.placa ? 1000 : vg ? 500 : estadoRast(r) === 'mov' ? 300 : 0);
     var aberto = m.isPopupOpen && m.isPopupOpen();
-    m.bindPopup(popupCaminhao(c, r, vg), { maxWidth: 300, minWidth: 260, className: 'pop-rv', autoPanPaddingTopLeft: [16, 64], autoPanPaddingBottomRight: [16, 20] });
+    m.bindPopup(popupCaminhao(c, r, vg), { maxWidth: 300, minWidth: 260, className: 'pop-rv', autoPanPaddingTopLeft: [16, 16], autoPanPaddingBottomRight: [16, 20] });
     if (aberto) m.openPopup();
     if (estadoRast(r) !== 'off') pts.push(ll);
     if (vg) {
@@ -3150,6 +3188,7 @@ function atualizarMapa() {
   var dst = coordDestino();
   if (dst) L.marker(dst, { icon: L.divIcon({ className: 'vk-wrap', iconSize: [30, 30], iconAnchor: [15, 15], html: '<div class="mk-ponto frigo">' + ic('fabrica') + '</div>' }) }).bindTooltip('<b>Frigorífico</b>', { direction: 'top', offset: [0, -15], className: 'tt-mapa' }).addTo(MAPA.extras);
   if (!MAPA.ajustado && pts.length) { MAPA.map.fitBounds(pts, { padding: [56, 56], maxZoom: 13 }); MAPA.ajustado = true; }
+  setTimeout(desembolarEtiquetas, 0);
   var f = document.getElementById('mapa-fonte'); if (f) f.innerHTML = fonteRastHtml();
 }
 function filtroMapaOk(c, r, vg) {
