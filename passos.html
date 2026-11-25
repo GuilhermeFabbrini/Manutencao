@@ -465,80 +465,197 @@ textarea.inp { min-height: 84px; resize: vertical; }
 .rodape-app img { height: 34px; opacity: .8; display: block; margin: 0 auto 6px; }
 @media print { .topo, .nav, .faixa-fila, .demo-faixa { display: none !important; } main { padding: 0; } }
 
-/* ---------- Rastreador / mapa ao vivo ---------- */
+/* ---------- Rastreamento da frota (acesso restrito) ---------- */
 .seg-vivo button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .seg-vivo svg { width: 18px; height: 18px; }
-.mapa-card { margin-top: 10px; background: #fff; border-radius: 24px; box-shadow: var(--sombra-alta); overflow: hidden; position: relative; }
-.mapa-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; background: linear-gradient(180deg, #fff, #F6F9FD); border-bottom: 1px solid var(--linha); flex-wrap: wrap; }
-.mapa-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-.mapa-chips::-webkit-scrollbar { display: none; }
-.mchip { border: 1.5px solid var(--linha); background: #fff; border-radius: 999px; padding: 6px 11px; font-size: 13px; font-weight: 700; color: var(--tinta-2); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
-.mchip i { width: 8px; height: 8px; border-radius: 50%; }
-.mchip.on { background: var(--noite); border-color: var(--noite); color: #fff; }
-.mapa-fonte { font-size: 12px; color: var(--tinta-3); font-weight: 600; white-space: nowrap; }
-.mapa-slot { width: 100%; position: relative; background: #E8EEF5; }
-.mapa-vivo { width: 100%; height: 100%; }
-.mapa-vivo.sem-fundo { background-color: #E9EFF6; background-image: linear-gradient(#D7E1EC 1px, transparent 1px), linear-gradient(90deg, #D7E1EC 1px, transparent 1px); background-size: 40px 40px; }
+.mapa-pagina { display: grid; gap: 12px; margin-top: 10px; }
+.mapa-card { background: #fff; border-radius: 22px; box-shadow: 0 1px 0 rgba(10,33,64,.04), 0 24px 48px -28px rgba(10,33,64,.55); overflow: hidden; position: relative; border: 1px solid #E3EAF4; }
+.mapa-cab { padding: 14px 14px 12px; background: linear-gradient(135deg, #0A2140 0%, #123A6E 62%, #1665C1 130%); color: #fff; display: grid; gap: 12px; }
+.mc-tit { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.mc-tit h3 { font-size: 18px; letter-spacing: -.01em; color: #fff; }
+.mapa-fonte { display: flex; gap: 8px; align-items: center; margin-top: 3px; font-size: 12.5px; color: #A9C4E6; font-weight: 600; white-space: nowrap; }
+.mf-vivo { display: inline-flex; align-items: center; gap: 6px; color: #7CF0B5; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+.mf-vivo i { width: 7px; height: 7px; border-radius: 50%; background: #3DDC97; box-shadow: 0 0 0 0 rgba(61,220,151,.7); animation: vivo 1.8s infinite; }
+@keyframes vivo { 70% { box-shadow: 0 0 0 7px rgba(61,220,151,0); } 100% { box-shadow: 0 0 0 0 rgba(61,220,151,0); } }
+.mf-erro { display: inline-flex; gap: 5px; align-items: center; color: #FFC9C9; }
+.mf-erro svg { width: 14px; height: 14px; }
+.mc-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.mk-kpi { --c: #fff; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); border-radius: 14px; padding: 8px 6px 7px; color: #fff; text-align: left; display: grid; gap: 1px; min-width: 0; transition: background .15s, border-color .15s; }
+.mk-kpi b { font: 800 21px/1.05 var(--fonte-titulo); font-variant-numeric: tabular-nums; padding-left: 2px; }
+.mk-kpi span { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: #B9CDE8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mk-kpi span i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex: none; box-shadow: 0 0 0 2px rgba(255,255,255,.15); }
+.mk-kpi:hover { background: rgba(255,255,255,.11); }
+.mk-kpi.on { background: #fff; border-color: #fff; color: var(--noite); }
+.mk-kpi.on span { color: var(--tinta-2); }
+.mapa-slot { width: 100%; height: var(--alt, 60vh); position: relative; background: #E9EEF4; }
+.mapa-carregando { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 10px; color: var(--tinta-2); font-weight: 600; font-size: 14px; }
+.mapa-vivo { width: 100%; height: 100%; background: #E9EEF4; }
+.mapa-vivo.fundo-escuro { background: #1B2533; }
 .leaflet-container { font-family: var(--fonte); }
-.mk-wrap { background: none; border: 0; }
-.mk { --c: #3DDC97; position: relative; width: 46px; height: 46px; display: grid; place-items: center; }
-.mk span { position: relative; z-index: 2; min-width: 34px; height: 34px; padding: 0 5px; border-radius: 12px; background: var(--noite); color: #fff; font: 800 12.5px/34px var(--fonte-titulo); text-align: center; box-shadow: 0 0 0 3px var(--c), 0 6px 14px -4px rgba(10,33,64,.6); }
-.mk.off span { background: #5C6A7D; }
-.mk em { position: absolute; z-index: 3; right: -8px; top: -6px; background: var(--c); color: var(--noite); font: 800 10.5px/1 var(--fonte); font-style: normal; padding: 3px 5px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
-.mk .anel { position: absolute; inset: 4px; border-radius: 14px; background: var(--c); opacity: 0; }
-.mk.mov .anel { animation: anel 1.8s ease-out infinite; }
-@keyframes anel { 0% { transform: scale(.8); opacity: .55; } 100% { transform: scale(1.7); opacity: 0; } }
-.mk-granja { width: 30px; height: 30px; border-radius: 50% 50% 50% 6px; transform: rotate(-45deg); background: #fff; border: 2.5px solid #E88A00; display: grid; place-items: center; box-shadow: 0 4px 10px -3px rgba(0,0,0,.4); }
-.mk-granja svg { transform: rotate(45deg); width: 16px; height: 16px; color: #E88A00; }
-.mk-granja.frigo { border-color: #6E56CF; width: 34px; height: 34px; }
-.mk-granja.frigo svg { color: #6E56CF; }
-.tt-rumo { background: var(--noite) !important; color: #fff !important; border: 0 !important; border-radius: 10px !important; font: 800 11.5px var(--fonte) !important; padding: 4px 8px !important; box-shadow: 0 4px 10px -4px rgba(0,0,0,.5) !important; }
-.tt-rumo::before { display: none; }
-.pop-rv .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 16px 36px -14px rgba(10,33,64,.55); }
-.pop-rv .leaflet-popup-content { margin: 12px 14px; }
-.pop { font-size: 13.5px; min-width: 210px; }
-.pop-t { display: flex; align-items: center; gap: 8px; }
-.pop-t b { font-size: 12.5px; color: var(--tinta-2); }
-.pop-e { --c: #19B77C; margin-top: 8px; font-weight: 800; color: var(--tinta); display: flex; align-items: center; gap: 6px; }
-.pop-e i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 25%, transparent); }
-.pop-l { color: var(--tinta-2); font-size: 12.5px; margin-top: 2px; }
-.pop-v { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--linha); }
-.pop-v span { color: var(--tinta-2); font-size: 12.5px; }
-.pop-b { display: flex; gap: 12px; margin-top: 8px; font-weight: 800; font-size: 13px; }
-.frota-lista { margin-top: 10px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); padding: 4px 10px; }
-.frota-lista summary { cursor: pointer; font-weight: 800; padding: 10px 4px; display: flex; align-items: center; gap: 8px; list-style: none; }
-.frota-lista summary::-webkit-details-marker { display: none; }
-.frota-lista summary::after { content: '▾'; margin-left: auto; color: var(--tinta-3); }
-.frota-lista[open] summary::after { content: '▴'; }
-.lista-rast { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding-bottom: 8px; }
+.leaflet-control-attribution { font-size: 10px !important; background: rgba(255,255,255,.75) !important; border-radius: 8px 0 0 0; color: #5C6A7D !important; }
+.leaflet-control-attribution a { color: #5C6A7D !important; }
+.leaflet-bar { border: 0 !important; box-shadow: 0 6px 18px -8px rgba(10,33,64,.45) !important; border-radius: 12px !important; overflow: hidden; }
+.leaflet-bar a { width: 36px !important; height: 36px !important; line-height: 34px !important; color: var(--noite) !important; font-size: 18px !important; border-bottom-color: #EDF1F6 !important; }
+.leaflet-bottom.leaflet-right .leaflet-control-zoom { margin: 0 12px 26px 0; }
+.mapa-ctl { position: absolute; z-index: 500; display: flex; gap: 6px; }
+.mapa-ctl.topo-dir { top: 12px; right: 12px; }
+.mapa-ctl.topo-esq { top: 12px; left: 12px; flex-direction: column; }
+.mseg { display: flex; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-radius: 12px; padding: 3px; box-shadow: 0 6px 18px -8px rgba(10,33,64,.45); }
+.mseg button { border: 0; background: transparent; padding: 7px 11px; border-radius: 9px; font-size: 12.5px; font-weight: 700; color: var(--tinta-2); }
+.mseg button.on { background: var(--noite); color: #fff; }
+.mbtn { width: 38px; height: 38px; border: 0; border-radius: 12px; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); color: var(--noite); display: grid; place-items: center; box-shadow: 0 6px 18px -8px rgba(10,33,64,.45); }
+.mbtn svg { width: 19px; height: 19px; }
+.mbtn:hover { background: #fff; color: var(--azul); }
+.mapa-legenda { position: absolute; z-index: 500; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; max-width: calc(100% - 90px); background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-radius: 11px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: var(--tinta-2); box-shadow: 0 6px 18px -8px rgba(10,33,64,.4); pointer-events: none; }
+.mapa-legenda span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.mapa-legenda i { width: 8px; height: 8px; border-radius: 50%; }
+.mapa-legenda .lg-vg i { width: 14px; height: 9px; border-radius: 3px; background: var(--noite); }
+.mapa-card.cheia { position: fixed; inset: 0; z-index: 140; border-radius: 0; border: 0; display: flex; flex-direction: column; }
+.mapa-card.cheia .mapa-slot { flex: 1; height: auto !important; }
+body.mapa-cheio { overflow: hidden; }
+/* marcador do caminhão: nº da frota no círculo, cor = situação, anel azul-marinho = em viagem */
+.vk-wrap { background: none; border: 0; }
+.vk { --c: #12A150; position: relative; width: 34px; height: 34px; }
+.vk-pin { position: absolute; inset: 0; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font: 800 12.5px/1 var(--fonte-titulo); letter-spacing: -.02em; border: 2.5px solid #fff; box-shadow: 0 3px 10px -2px rgba(10,33,64,.55), 0 0 0 1px rgba(10,33,64,.1); z-index: 2; transition: transform .15s; }
+.vk.longo .vk-pin { font-size: 10.5px; }
+.vk.vg .vk-pin { box-shadow: 0 0 0 2.5px var(--noite), 0 4px 12px -2px rgba(10,33,64,.6); }
+.vk.mov .vk-pin::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; border: 2px solid var(--c); opacity: 0; animation: pulso 2s ease-out infinite; }
+@keyframes pulso { 0% { transform: scale(.7); opacity: .8; } 100% { transform: scale(1.45); opacity: 0; } }
+.vk.off .vk-pin { background: #fff; color: var(--c); border: 2px dashed var(--c); }
+.vk.par .vk-pin { background: #64748B; }
+.vk-tag { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); z-index: 1; white-space: nowrap; background: var(--noite); color: #CFE0F5; border-radius: 0 8px 8px 0; padding: 3px 7px 3px 10px; font-size: 10px; font-weight: 700; box-shadow: 0 3px 8px -3px rgba(10,33,64,.5); }
+.vk-tag b { color: #fff; font: 800 12px/1 var(--fonte-titulo); }
+.vk.sel .vk-pin { transform: scale(1.2); }
+.vk:hover .vk-pin { transform: scale(1.12); }
+.mapa-slot.pop-aberto .mapa-ctl.topo-esq, .mapa-slot.pop-aberto .mapa-legenda { opacity: 0; pointer-events: none; }
+.mapa-ctl, .mapa-legenda { transition: opacity .15s; }
+.mapa-legenda .lg-vg i { width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2.5px var(--noite); }
+.mapa-legenda .lg-vel i { font-style: normal; background: var(--noite); color: #fff; border-radius: 0 5px 5px 0; padding: 0 4px; font-size: 10px; width: auto; height: auto; }
+.mk-ponto { width: 28px; height: 28px; border-radius: 9px; background: #fff; display: grid; place-items: center; box-shadow: 0 3px 10px -3px rgba(10,33,64,.5); border: 2px solid #E8730C; color: #E8730C; transform: rotate(45deg); }
+.mk-ponto svg { width: 15px; height: 15px; transform: rotate(-45deg); }
+.mk-ponto.frigo { border-color: #6E56CF; color: #6E56CF; width: 30px; height: 30px; }
+.tt-mapa { background: var(--noite) !important; color: #fff !important; border: 0 !important; border-radius: 10px !important; font: 600 12px/1.35 var(--fonte) !important; padding: 6px 9px !important; box-shadow: 0 8px 18px -8px rgba(0,0,0,.55) !important; }
+.tt-mapa::before { border-top-color: var(--noite) !important; }
+/* balão do caminhão */
+.pop-rv .leaflet-popup-content-wrapper { border-radius: 18px; padding: 0; box-shadow: 0 24px 48px -18px rgba(10,33,64,.6); overflow: hidden; }
+.pop-rv .leaflet-popup-content { margin: 0; width: auto !important; min-width: 260px; }
+.pop-rv .leaflet-popup-close-button { color: #fff !important; top: 8px !important; right: 8px !important; font-size: 20px !important; }
+.pop { font-size: 13.5px; }
+.pop-cab { display: flex; align-items: center; gap: 12px; padding: 12px 36px 12px 14px; background: linear-gradient(135deg, #0A2140, #164C8F); color: #fff; }
+.pop-frota { display: grid; text-align: center; min-width: 50px; padding-right: 12px; border-right: 1px solid rgba(255,255,255,.18); }
+.pop-frota small { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #A9C4E6; font-weight: 700; }
+.pop-frota b { font: 800 24px/1 var(--fonte-titulo); }
+.pop-id { display: grid; gap: 4px; justify-items: start; }
+.pop-id > span:last-child { font-size: 12px; color: #B9CDE8; font-weight: 600; }
+.pop-est { --c: #12A150; display: flex; align-items: center; gap: 8px; padding: 11px 14px 0; }
+.pop-est i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 20%, transparent); flex: none; }
+.pop-est b { font-size: 14.5px; color: var(--tinta); }
+.pop-est span { margin-left: auto; font-size: 12px; color: var(--tinta-3); font-weight: 600; }
+.pop-end { display: flex; gap: 6px; padding: 5px 14px 0; color: var(--tinta-2); font-size: 12.5px; line-height: 1.35; }
+.pop-end svg { width: 14px; height: 14px; flex: none; margin-top: 1px; color: var(--tinta-3); }
+.pop-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 14px 0; }
+.pop-grade div { background: #F3F6FA; border-radius: 10px; padding: 7px 8px; }
+.pop-grade small { display: block; font-size: 10.5px; color: var(--tinta-3); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.pop-grade b { font: 800 14px/1.2 var(--fonte-titulo); color: var(--tinta); font-variant-numeric: tabular-nums; }
+.pop-grade b i { font: 600 10.5px var(--fonte); font-style: normal; color: var(--tinta-3); }
+.pop-vg { margin: 10px 14px 0; padding: 10px 11px; border-radius: 12px; background: #EEF5FF; border: 1px solid #D5E5FA; }
+.pop-vg.livre { background: #F3F6FA; border-color: #E6ECF3; color: var(--tinta-2); font-weight: 600; font-size: 12.5px; }
+.pop-vg-t { display: flex; justify-content: space-between; gap: 2px 8px; align-items: baseline; flex-wrap: wrap; }
+.pop-vg-t b { font-size: 14px; color: var(--noite); }
+.pop-etapa { font-size: 11.5px; font-weight: 800; color: var(--azul); white-space: nowrap; }
+.pop-vg-s { font-size: 12.5px; color: var(--tinta-2); margin-top: 2px; }
+.pop-rumo { display: flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 12.5px; color: #0F4F9C; font-weight: 600; }
+.pop-rumo svg { width: 14px; height: 14px; }
+.pop-acoes { display: flex; gap: 6px; padding: 12px 14px 14px; }
+.pop-acoes .pa { flex: 1; text-align: center; padding: 9px 8px; border-radius: 11px; background: #F3F6FA; color: var(--noite) !important; font-weight: 800; font-size: 13px; text-decoration: none; }
+.pop-acoes .pa.pri { background: var(--azul); color: #fff !important; }
+/* lista ao lado do mapa */
+.painel-rast { background: #fff; border-radius: 22px; box-shadow: var(--sombra); border: 1px solid #E3EAF4; overflow: hidden; display: flex; flex-direction: column; }
+.pr-cab { padding: 10px; border-bottom: 1px solid #EDF1F6; }
+.pr-cab .busca { margin: 0; }
+.lista-rast { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 6px; }
 .lista-rast > * { min-width: 0; }
-.rast-linha { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: var(--fundo); border-radius: 14px; padding: 9px 10px; text-align: left; color: inherit; }
-.rast-linha:active { transform: scale(.995); }
-.rl-frota { --c: #3DDC97; min-width: 40px; height: 32px; border-radius: 10px; background: var(--noite); color: #fff; display: grid; place-items: center; font: 800 12.5px var(--fonte-titulo); box-shadow: 0 0 0 2.5px var(--c); flex: none; padding: 0 4px; }
+.rast-linha { --c: #12A150; display: flex; align-items: center; gap: 11px; width: 100%; border: 0; background: transparent; border-radius: 14px; padding: 9px 10px; text-align: left; color: inherit; position: relative; transition: background .12s; }
+.rast-linha:hover { background: #F3F6FA; }
+.rast-linha.on { background: #EAF3FF; box-shadow: inset 3px 0 0 var(--azul); }
+.rl-frota { min-width: 46px; height: 42px; border-radius: 12px; background: #F1F5FA; color: var(--noite); display: grid; place-items: center; align-content: center; font: 800 16px/1 var(--fonte-titulo); flex: none; position: relative; border: 1px solid #E3EAF4; }
+.rl-frota small { font: 700 9px/1 var(--fonte); text-transform: uppercase; letter-spacing: .08em; color: var(--tinta-3); margin-bottom: 2px; }
+.rl-frota::after { content: ""; position: absolute; right: -4px; bottom: -4px; width: 11px; height: 11px; border-radius: 50%; background: var(--c); border: 2px solid #fff; }
 .rl-meio { flex: 1; min-width: 0; }
-.rl-meio b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rl-meio small, .rl-dir small { display: block; color: var(--tinta-2); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-meio b { display: flex; align-items: center; gap: 6px; font-size: 14px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; }
+.rl-quem { font-weight: 700; letter-spacing: 0; color: var(--azul); font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+.rl-meio small, .rl-dir small { display: flex; align-items: center; gap: 5px; color: var(--tinta-2); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.rl-vg { width: 7px; height: 7px; border-radius: 2px; background: var(--noite); flex: none; }
 .rl-dir { text-align: right; flex: none; }
-.rl-dir b { font-size: 13.5px; display: block; }
-.mapa-pagina { display: grid; gap: 12px; }
-.mapa-pagina .lista-rast { background: #fff; border-radius: 18px; box-shadow: var(--sombra); padding: 10px; max-height: none; }
-@media (min-width: 980px) { main:has(.mapa-pagina) { max-width: 1280px; } .mapa-pagina { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } .mapa-pagina .lista-rast { max-height: calc(68vh + 50px); overflow: auto; } }
+.rl-dir b { font: 800 13.5px var(--fonte-titulo); display: block; color: var(--c); font-variant-numeric: tabular-nums; }
+.rl-dir b i { font: 600 11px var(--fonte); font-style: normal; }
+.rl-dir small { justify-content: flex-end; }
+@media (min-width: 980px) {
+  main:has(.mapa-pagina) { max-width: 1320px; }
+  .mapa-pagina { grid-template-columns: minmax(0, 1fr) 370px; align-items: stretch; }
+  .painel-rast { max-height: calc(var(--alt-lista, 560px) + 128px); }
+  .painel-rast .lista-rast { overflow: auto; flex: 1; }
+}
+@media (max-width: 560px) {
+  .mc-kpis { grid-template-columns: repeat(5, minmax(78px, 1fr)); overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; scroll-snap-type: x proximity; }
+  .mk-kpi { scroll-snap-align: start; }
+  .pop-grade { margin-top: 8px; } .pop-grade div { padding: 6px 7px; }
+  .mc-kpis::-webkit-scrollbar { display: none; }
+  .mk-kpi b { font-size: 19px; }
+  .mseg button { padding: 7px 8px; font-size: 12px; }
+  .mapa-legenda { display: none; }
+}
 .rast-vaga { --c: #3DDC97; display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 11px; font-weight: 700; color: #DCE8F7; background: rgba(255,255,255,.08); border-radius: 8px; padding: 2px 7px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rast-vaga i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); flex: none; }
-.rast-bloco { --c: #19B77C; margin-top: 12px; background: #fff; border-radius: 16px; padding: 12px; box-shadow: var(--sombra); border-left: 5px solid var(--c); }
-.rast-bloco.vazio-r { display: flex; gap: 8px; align-items: center; color: var(--tinta-2); border-left-color: var(--linha); font-size: 14px; }
+.rast-bloco { --c: #12A150; margin-top: 12px; background: #fff; border-radius: 16px; padding: 12px 14px; box-shadow: var(--sombra); border: 1px solid #E3EAF4; position: relative; overflow: hidden; }
+.rast-bloco::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c); }
+.rast-bloco.vazio-r { display: flex; gap: 8px; align-items: center; color: var(--tinta-2); font-size: 14px; }
+.rast-bloco.vazio-r::before { background: var(--linha); }
 .rb-topo { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-.rb-est { font-weight: 800; display: inline-flex; align-items: center; gap: 7px; font-size: 15.5px; }
+.rb-est { font-weight: 800; display: inline-flex; align-items: center; gap: 8px; font-size: 15.5px; }
 .rb-est i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent); }
 .rb-end { margin-top: 4px; color: var(--tinta-2); font-size: 14px; }
 .rb-dados { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 13.5px; color: var(--tinta-2); }
 .rb-dados b { color: var(--tinta); }
-.rumo { display: flex; gap: 10px; align-items: center; background: linear-gradient(90deg, #EAF3FF, #F4F8FE); color: #0F4F9C; border-radius: 14px; padding: 10px 12px; margin: 0 0 12px; font-size: 14px; }
-.rumo svg { width: 22px; height: 22px; flex: none; }
-.rumo small { display: block; color: #5B7BA6; font-size: 12px; margin-top: 1px; }
-.rumo.chegou { background: linear-gradient(90deg, #FFF0D1, #FFF8E8); color: #7A4B00; animation: chama 1.6s ease-in-out infinite; }
-@keyframes chama { 50% { box-shadow: 0 0 0 4px rgba(255,200,61,.35); } }
-@media (prefers-reduced-motion: reduce) { .mk.mov .anel, .rumo.chegou { animation: none; } }
+.etiq.azul { background: #E3EEFF; color: #1665C1; }
+@media (prefers-reduced-motion: reduce) { .vk.mov .vk-pin::after, .mf-vivo i { animation: none; } }
+
+/* ---------- Rotas das granjas (motorista) ---------- */
+.rota-hero { display: flex; gap: 14px; align-items: center; background: radial-gradient(120% 140% at 100% 0%, #1D5BB0 0%, #0A2140 60%); color: #fff; border-radius: 22px; padding: 16px; box-shadow: var(--sombra-alta); margin-bottom: 14px; position: relative; overflow: hidden; }
+.rota-hero::after { content: ''; position: absolute; right: -40px; bottom: -60px; width: 200px; height: 200px; border-radius: 50%; border: 28px solid rgba(255,255,255,.04); }
+.rh-txt { flex: 1; display: grid; gap: 4px; position: relative; z-index: 1; }
+.rh-txt b { font: 800 18px/1.15 var(--fonte-titulo); }
+.rh-txt span { color: #B9CDE8; font-size: 13.5px; line-height: 1.35; }
+.rh-txt .btn { justify-self: start; margin-top: 8px; }
+.rh-anel { --p: 0; width: 92px; height: 92px; flex: none; border-radius: 50%; display: grid; place-items: center; align-content: center; text-align: center; position: relative; z-index: 1;
+  background: radial-gradient(closest-side, #0F2C52 76%, transparent 77% 100%), conic-gradient(var(--ouro) calc(var(--p) * 1%), rgba(255,255,255,.12) 0); }
+.rh-anel b { font: 800 22px/1 var(--fonte-titulo); }
+.rh-anel small { font-size: 10.5px; color: #A9C4E6; line-height: 1.2; margin-top: 2px; }
+.seg-n { display: inline-grid; place-items: center; min-width: 20px; height: 18px; padding: 0 5px; border-radius: 9px; background: #FFE3B0; color: #7A4B00; font-size: 11px; font-weight: 800; margin-left: 3px; }
+.contato .t { display: flex; gap: 10px; align-items: center; }
+.contato .t > div { flex: 1; min-width: 0; }
+.ct-ic, .ct-av { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; flex: none; background: #E3EEFF; color: var(--azul); font-weight: 800; font-size: 13px; }
+.ct-ic svg { width: 19px; height: 19px; }
+.contato.sem-rota .ct-ic { background: #FFF0D1; color: #B26B00; }
+.mini.waze { background: #E2F6FD; color: #0A6E8F; }
+.mini.pri { background: var(--azul); color: #fff; }
+.acao.ouro { background: #FFF3D1; color: #7A4B00; }
+.gps-box { display: grid; gap: 8px; margin-top: 10px; }
+.gps-leitura { display: flex; gap: 10px; align-items: center; border-radius: 14px; padding: 11px 12px; background: #EAF3FF; color: #0F4F9C; font-size: 13px; }
+.gps-leitura:empty { display: none; }
+.gps-leitura > svg { width: 20px; height: 20px; flex: none; }
+.gps-leitura span { flex: 1; min-width: 0; display: grid; }
+.gps-leitura b { font-size: 14px; }
+.gps-leitura.ok { background: #DBF4E8; color: #08794F; }
+.gps-leitura.aviso { background: #FFF0D1; color: #8A4B00; }
+.gps-leitura.grave { background: #FDECEC; color: #B42318; }
+.cartao-novo { border: 1.5px dashed #BFD8F7; border-radius: 16px; padding: 4px 12px 12px; background: #F7FAFE; }
+.cn-t { display: flex; align-items: center; gap: 8px; padding-top: 10px; color: var(--azul); }
+.cn-t b { color: var(--noite); }
+.cn-t .link { margin-left: auto; }
+.achado.novo { border-style: dashed; color: var(--azul); }
+.achado.novo b { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.seg button svg { width: 16px; height: 16px; vertical-align: -3px; }
 
 </style>
 </head>
@@ -602,7 +719,8 @@ var NUCLEO = (function () {
     Equipe: { chave: 'id', cols: [
       ['id', 'ID', 't'], ['nome', 'Nome', 't'], ['apelido', 'Apelido (como aparece no app)', 't'], ['perfil', 'Perfil', 't'], ['matricula', 'Matrícula', 't'],
       ['senha', 'Senha (motorista: 3 primeiros dígitos do CPF)', 't'], ['telefone', 'Telefone', 't'], ['placa_padrao', 'Caminhão de costume', 't'],
-      ['ativo', 'Ativo', 't'], ['admissao', 'Admissão', 't'], ['obs', 'Observações', 't']
+      ['ativo', 'Ativo', 't'], ['admissao', 'Admissão', 't'], ['obs', 'Observações', 't'],
+      ['rastreador', 'Acesso ao rastreador (SIM/NÃO)', 't']
     ] },
     Integrados: { chave: 'id', cols: [
       ['id', 'ID', 't'], ['nome', 'Integrado', 't'], ['cidade', 'Cidade', 't'], ['tecnico', 'Técnico responsável', 't'], ['telefone', 'Telefone do técnico', 't'],
@@ -631,7 +749,7 @@ var NUCLEO = (function () {
     ['km_tolerancia', '30', 'Diferença aceitável entre o KM inicial e o último KM do caminhão'],
     ['tolerancia_atraso_min', '15', 'Minutos de tolerância para contar como chegada no horário'],
     ['etapa_alerta_h', '3', 'Avisar o gestor quando a viagem ficar parada na mesma etapa por mais de X horas'],
-    ['rastreador_url', 'https://script.google.com/macros/s/AKfycbxfImBmRN8s3VTSuq7uTnGRck8hWr0KSA7cgpo8xUMEFsGc4Cqh4E5lKDP_zM5DllUk/exec?action=telemetria', 'Endereço das posições da Sascar (o mesmo do painel da Manutenção)'],
+    ['rastreador_url', '', 'Endereço das posições da Sascar (fica só na planilha: o celular nunca recebe esse endereço). Quem vê o mapa: coluna "Acesso ao rastreador" na aba Equipe'],
     ['vel_alerta', '80', 'Avisar o gestor quando o caminhão passar dessa velocidade (km/h, pelo rastreador)'],
     ['km_rast_tolerancia', '15', 'Diferença aceitável (km) entre o KM rodado digitado e o do rastreador'],
     ['destino_coord', '', 'Latitude,longitude do frigorífico (opcional: mostra no mapa e avisa a chegada)'],
@@ -674,7 +792,7 @@ var NUCLEO = (function () {
       tipos_documento: lista(c.tipos_documento), jornada_normal_h: Number(c.jornada_normal_h) || 8, jornada_max_h: Number(c.jornada_max_h) || 10,
       interjornada_min_h: Number(c.interjornada_min_h) || 11, direcao_alerta_h: Number(String(c.direcao_alerta_h).replace(',', '.')) || 5.5,
       km_tolerancia: Number(c.km_tolerancia) || 30, tolerancia_atraso_min: Number(c.tolerancia_atraso_min) || 15, etapa_alerta_h: Number(c.etapa_alerta_h) || 3,
-      rastreador_url: txt(c.rastreador_url), vel_alerta: Number(c.vel_alerta) || 80, km_rast_tolerancia: Number(c.km_rast_tolerancia) || 15, destino_coord: txt(c.destino_coord)
+      vel_alerta: Number(c.vel_alerta) || 80, km_rast_tolerancia: Number(c.km_rast_tolerancia) || 15, destino_coord: txt(c.destino_coord)
     };
   }
   function comGranja(cfg, op) { var l = lista(cfg.operacoes_com_granja).map(chave); return l.indexOf(chave(op)) >= 0; }
@@ -694,7 +812,10 @@ var NUCLEO = (function () {
     if (assinar(store, u.id, p[1], u.senha) !== p[2]) return null;
     return u;
   }
-  function gestor(u) { return u && (u.perfil === 'Analista' || u.perfil === 'Supervisor' || u.perfil === 'Coordenador'); }
+  /** só quem tem SIM na coluna "Acesso ao rastreador" vê posições, mapa e conferência de KM */
+  function podeRast(u) { return !!u && chave(u.rastreador) === 'sim'; }
+  /** gestão = qualquer perfil que não seja Motorista (Analista, Coordenador, Supervisor, Encarregado…) */
+  function gestor(u) { return !!u && !!txt(u.perfil) && chave(u.perfil) !== 'motorista'; }
   function publico(u) { return { id: u.id, nome: u.nome, apelido: u.apelido || txt(u.nome).split(' ')[0], perfil: u.perfil || 'Motorista' }; }
 
   /* ------------------------------------------------------------ cálculos */
@@ -754,13 +875,19 @@ var NUCLEO = (function () {
     var ocorr = store.lerRecentes('Ocorrencias', 2000).filter(function (o) { return o.status !== 'Tratada' || recente('data_hora')(o); });
     var docs = store.lerRecentes('Documentos', 3000).filter(recente('data_hora'));
     if (!g) { viagens = viagens.filter(meu); jornadas = jornadas.filter(meu); ocorr = ocorr.filter(meu); docs = docs.filter(meu); }
+    var rast = podeRast(u);
+    if (!rast) viagens = viagens.map(function (x) {
+      x.km_rast_inicial = ''; x.km_rast_final = ''; x.km_rast_rodado = '';
+      x.alertas = lista(x.alertas).filter(function (a) { return a.indexOf('KM digitado') !== 0; }).join('; ');
+      return x;
+    });
     var equipe = store.ler('Equipe').filter(function (e) { return g || sim(e.ativo); }).map(function (e) {
       var x = publico(e); x.ativo = sim(e.ativo) ? 'SIM' : 'NÃO'; x.telefone = e.telefone; x.placa_padrao = e.placa_padrao;
-      if (g) { x.matricula = e.matricula; x.admissao = e.admissao; x.obs = e.obs; x.tem_senha = !!txt(e.senha); }
+      if (g) { x.matricula = e.matricula; x.admissao = e.admissao; x.obs = e.obs; x.tem_senha = !!txt(e.senha); x.rastreador = podeRast(e) ? 'SIM' : 'NÃO'; }
       return x;
     });
     return {
-      versao: store.versao(), agora: store.agora(), eu: publico(u), config: pc,
+      versao: store.versao(), agora: store.agora(), eu: (function () { var x = publico(u); x.rast = rast; return x; })(), config: pc,
       equipe: equipe, caminhoes: store.ler('Caminhoes'), tecnicos: store.ler('Tecnicos').filter(function (t) { return g || sim(t.ativo); }),
       integrados: store.ler('Integrados').filter(function (i) { return g || sim(i.ativo); }),
       viagens: viagens, emUso: emUso, jornadas: jornadas, ocorrencias: ocorr, documentos: docs,
@@ -778,6 +905,71 @@ var NUCLEO = (function () {
   function pessoa(store, id) { return store.ler('Equipe').filter(function (e) { return e.id === id; })[0] || null; }
   function nomeCurto(p) { return p ? (p.apelido || txt(p.nome).split(' ')[0]) : ''; }
   function addAlerta(obj, a) { var l = lista(obj.alertas); if (l.indexOf(a) < 0) l.push(a); obj.alertas = l.join('; '); }
+
+  /* ------------------------------------------------------------ rastreador Sascar (lido só aqui no servidor) */
+  function placaLimpa(p) { return txt(p).toUpperCase().replace(/-\d+$/, '').replace(/[^A-Z0-9]/g, ''); }
+  function lerTelemetria(t) {
+    var js = t;
+    if (typeof t === 'string') { var i = t.indexOf('('), j = t.lastIndexOf(')'); js = JSON.parse(i >= 0 && j > i && t.charAt(0) !== '{' && t.charAt(0) !== '[' ? t.slice(i + 1, j) : t); }
+    var l = Array.isArray(js) ? js : (js && (js.veiculos || js.frota)) || [], d = {};
+    l.forEach(function (x) {
+      if (!x || !x.placa) return;
+      var lat = Number(x.lat), lng = Number(x.lon !== undefined ? x.lon : x.lng);
+      if (isNaN(lat) || isNaN(lng) || !lat) return;
+      d[placaLimpa(x.placa)] = { lat: lat, lng: lng, km: parseInt(x.km, 10) || 0, vel: parseInt(x.vel, 10) || 0, ign: !!x.ign && x.ign !== '0' && x.ign !== 'false', ts: Number(x.ts) || Date.parse(x.ts) || Date.now(), end: txt(x.end || x.endereco) };
+    });
+    return d;
+  }
+  /** aceita placa com 1 letra trocada no cadastro da Sascar */
+  function casarPlaca(d, placa) {
+    if (d[placa]) return d[placa];
+    var ks = Object.keys(d);
+    for (var i = 0; i < ks.length; i++) {
+      var k = ks[i]; if (k.length !== placa.length) continue;
+      var dif = 0; for (var c = 0; c < k.length && dif < 2; c++) if (k[c] !== placa[c]) dif++;
+      if (dif === 1) return d[k];
+    }
+    return null;
+  }
+  /** posições só dos caminhões desta unidade (guardadas 20 s para não repetir a consulta) */
+  function posicoesFrota(store, cfgRaw) {
+    var guardado = store.cacheLer ? store.cacheLer('rast_frota') : null;
+    if (guardado) return JSON.parse(guardado);
+    if (!store.buscarTelemetria) return {};
+    var todas = lerTelemetria(store.buscarTelemetria(txt(cfgRaw.rastreador_url))), out = {};
+    store.ler('Caminhoes').forEach(function (c) { var p = placaLimpa(c.placa), r = p && casarPlaca(todas, p); if (r) out[p] = r; });
+    if (store.cacheGravar) store.cacheGravar('rast_frota', JSON.stringify(out), 20);
+    return out;
+  }
+  /** completa a ação com a posição e o hodômetro do rastreador (o motorista não vê nada disso) */
+  function completarRast(ctx, placa, d, comKm) {
+    try {
+      if (!placa || !ctx.store.buscarTelemetria) return d;
+      if (Math.abs(difMin(ctx.ts, ctx.agora)) > 15) return d; // registro antigo (veio da fila offline): a posição de agora não serve
+      var precisaGps = !d.lat, precisaKm = comKm && num(d.km_rast) === '';
+      if (!precisaGps && !precisaKm) return d;
+      var r = posicoesFrota(ctx.store, ctx.cfgRaw)[placaLimpa(placa)];
+      if (!r) return d;
+      var idade = (Date.now() - r.ts) / 60000;
+      if (precisaGps && idade <= 20) { d.lat = r.lat.toFixed(6); d.lng = r.lng.toFixed(6); d.prec = idade <= 5 ? 60 : 500; d.gps_fonte = 'rastreador'; }
+      if (precisaKm && idade <= 30 && r.km) d.km_rast = r.km;
+    } catch (e) { try { ctx.store.log && ctx.store.log(e); } catch (x) {} }
+    return d;
+  }
+  /** tira latitude/longitude de um link do Google Maps ou de "-20.73, -46.57" */
+  function coordDeTexto(s) {
+    s = decodeURIComponent(txt(s).replace(/\+/g, ' '));
+    var m = /@(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/.exec(s) || /!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/.exec(s) ||
+      /[?&](?:q|query|destination|daddr|ll|center)=(?:loc:)?\s*(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/i.exec(s) ||
+      /\/(?:place|search|dir)\/[^@]*?(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/i.exec(s) ||
+      /^\s*(-?\d{1,2}[.,]\d+)\s*[,; ]\s*(-?\d{1,3}[.,]\d+)\s*$/.exec(s);
+    if (!m) return null;
+    var a = Number(m[1].replace(',', '.')), b = Number(m[2].replace(',', '.'));
+    if (isNaN(a) || isNaN(b)) return null;
+    if (a < -40 && b > -40) { var t = a; a = b; b = t; } // veio invertido (longitude primeiro)
+    if (a < -35 || a > 7 || b < -75 || b > -32) return null; // fora do Brasil
+    return [a, b];
+  }
 
   var OPS = {};
 
@@ -873,6 +1065,7 @@ var NUCLEO = (function () {
     if (!placa) throw erro('Escolha a placa do caminhão.');
     var km = num(d.km_inicial);
     if (km === '') throw erro('Informe o KM inicial.');
+    completarRast(ctx, placa, d, true);
     var v = { uid: uid, numero: ctx.store.proximo('Viagens'), data: dataDe(ctx.ts), status: 'Em andamento', operacao: op, placa: placa,
       destino: txt(d.destino) || lista(ctx.cfgRaw.destinos)[0] || '', hora_prevista: txt(d.hora_prevista), nf: txt(d.nf), inicio: ctx.ts, km_inicial: km,
       obs: txt(d.obs), ocorrencias: 0, docs: 0, alertas: '', km_rast_inicial: num(d.km_rast), criado_por: ctx.u.nome, criado_em: ctx.agora, atualizado_em: ctx.agora,
@@ -903,6 +1096,7 @@ var NUCLEO = (function () {
     if (v.status !== 'Em andamento' && !gestor(ctx.u)) throw erro('Essa viagem já foi encerrada.');
     if (v[et] && !gestor(ctx.u)) return { aviso: NOME_ETAPA[et] + ' já estava marcada às ' + txt(v[et]).slice(11, 16) + '.', ref: v.numero };
     v[et] = ctx.ts;
+    completarRast(ctx, v.placa, d, false);
     if (d.nf && !v.nf) v.nf = txt(d.nf);
     var g = gpsDe(v); if (d.lat) { g[et] = d.lat + ',' + d.lng; v.gps = JSON.stringify(g); }
     v.atualizado_em = ctx.agora; recalcViagem(v, ctx.cfg);
@@ -927,6 +1121,7 @@ var NUCLEO = (function () {
     if (kf === '') throw erro('Informe o KM final para encerrar.');
     if (num(v.km_inicial) !== '' && kf < num(v.km_inicial)) throw erro('KM final (' + kf + ') menor que o KM inicial (' + v.km_inicial + ').');
     v.km_final = kf; v.fim = ctx.ts; v.status = 'Finalizada';
+    completarRast(ctx, v.placa, d, true);
     if (num(d.km_rast) !== '') v.km_rast_final = num(d.km_rast);
     if (d.nf) v.nf = txt(d.nf);
     if (d.obs) v.obs = (v.obs ? v.obs + ' | ' : '') + txt(d.obs);
@@ -990,6 +1185,7 @@ var NUCLEO = (function () {
     if (!tipo) throw erro('Escolha o tipo da ocorrência.');
     var v = acharViagem(ctx.store, d.viagem_uid);
     var p = pessoa(ctx.store, ctx.alvo);
+    completarRast(ctx, txt(d.placa) || (v ? v.placa : ''), d, false);
     var o = { uid: ctx.op.uid, numero: ctx.store.proximo('Ocorrencias'), data_hora: ctx.ts, status: 'Aberta', tipo: tipo, motorista: p ? p.nome : ctx.u.nome, motorista_id: ctx.alvo,
       placa: txt(d.placa) || (v ? v.placa : ''), viagem: v ? v.numero : '', viagem_uid: v ? v.uid : '', integrado: v ? v.integrado : '', descricao: txt(d.descricao),
       lat: d.lat ? String(d.lat) : '', lng: d.lng ? String(d.lng) : '', precisao: d.prec || '', mapa: d.lat ? 'https://www.google.com/maps?q=' + d.lat + ',' + d.lng : '' };
@@ -1028,6 +1224,40 @@ var NUCLEO = (function () {
     return { ref: doc.numero, log: 'Enviou ' + tipo, det: (doc.placa || '') + (doc.nf ? ' · NF ' + doc.nf : '') + (doc.viagem ? ' · ' + doc.viagem : '') };
   };
 
+  /* ------------------------------------------------------------ cadastro de rota (motorista e gestor) */
+  OPS.rota_cadastrar = function (ctx, d) {
+    var it = txt(d.integrado_id) ? ctx.store.achar('Integrados', txt(d.integrado_id)) : null, novo = false;
+    if (!it) {
+      var nome = txt(d.nome).replace(/\s+/g, ' ');
+      if (nome.length < 3) throw erro('Escolha a granja na lista ou digite o nome do integrado.');
+      it = ctx.store.ler('Integrados').filter(function (i) { return chave(i.nome) === chave(nome); })[0] || null;
+      if (!it) {
+        var mx = ctx.store.ler('Integrados').map(function (e) { return Number(String(e.id).replace(/\D/g, '')) || 0; });
+        var tc = ctx.store.ler('Tecnicos').filter(function (t) { return chave(t.nome) === chave(d.tecnico); })[0];
+        it = { id: 'IN-' + pad(Math.max.apply(null, mx.concat([0])) + 1, 4), nome: nome, cidade: txt(d.cidade), tecnico: tc ? tc.nome : txt(d.tecnico), telefone: tc ? tc.telefone : '', ativo: 'SIM' };
+        novo = true;
+      }
+    }
+    var link = txt(d.link), ehUrl = /^https?:\/\//i.test(link), c = null, origem = '', mud = [];
+    if (link && !ehUrl && !coordDeTexto(link)) throw erro('Cole o link do Google Maps (começa com https://) ou use a localização do celular.');
+    if (d.lat && d.lng && !isNaN(Number(d.lat))) {
+      if (Number(d.prec || 9999) > 300) throw erro('O GPS do celular está fraco (±' + Math.round(d.prec) + ' m). Vá para céu aberto e marque de novo, ou cole o link do Maps.');
+      c = [Number(d.lat), Number(d.lng)]; origem = 'GPS do celular ±' + Math.round(d.prec || 0) + ' m';
+    } else if (link) { c = coordDeTexto(link); if (c) origem = 'Link do Google Maps'; }
+    if (!c && !ehUrl && !txt(d.obs_rota)) throw erro('Marque a localização, cole o link do Maps ou escreva a dica de acesso.');
+    if (c) {
+      it.latitude = c[0].toFixed(6); it.longitude = c[1].toFixed(6);
+      it.gps_origem = origem + ' · ' + nomeCurto(ctx.u) + ' em ' + dataDe(ctx.ts).split('-').reverse().slice(0, 2).join('/');
+      mud.push('localização');
+    }
+    if (ehUrl) { it.link_rota = link; mud.push('link'); }
+    else if (c && (!txt(it.link_rota) || /destination=-?\d/.test(it.link_rota))) it.link_rota = 'https://www.google.com/maps/dir/?api=1&destination=' + it.latitude + ',' + it.longitude;
+    if (txt(d.obs_rota) && txt(d.obs_rota) !== txt(it.obs_rota)) { it.obs_rota = txt(d.obs_rota).slice(0, 400); mud.push('dica de acesso'); }
+    if (!novo && !mud.length) return { aviso: 'Nada mudou nessa rota.', ref: it.id };
+    if (novo) ctx.store.inserir('Integrados', it); else ctx.store.atualizar('Integrados', it);
+    return { ref: it.id, log: novo ? 'Cadastrou granja e rota' : 'Atualizou rota', det: it.nome + (it.cidade ? ' (' + it.cidade + ')' : '') + ' · ' + (mud.join(', ') || 'granja nova') };
+  };
+
   var CADASTROS = { Equipe: 'id', Caminhoes: 'placa', Integrados: 'id', Tecnicos: 'nome' };
   OPS.cadastro = function (ctx, d) {
     if (!gestor(ctx.u)) throw erro('Só o gestor mexe nos cadastros.');
@@ -1038,6 +1268,11 @@ var NUCLEO = (function () {
     if (tab === 'Caminhoes' && limpo.placa) limpo.placa = limpo.placa.toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (!txt(limpo.nome || limpo.placa)) throw erro('Preencha o nome.');
     if (tab === 'Equipe' && ctx.u.perfil !== 'Analista' && limpo.perfil && limpo.perfil !== 'Motorista') throw erro('Só o analista cria gestores.');
+    if (tab === 'Equipe' && limpo.rastreador !== undefined) {
+      limpo.rastreador = chave(limpo.rastreador) === 'sim' ? 'SIM' : 'NÃO';
+      var antes = limpo.id ? ctx.store.achar('Equipe', limpo.id) : null;
+      if ((antes ? (podeRast(antes) ? 'SIM' : 'NÃO') : 'NÃO') !== limpo.rastreador && !(ctx.u.perfil === 'Analista' && podeRast(ctx.u))) throw erro('Só o analista libera ou tira o acesso ao rastreador.');
+    }
     var existente = limpo[k] ? ctx.store.achar(tab, limpo[k]) : null;
     if (d.novo && existente && tab !== 'Equipe' && tab !== 'Integrados') throw erro('Já existe esse cadastro (' + limpo[k] + ').');
     if (tab === 'Integrados' && limpo.tecnico !== undefined) {
@@ -1126,6 +1361,11 @@ var NUCLEO = (function () {
         var dd2 = montarDados(store, u); dd2.resultados = res;
         return { ok: true, dados: dd2 };
       }
+      if (acao === 'rastreio') {
+        if (!podeRast(u)) return { ok: false, erro: 'PERM', msg: 'O rastreador é liberado só para quem o analista autorizar.' };
+        try { return { ok: true, dados: { posicoes: posicoesFrota(store, cfgObj(store)), agora: Date.now() } }; }
+        catch (e1) { try { store.log && store.log(e1); } catch (x) {} return { ok: false, erro: 'RAST', msg: 'Rastreador sem resposta agora.' }; }
+      }
       if (acao === 'periodo') {
         if (!gestor(u)) return { ok: false, erro: 'PERM', msg: 'Só para gestores.' };
         var de = txt(dados.de), ate = txt(dados.ate);
@@ -1139,7 +1379,7 @@ var NUCLEO = (function () {
     }
   }
 
-  return { SCHEMA: SCHEMA, CONFIG_PADRAO: CONFIG_PADRAO, api: api, recalcViagem: recalcViagem, recalcJornada: recalcJornada, cfgPublica: cfgPublica, util: { mins: mins, deMins: deMins, difMin: difMin, hm: hm, somaDias: somaDias, num: num, chave: chave, lista: lista } };
+  return { SCHEMA: SCHEMA, CONFIG_PADRAO: CONFIG_PADRAO, api: api, recalcViagem: recalcViagem, recalcJornada: recalcJornada, cfgPublica: cfgPublica, coordDeTexto: coordDeTexto, util: { mins: mins, deMins: deMins, difMin: difMin, hm: hm, somaDias: somaDias, num: num, chave: chave, lista: lista } };
 })();
 
 
@@ -1155,6 +1395,7 @@ function StoreMemoria(base, opcoes) {
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function completo(tab, o) { var r = {}; S[tab].cols.forEach(function (c) { r[c[0]] = o[c[0]] === undefined || o[c[0]] === null ? '' : o[c[0]]; }); return r; }
   function idx(tab, k) { var ch = S[tab].chave; for (var i = 0; i < db[tab].length; i++) if (String(db[tab][i][ch]) === String(k)) return i; return -1; }
+  var CACHE_MEM = {};
   var relogio = opcoes.relogio || function () { return new Date(); };
   return {
     db: db,
@@ -1176,6 +1417,9 @@ function StoreMemoria(base, opcoes) {
     hmac: function (s) { var h = 2166136261, out = ''; for (var k = 0; k < 4; k++) { for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i) + k; h = Math.imul(h, 16777619) >>> 0; } out += h.toString(16); } return out; },
     opsFeitas: function () { var m = {}; db.Historico.slice(-3000).forEach(function (h) { if (h.uid) m[h.uid] = 1; }); return m; },
     urlPlanilha: function () { return ''; },
+    buscarTelemetria: opcoes.telemetria ? function () { return opcoes.telemetria(); } : undefined,
+    cacheLer: function (k) { var c = CACHE_MEM[k]; return c && c.ate > Date.now() ? c.v : null; },
+    cacheGravar: function (k, v, seg) { CACHE_MEM[k] = { v: v, ate: Date.now() + seg * 1000 }; },
     comTrava: function (fn) { return fn(); },
     log: function (e) { if (typeof console !== 'undefined') console.error(e); }
   };
@@ -1291,6 +1535,13 @@ var IC = {
   engrenagem: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
   impressora: '<path d="M7 8V3.5h10V8"/><rect x="3.5" y="8" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/>',
   copiar: '<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/>',
+  satelite: '<path d="M5 19a10 10 0 0 1 0-14M19 5a10 10 0 0 1 0 14M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7"/><circle cx="12" cy="12" r="1.6"/>',
+  alvo: '<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>',
+  camadas: '<path d="m12 3.5 9 4.8-9 4.8-9-4.8z"/><path d="m3 12.3 9 4.8 9-4.8M3 16.3l9 4.8 9-4.8"/>',
+  expandir: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  recolher: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
+  navegar: '<path d="M12 3 19.5 20 12 16l-7.5 4z"/>',
+  mais_pin: '<path d="M12 21s-6.5-6.1-6.5-11a6.5 6.5 0 0 1 13 0c0 4.9-6.5 11-6.5 11z"/><path d="M12 7v6M9 10h6"/>',
   atualizar: '<path d="M20 11a8 8 0 0 0-14.5-4.5L3.5 9"/><path d="M3.5 4v5h5"/><path d="M4 13a8 8 0 0 0 14.5 4.5l2-2.5"/><path d="M20.5 20v-5h-5"/>'
 };
 function ic(n, cls) { return '<svg class="' + (cls || 'ic') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>'; }
@@ -1353,7 +1604,7 @@ function storeDemo() {
   if (DEMO_STORE) return DEMO_STORE;
   var base = null; try { base = JSON.parse(lerLocal(P + 'base') || 'null'); } catch (e) { base = null; }
   if (!base) base = montarDemo();
-  DEMO_STORE = StoreMemoria(base);
+  DEMO_STORE = StoreMemoria(base, { telemetria: function () { return typeof rastDemoBruto === 'function' ? rastDemoBruto() : []; } });
   return DEMO_STORE;
 }
 function chamarUma(acao, dados) {
@@ -1501,6 +1752,10 @@ function projetar(v, o) {
     case 'ocorrencia': vg = acharV(v, d.viagem_uid); v.ocorrencias.push({ uid: o.uid, numero: '', data_hora: o.ts, status: 'Aberta', tipo: d.tipo, motorista_id: alvo, motorista: p.nome, placa: d.placa || (vg ? vg.placa : ''), viagem_uid: d.viagem_uid || '', viagem: vg ? vg.numero : '', integrado: vg ? vg.integrado : '', descricao: d.descricao, foto: d.foto && d.foto.dados ? 'data:image/jpeg;base64,' + d.foto.dados : '', lat: d.lat, lng: d.lng, pendente: 1 }); if (vg) vg.ocorrencias = (Number(vg.ocorrencias) || 0) + 1; break;
     case 'ocorrencia_tratar': var oc = v.ocorrencias.filter(function (x) { return x.uid === d.uid; })[0]; if (oc) { oc.status = d.status || 'Tratada'; oc.tratativa = d.tratativa; } break;
     case 'documento': vg = acharV(v, d.viagem_uid); v.documentos.push({ uid: o.uid, numero: '', data_hora: o.ts, tipo: d.tipo, nf: d.nf, viagem_uid: d.viagem_uid || '', viagem: vg ? vg.numero : '', placa: vg ? vg.placa : d.placa, integrado: vg ? vg.integrado : '', motorista_id: alvo, motorista: p.nome, arquivo: d.arquivo && d.arquivo.dados && d.arquivo.mime !== 'application/pdf' ? 'data:image/jpeg;base64,' + d.arquivo.dados : '', pendente: 1 }); if (vg) { vg.docs = (Number(vg.docs) || 0) + 1; if (d.nf && !vg.nf && /nota/i.test(d.tipo)) vg.nf = d.nf; } break;
+    case 'rota_cadastrar': var ri = d.integrado_id ? (v.integrados || []).filter(function (x) { return x.id === d.integrado_id; })[0] : (v.integrados || []).filter(function (x) { return chave(x.nome) === chave(d.nome); })[0];
+      if (!ri && d.nome) { ri = { id: 'novo-' + o.uid, nome: d.nome, cidade: d.cidade || '', tecnico: d.tecnico || '', ativo: 'SIM', pendente: 1 }; v.integrados.push(ri); }
+      if (ri) { var rc = d.lat ? [Number(d.lat), Number(d.lng)] : (typeof NUCLEO !== 'undefined' && d.link ? NUCLEO.coordDeTexto(d.link) : null); if (rc) { ri.latitude = String(rc[0]); ri.longitude = String(rc[1]); } if (/^https?:/i.test(d.link || '')) ri.link_rota = d.link; else if (rc && !ri.link_rota) ri.link_rota = 'https://www.google.com/maps/dir/?api=1&destination=' + rc[0] + ',' + rc[1]; if (d.obs_rota) ri.obs_rota = d.obs_rota; ri.pendente = 1; }
+      break;
     case 'cadastro': var tabs = { Equipe: ['equipe', 'id'], Caminhoes: ['caminhoes', 'placa'], Integrados: ['integrados', 'id'], Tecnicos: ['tecnicos', 'nome'] }[d.tabela]; if (tabs) { var arr = v[tabs[0]], ex = arr.filter(function (x) { return d.registro[tabs[1]] && x[tabs[1]] === d.registro[tabs[1]]; })[0]; if (ex && !d.novo) Object.assign(ex, d.registro); else arr.push(Object.assign({ pendente: 1, ativo: 'SIM' }, d.registro)); } break;
   }
 }
@@ -1649,11 +1904,12 @@ function tocarSinc() {
 function navHtml(r) {
   var itens = gestor()
     ? [['aovivo', 'casa', 'Ao vivo'], ['viagens', 'lista', 'Viagens'], ['ocorrencias', 'alerta', 'Ocorrências'], ['jornada', 'relogio', 'Jornada'], ['mais', 'grafico', 'Mais']]
-    : [['inicio', 'casa', 'Início'], ['viagens', 'lista', 'Viagens'], ['contatos', 'fone', 'Contatos'], ['perfil', 'pessoa', 'Eu']];
+    : [['inicio', 'casa', 'Início'], ['viagens', 'lista', 'Viagens'], ['rotas', 'mapa', 'Rotas']].concat(podeRast() ? [['mapa', 'satelite', 'Frota']] : []).concat([['perfil', 'pessoa', 'Eu']]);
   var abertas = gestor() ? (V().ocorrencias || []).filter(function (o) { return o.status === 'Aberta'; }).length : 0;
   var base = r.split('/')[0];
   if (base === 'viagem') base = 'viagens';
-  if (['indicadores', 'documentos', 'cad', 'mapa'].indexOf(base) >= 0) base = 'mais';
+  if (base === 'contatos') base = 'rotas';
+  if (['indicadores', 'documentos', 'cad'].indexOf(base) >= 0 || (base === 'mapa' && gestor())) base = 'mais';
   return '<nav class="nav" style="--n:' + itens.length + '">' + itens.map(function (i) {
     return '<a href="#' + i[0] + '" class="' + (base === i[0] ? 'on' : '') + '">' + ic(i[1]) + i[2] + (i[0] === 'ocorrencias' && abertas ? '<span class="bolinha">' + abertas + '</span>' : '') + '</a>';
   }).join('') + '</nav>';
@@ -1742,6 +1998,7 @@ function entrar() {
   }, function (e) { LOGIN.pin = ''; LOGIN.erro = e.message; telaLogin(); vibrar(120); });
 }
 function sair(expirou) {
+  if (typeof RAST !== 'undefined') { RAST.d = {}; RAST.quando = 0; RAST.dono = ''; }
   if (!expirou && FILA.length && !window.confirm('Ainda tem ' + FILA.length + ' registro(s) que não subiram para a planilha. Se sair agora, eles se perdem. Sair mesmo assim?')) return;
   TOKEN = ''; DB = null; gravarLocal(P + 'token', null); gravarLocal(P + 'db', null);
   if (!expirou) { FILA = []; salvarFila(); }
@@ -1754,7 +2011,8 @@ function telaMotorista(r) {
   var p = r.split('/');
   if (p[0] === 'viagem') return telaViagemDetalhe(p[1]);
   if (p[0] === 'viagens') return telaMinhasViagens();
-  if (p[0] === 'contatos') return telaContatos();
+  if (p[0] === 'rotas' || p[0] === 'contatos') return telaContatos();
+  if (p[0] === 'mapa' && podeRast()) return telaMapa();
   if (p[0] === 'perfil') return telaPerfil();
   return telaInicio();
 }
@@ -1853,11 +2111,9 @@ function cartaoViagemAtual(vg) {
     '<div class="meta"><span>KM inicial <b class="num">' + fmt(vg.km_inicial) + '</b></span>' + (vg.hora_prevista ? '<span>Previsto na granja <b>' + esc(vg.hora_prevista) + '</b></span>' : '') + (vg.nf ? '<span>NF <b>' + esc(vg.nf) + '</b></span>' : '') + (vg.motorista2 ? '<span>Dupla <b>' + esc(primeiro(vg.motorista2)) + '</b></span>' : '') + '</div>' +
     passosHtml(vg) +
     '<div class="tempo-etapa">' + esc(ondeEsta(vg)) + ' há ' + tick('tk-et', function () { return '<b>' + hmCurto(minEntre(vg[atual])) + '</b>'; }) + '</div>';
-  var rumo = typeof rumoViagem === 'function' ? rumoViagem(vg) : null;
-  if (rumo) h += '<div class="rumo' + (rumo.chegou ? ' chegou' : '') + '">' + ic('pin') + '<span>' + (rumo.chegou ? 'O rastreador mostra que você já está no ' + (rumo.nome === 'granja' ? 'local da granja' : 'frigorífico') + '. Marque a chegada!' : 'Faltam <b>' + fmtKm(rumo.dist) + '</b> até a ' + rumo.nome + ' · chega em ~<b>' + hmCurto(rumo.eta) + '</b>') + '<small>🛰 rastreador · ' + idadeTxt(idadeRast(rumo.r)) + '</small></span></div>';
   if (prox) h += '<button class="btn ' + (prox === 'fim' ? 'verde' : 'pri') + ' gigante cheio" id="bt-etapa" onclick="marcarEtapa(\'' + vg.uid + '\',\'' + prox + '\')">' + ic(prox === 'fim' ? 'bandeira' : 'ok') + esc(PROXIMA[prox]) + '</button>';
   h += '<div class="grade-acoes">' +
-    (link ? '<a class="acao" href="' + esc(link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Rota</a>' : '<button class="acao" disabled>' + ic('mapa') + 'Sem rota</button>') +
+    (link ? '<a class="acao" href="' + esc(link) + '" target="_blank" rel="noopener">' + ic('mapa') + 'Rota</a>' : (vg.integrado_id ? '<button class="acao ouro" onclick="formRota(\'' + esc(vg.integrado_id) + '\')">' + ic('mais_pin') + 'Marcar rota</button>' : '<button class="acao" disabled>' + ic('mapa') + 'Sem rota</button>')) +
     (vg.tecnico_tel ? '<a class="acao zap" href="' + esc(linkZap(vg.tecnico_tel, 'Olá ' + primeiro(vg.tecnico) + ', aqui é o ' + eu().apelido + ' da Andrioni (' + vg.placa + '), indo para ' + (vg.integrado || '') + '.')) + '" target="_blank" rel="noopener">' + ic('zap') + 'Técnico</a>' : '<button class="acao" disabled>' + ic('zap') + 'Técnico</button>') +
     '<button class="acao" onclick="formDocumento(\'' + vg.uid + '\')">' + ic('doc') + 'NF / GTA</button>' +
     '<button class="acao vermelho" onclick="formOcorrencia(\'' + vg.uid + '\')">' + ic('alerta') + 'Ocorrência</button>' +
@@ -1872,8 +2128,8 @@ function marcarEtapa(uid, etapa) {
   if (etapa === 'saida_granja') return formSaidaGranja(uid);
   var ts = agoraTs(), bt = document.getElementById('bt-etapa');
   if (bt) { bt.disabled = true; bt.innerHTML = '<span class="roda" style="width:20px;height:20px;border-width:3px"></span> Marcando ' + ts.slice(11, 16) + '…'; }
-  gpsComRast(vg.placa).then(function (g) {
-    registrar('viagem_etapa', anexarRast(vg.placa, Object.assign({ viagem_uid: uid, etapa: etapa }, g || {})), PROXIMA[etapa].replace('Cheguei', 'Chegada') + ' às ' + ts.slice(11, 16), ts);
+  gpsRapido().then(function (g) {
+    registrar('viagem_etapa', Object.assign({ viagem_uid: uid, etapa: etapa }, g || {}), PROXIMA[etapa].replace('Cheguei', 'Chegada') + ' às ' + ts.slice(11, 16), ts);
   });
 }
 function formSaidaGranja(uid) {
@@ -1888,8 +2144,8 @@ function formSaidaGranja(uid) {
       f.querySelector('#ok').onclick = function () {
         var nf = f.querySelector('#nf').value.trim();
         fecharFolha();
-        gpsComRast(vg.placa).then(function (g) {
-          registrar('viagem_etapa', anexarRast(vg.placa, Object.assign({ viagem_uid: uid, etapa: 'saida_granja', nf: nf }, g || {})), 'Saída da granja às ' + ts.slice(11, 16), ts);
+        gpsRapido().then(function (g) {
+          registrar('viagem_etapa', Object.assign({ viagem_uid: uid, etapa: 'saida_granja', nf: nf }, g || {}), 'Saída da granja às ' + ts.slice(11, 16), ts);
           if (foto) registrar('documento', { viagem_uid: uid, tipo: 'Nota fiscal', nf: nf, arquivo: { mime: foto.mime, dados: foto.dados, nome: foto.nome } });
         });
       };
@@ -1900,7 +2156,7 @@ function formEncerrar(uid) {
   abrirFolha(cabFolha('Encerrar viagem', esc(vg.integrado || vg.operacao) + ' · ' + esc(vg.placa) + ' · fim às ' + ts.slice(11, 16)) +
     (proximaEtapa(vg) && proximaEtapa(vg) !== 'fim' ? '<div class="aviso-form">' + ic('alerta') + '<span>Algumas etapas não foram marcadas (' + etapasDe(vg).filter(function (e) { return !vg[e[0]] && e[0] !== 'fim'; }).map(function (e) { return e[1].toLowerCase(); }).join(', ') + '). Tudo bem, mas marque sempre que der: é isso que mostra para a JBS onde o tempo foi perdido.</span></div>' : '') +
     '<label class="campo"><span>KM final (painel do caminhão)</span><input class="inp grande num" id="kmf" inputmode="numeric" placeholder="000000" autocomplete="off"></label>' +
-    '<div class="km-dica">KM inicial <b>' + fmt(vg.km_inicial) + '</b> · rodado <b id="rod">—</b></div>' + dicaKmRast(vg) +
+    '<div class="km-dica">KM inicial <b>' + fmt(vg.km_inicial) + '</b> · rodado <b id="rod">—</b></div>' +
     (precisaNF ? '<label class="campo"><span>Nº da nota fiscal</span><input class="inp" id="nf" inputmode="numeric" placeholder="Número da NF"></label><label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;font-weight:600"><input type="checkbox" id="semnf"> Ainda não tenho o número da NF</label>' : '') +
     '<label class="campo"><span>Observação <em>(opcional)</em></span><input class="inp" id="obs" placeholder="Algo que o analista precisa saber?"></label>' +
     '<div class="botoes-folha"><button class="btn verde gigante cheio" id="ok">' + ic('bandeira') + 'Encerrar viagem</button></div>',
@@ -1915,19 +2171,14 @@ function formEncerrar(uid) {
         if (nfEl && !nf && !f.querySelector('#semnf').checked) return toast('Digite o número da NF ou marque que ainda não tem.', true);
         var seguir = function () {
           fecharFolha();
-          gpsComRast(vg.placa).then(function (g) {
-            registrar('viagem_encerrar', anexarRast(vg.placa, Object.assign({ viagem_uid: uid, km_final: k, nf: nf, obs: f.querySelector('#obs').value.trim() }, g || {}), true), 'Viagem encerrada: ' + fmt(k - vg.km_inicial) + ' km. Valeu!', ts);
+          gpsRapido().then(function (g) {
+            registrar('viagem_encerrar', Object.assign({ viagem_uid: uid, km_final: k, nf: nf, obs: f.querySelector('#obs').value.trim() }, g || {}), 'Viagem encerrada: ' + fmt(k - vg.km_inicial) + ' km. Valeu!', ts);
           });
         };
         if (k - vg.km_inicial > 700) confirmar('Confere o KM?', 'Deu <b>' + fmt(k - vg.km_inicial) + ' km</b> rodados nessa viagem. Está certo?', 'Sim, está certo').then(function (s) { if (s) seguir(); });
         else seguir();
       };
     });
-}
-function dicaKmRast(vg) {
-  var r = typeof rastDe === 'function' ? rastDe(vg.placa) : null, ki = Number(vg.km_rast_inicial);
-  if (!r || !ki || idadeRast(r) > 30 || r.km < ki) return '';
-  return '<div class="aviso-form info">' + ic('pin') + '<span>O rastreador contou <b>~' + fmt(r.km - ki) + ' km</b> nesta viagem. Se o seu número ficar muito diferente, confira o painel.</span></div>';
 }
 function formCorrigir(uid) {
   var vg = acharV(V(), uid);
@@ -2027,8 +2278,8 @@ function formViagem(paraMotorista) {
         var seguir = function () {
           PREF.placa = g ? PREF.placa : st.placa; salvarPref();
           fecharFolha();
-          gpsComRast(st.placa).then(function (gp) {
-            Object.assign(dados, gp || {}); anexarRast(st.placa, dados, true);
+          gpsRapido().then(function (gp) {
+            Object.assign(dados, gp || {});
             if (!jornadaAbertaDe(V(), st.mot)) { registrar('jornada_inicio', { placa: st.placa, motorista_id: g ? st.mot : undefined }, '', ts); }
             registrar('viagem_iniciar', dados, 'Viagem iniciada às ' + ts.slice(11, 16) + '. Boa viagem!', ts);
             if (g) ir('viagens'); else window.scrollTo(0, 0);
@@ -2063,7 +2314,7 @@ function formOcorrencia(uidViagem) {
         var desc = f.querySelector('#desc').value.trim();
         if (st.tipo === 'Outro' && !desc) return toast('Conte rapidinho o que aconteceu.', true);
         fecharFolha();
-        registrar('ocorrencia', anexarRast(placa, Object.assign({ tipo: st.tipo, descricao: desc, viagem_uid: vg ? vg.uid : '', placa: placa, foto: st.foto ? { mime: st.foto.mime, dados: st.foto.dados } : null }, st.gps || {})), 'Ocorrência enviada. O analista já recebe.', ts);
+        registrar('ocorrencia', Object.assign({ tipo: st.tipo, descricao: desc, viagem_uid: vg ? vg.uid : '', placa: placa, foto: st.foto ? { mime: st.foto.mime, dados: st.foto.dados } : null }, st.gps || {}), 'Ocorrência enviada. O analista já recebe.', ts);
       };
     });
 }
@@ -2161,8 +2412,8 @@ function telaViagemDetalhe(uid) {
   } else h += marcoHtml(vg, 'inicio', 'Início da viagem') + intervaloHtml(vg.inicio, vg.fim, 'duração', 0) + marcoHtml(vg, 'fim', 'Encerramento');
   h += '</div></div>';
   h += '<div class="secao"><h2>Quilometragem</h2></div><div class="km-bloco"><div><small>KM inicial</small><b class="num">' + fmt(vg.km_inicial) + '</b></div><div><small>KM final</small><b class="num">' + fmt(vg.km_final) + '</b></div><div class="rodado"><small>Rodado</small><b class="num">' + (vg.km_final !== '' && vg.km_final !== undefined ? fmt(vg.km_final - vg.km_inicial) : '—') + '</b></div></div>' +
-    (vg.km_rast_rodado !== '' && vg.km_rast_rodado !== undefined && vg.km_rast_rodado !== null ? '<p class="fraco" style="margin:8px 2px 0">🛰 Pelo rastreador: <b>' + fmt(vg.km_rast_rodado) + ' km</b>' + (vg.km_final !== '' && Math.abs((vg.km_final - vg.km_inicial) - vg.km_rast_rodado) > (V().config.km_rast_tolerancia || 15) ? ' · <span style="color:#B42318;font-weight:700">diferença de ' + fmt(Math.abs((vg.km_final - vg.km_inicial) - vg.km_rast_rodado)) + ' km</span>' : ' · confere ✓') + '</p>' : '') +
-    (gestor() && vg.status === 'Em andamento' ? '<div style="margin-top:10px">' + blocoRast(vg.placa) + '</div>' : '');
+    (podeRast() && vg.km_rast_rodado !== '' && vg.km_rast_rodado !== undefined && vg.km_rast_rodado !== null ? '<p class="fraco" style="margin:8px 2px 0">🛰 Pelo rastreador: <b>' + fmt(vg.km_rast_rodado) + ' km</b>' + (vg.km_final !== '' && Math.abs((vg.km_final - vg.km_inicial) - vg.km_rast_rodado) > (V().config.km_rast_tolerancia || 15) ? ' · <span style="color:#B42318;font-weight:700">diferença de ' + fmt(Math.abs((vg.km_final - vg.km_inicial) - vg.km_rast_rodado)) + ' km</span>' : ' · confere ✓') + '</p>' : '') +
+    (podeRast() && vg.status === 'Em andamento' ? '<div style="margin-top:10px">' + blocoRast(vg.placa) + '</div>' : '');
   h += '<div class="secao"><h2>Documentos</h2>' + (g || minha ? '<button class="link" onclick="formDocumento(\'' + uid + '\')">+ Enviar</button>' : '') + '</div>' +
     (docs.length ? '<div class="fotos">' + docs.map(function (d) { var mi = miniatura(d.arquivo); return '<button class="foto" onclick="verFoto(\'' + esc(d.arquivo) + '\')">' + (mi ? '<img loading="lazy" alt="" src="' + esc(mi) + '">' : '<span class="sem">' + ic('doc') + '</span>') + '<span>' + esc(d.tipo + (d.nf ? ' ' + d.nf : '')) + '</span></button>'; }).join('') + '</div>' : '<div class="vazio" style="padding:14px">Nenhum documento enviado.</div>');
   h += '<div class="secao"><h2>Ocorrências</h2>' + (g || minha ? '<button class="link" onclick="formOcorrencia(\'' + uid + '\')">+ Registrar</button>' : '') + '</div>' + (ocs.length ? '<div class="lista">' + ocs.map(cartaoOcorrencia).join('') + '</div>' : '<div class="vazio" style="padding:14px">Sem ocorrências.</div>');
@@ -2178,12 +2429,20 @@ function cancelarViagem(uid) {
     function (f) { f.querySelector('#ok').onclick = function () { var m = f.querySelector('#mot').value.trim(); fecharFolha(); registrar('viagem_cancelar', { viagem_uid: uid, motivo: m }, 'Viagem cancelada.'); }; });
 }
 
-/* ------------------------------------------------------------ contatos e perfil */
+/* ------------------------------------------------------------ rotas das granjas, cadastro de rota e contatos */
 var CONT = { aba: 'integrados', busca: '' };
+function linkRota(i) { return i.link_rota || (i.latitude ? 'https://www.google.com/maps/dir/?api=1&destination=' + i.latitude + ',' + i.longitude : ''); }
+function linkWaze(i) { return i.latitude ? 'https://waze.com/ul?ll=' + i.latitude + ',' + i.longitude + '&navigate=yes' : ''; }
+function temRota(i) { return !!(i.latitude || i.link_rota); }
 function telaContatos() {
-  var v = V(), q = chave(CONT.busca), h = '<div class="secao" style="margin-top:4px"><h2>Contatos e rotas</h2></div>' +
-    '<div class="seg"><button data-aba="integrados" class="' + (CONT.aba === 'integrados' ? 'on' : '') + '">Integrados</button><button data-aba="tecnicos" class="' + (CONT.aba === 'tecnicos' ? 'on' : '') + '">Técnicos</button></div>' +
-    '<div class="busca">' + ic('busca') + '<input id="bc" placeholder="Procurar nome, cidade ou técnico" value="' + esc(CONT.busca) + '" autocomplete="off"></div><div id="lc">';
+  var v = V(), q = chave(CONT.busca), ints = (v.integrados || []).filter(ativo);
+  var com = ints.filter(temRota).length, pct = ints.length ? Math.round(com / ints.length * 100) : 0;
+  var h = '<div class="secao" style="margin-top:4px"><h2>Rotas das granjas</h2></div>' +
+    '<section class="rota-hero"><div class="rh-txt"><b>Chegou numa granja sem rota?</b><span>Marque o local em 10 segundos. Na próxima viagem, todo motorista chega direto.</span>' +
+    '<button class="btn ouro" onclick="formRota()">' + ic('mais_pin') + 'Cadastrar rota</button></div>' +
+    '<div class="rh-anel" style="--p:' + pct + '"><b>' + pct + '%</b><small>' + com + ' de ' + ints.length + '<br>com rota</small></div></section>' +
+    '<div class="seg"><button data-aba="integrados" class="' + (CONT.aba === 'integrados' ? 'on' : '') + '">Granjas</button><button data-aba="sem" class="' + (CONT.aba === 'sem' ? 'on' : '') + '">Sem rota <span class="seg-n">' + (ints.length - com) + '</span></button><button data-aba="tecnicos" class="' + (CONT.aba === 'tecnicos' ? 'on' : '') + '">Técnicos</button></div>' +
+    '<div class="busca">' + ic('busca') + '<input id="bc" placeholder="Procurar granja, cidade ou técnico" value="' + esc(CONT.busca) + '" autocomplete="off"></div><div id="lc">';
   h += listaContatos(v, q) + '</div>';
   POS_DESENHO = function () {
     document.querySelectorAll('[data-aba]').forEach(function (b) { b.onclick = function () { CONT.aba = b.dataset.aba; desenhar(); }; });
@@ -2197,18 +2456,113 @@ function listaContatos(v, q) {
     return t.map(function (x) {
       var n = (v.integrados || []).filter(function (i) { return chave(i.tecnico) === chave(x.nome); });
       var cidades = n.map(function (i) { return i.cidade; }).filter(function (c, i, a) { return c && a.indexOf(c) === i; }).slice(0, 4).join(', ');
-      return '<div class="contato"><div class="t"><div><b>' + esc(x.nome) + '</b><small>' + esc(x.telefone || 'sem telefone') + ' · ' + n.length + ' integrados</small><small>' + esc(cidades) + '</small></div></div>' +
+      return '<div class="contato"><div class="t"><span class="ct-av">' + esc(iniciais(x.nome)) + '</span><div><b>' + esc(x.nome) + '</b><small>' + esc(x.telefone || 'sem telefone') + ' · ' + n.length + ' integrados</small><small>' + esc(cidades) + '</small></div></div>' +
         (x.telefone ? '<div class="botoes"><a class="mini" href="' + linkTel(x.telefone) + '">' + ic('fone') + 'Ligar</a><a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(x.telefone)) + '">' + ic('zap') + 'WhatsApp</a></div>' : '') + '</div>';
     }).join('') || '<div class="vazio">Nenhum técnico encontrado.</div>';
   }
-  var l = (v.integrados || []).filter(function (i) { return ativo(i) && (!q || chave(i.nome + ' ' + i.cidade + ' ' + i.tecnico).indexOf(q) >= 0); });
+  var l = (v.integrados || []).filter(function (i) { return ativo(i) && (CONT.aba !== 'sem' || !temRota(i)) && (!q || chave(i.nome + ' ' + i.cidade + ' ' + i.tecnico).indexOf(q) >= 0); });
   var total = l.length; l = l.slice(0, 60);
   return l.map(function (i) {
-    var link = i.link_rota || (i.latitude ? 'https://www.google.com/maps/dir/?api=1&destination=' + i.latitude + ',' + i.longitude : '');
-    return '<div class="contato"><div class="t"><div><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade) + ' · Téc. ' + esc(i.tecnico || '—') + '</small></div>' + (link ? '<span class="etiq ok">' + ic('pin') + 'rota</span>' : '') + '</div>' +
-      '<div class="botoes">' + (link ? '<a class="mini ok" target="_blank" rel="noopener" href="' + esc(link) + '">' + ic('mapa') + 'Abrir rota</a>' : '') + (i.telefone ? '<a class="mini" href="' + linkTel(i.telefone) + '">' + ic('fone') + 'Técnico</a><a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(i.telefone)) + '">' + ic('zap') + 'WhatsApp</a>' : '') + '</div>' +
-      (i.obs_rota ? '<div class="dica">' + ic('alerta') + ' ' + esc(i.obs_rota) + '</div>' : '') + '</div>';
-  }).join('') + (total > 60 ? '<p class="fraco" style="text-align:center">Mostrando 60 de ' + total + '. Digite para filtrar.</p>' : '') || '<div class="vazio">Nenhum integrado encontrado.</div>';
+    var link = linkRota(i), wz = linkWaze(i), idj = esc(String(i.id).replace(/'/g, ''));
+    return '<div class="contato' + (temRota(i) ? '' : ' sem-rota') + '"><div class="t"><span class="ct-ic">' + ic('granja') + '</span><div><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade || '—') + ' · Téc. ' + esc(primeiro(i.tecnico) || '—') + '</small></div>' + (temRota(i) ? '<span class="etiq ok">' + ic('pin') + 'rota</span>' : '<span class="etiq aviso">sem rota</span>') + '</div>' +
+      (i.obs_rota ? '<div class="dica">' + ic('alerta') + ' ' + esc(i.obs_rota) + '</div>' : '') +
+      '<div class="botoes">' + (link ? '<a class="mini ok" target="_blank" rel="noopener" href="' + esc(link) + '">' + ic('mapa') + 'Maps</a>' : '') + (wz ? '<a class="mini waze" target="_blank" rel="noopener" href="' + esc(wz) + '">' + ic('navegar') + 'Waze</a>' : '') +
+      (i.telefone ? '<a class="mini zap" target="_blank" rel="noopener" href="' + esc(linkZap(i.telefone)) + '">' + ic('zap') + 'Técnico</a>' : '') +
+      '<button class="mini ' + (temRota(i) ? '' : 'pri') + '" onclick="formRota(\'' + idj + '\')">' + ic(temRota(i) ? 'lapis' : 'mais_pin') + (temRota(i) ? 'Atualizar' : 'Cadastrar rota') + '</button></div></div>';
+  }).join('') + (total > 60 ? '<p class="fraco" style="text-align:center">Mostrando 60 de ' + total + '. Digite para filtrar.</p>' : '') || '<div class="vazio">' + (CONT.aba === 'sem' ? '<b>Todas as granjas têm rota 🎉</b>' : 'Nenhuma granja encontrada.') + '</div>';
+}
+/** GPS para cadastro de rota: fica ouvindo até 20 s e guarda a leitura mais precisa */
+function gpsPreciso(aoMudar) {
+  return new Promise(function (ok) {
+    if (!navigator.geolocation) return ok(null);
+    var melhor = null, id = null, fim = function () { if (id !== null) navigator.geolocation.clearWatch(id); id = null; clearTimeout(t); ok(melhor); };
+    var t = setTimeout(fim, 20000);
+    try {
+      id = navigator.geolocation.watchPosition(function (p) {
+        var g = { lat: p.coords.latitude.toFixed(6), lng: p.coords.longitude.toFixed(6), prec: Math.round(p.coords.accuracy) };
+        if (!melhor || g.prec <= melhor.prec) { melhor = g; if (aoMudar) aoMudar(g); }
+        if (g.prec <= 12) fim();
+      }, function () { fim(); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+    } catch (e) { fim(); }
+  });
+}
+function qualGps(p) { return p <= 25 ? ['ótima', 'ok'] : p <= 80 ? ['boa', 'ok'] : p <= 300 ? ['razoável', 'aviso'] : ['fraca', 'grave']; }
+function formRota(idIntegrado) {
+  var v = V(), it = idIntegrado ? integradoDe(idIntegrado) : null;
+  var st = { it: it, novo: false, modo: 'gps', gps: null, lendo: false };
+  var vg = viagemAbertaDe(v, v.eu.id);
+  if (!it && vg && vg.integrado_id && ['chegada_granja', 'inicio_carga'].indexOf(etapaAtual(vg)) >= 0) st.it = integradoDe(vg.integrado_id); // está na granja agora
+  abrirFolha(cabFolha('Cadastrar rota', 'Fica salvo na planilha e aparece para todos os motoristas.') +
+    '<div id="r-granja"></div>' +
+    '<div class="campo"><span>Onde fica?</span><div class="seg" style="margin:0"><button data-modo="gps" class="on">' + ic('alvo') + ' Estou na granja</button><button data-modo="link">' + ic('link') + ' Link do Maps</button></div></div>' +
+    '<div id="r-local"></div>' +
+    '<label class="campo"><span>Dica de acesso <em>(porteira, estrada de terra, ponto de referência…)</em></span><textarea class="inp" id="r-dica" maxlength="400" placeholder="Ex.: depois da ponte, 2ª entrada à esquerda; porteira azul. Estrada de terra de 4 km."></textarea></label>' +
+    '<div class="botoes-folha"><button class="btn pri gigante cheio" id="ok">' + ic('ok') + 'Salvar rota</button></div>',
+    function (f) {
+      var $ = function (x) { return f.querySelector(x); };
+      var desenharGranja = function () {
+        var el = $('#r-granja');
+        if (st.it) {
+          el.innerHTML = '<div class="escolhido">' + ic('granja') + '<div><b>' + esc(st.it.nome) + '</b><small>' + esc([st.it.cidade, st.it.tecnico ? 'Téc. ' + primeiro(st.it.tecnico) : ''].filter(Boolean).join(' · ')) + '</small>' + (temRota(st.it) ? '<br><span class="etiq ok">' + ic('pin') + 'já tem rota — você vai atualizar</span>' : '<br><span class="etiq aviso">ainda sem rota</span>') + '</div><button class="mini" id="trocar">Trocar</button></div>';
+          $('#trocar').onclick = function () { st.it = null; st.novo = false; desenharGranja(); };
+          if (!$('#r-dica').value) $('#r-dica').value = st.it.obs_rota || '';
+          return;
+        }
+        if (st.novo) {
+          el.innerHTML = '<div class="cartao-novo"><div class="cn-t">' + ic('mais_pin') + '<b>Granja nova</b><button class="link" id="voltar-lista">Escolher da lista</button></div>' +
+            '<label class="campo"><span>Nome do integrado</span><input class="inp" id="r-nome" placeholder="Nome como está na programação" value="' + esc(st.nomeDigitado || '') + '"></label>' +
+            '<label class="campo"><span>Cidade</span><input class="inp" id="r-cid" placeholder="Ex.: Passos"></label>' +
+            '<label class="campo"><span>Técnico <em>(se souber)</em></span><select class="inp" id="r-tec"><option value="">—</option>' + (v.tecnicos || []).filter(ativo).map(function (t) { return '<option>' + esc(t.nome) + '</option>'; }).join('') + '</select></label></div>';
+          $('#voltar-lista').onclick = function () { st.novo = false; desenharGranja(); };
+          return;
+        }
+        el.innerHTML = '<label class="campo"><span>Qual granja?</span><div class="busca" style="margin:0">' + ic('busca') + '<input id="r-busca" placeholder="Nome do integrado ou cidade" autocomplete="off"></div></label><div id="r-ach" class="achados"></div>';
+        var bx = $('#r-busca'), mostrar = function () {
+          var q = chave(bx.value), l = (v.integrados || []).filter(function (i) { return ativo(i) && (!q || chave(i.nome + ' ' + i.cidade).indexOf(q) >= 0); });
+          l.sort(function (a, b) { return temRota(a) - temRota(b); });
+          $('#r-ach').innerHTML = l.slice(0, 6).map(function (i) { return '<button class="achado" data-id="' + esc(i.id) + '"><span><b>' + esc(i.nome) + '</b><small>' + esc(i.cidade) + ' · ' + esc(primeiro(i.tecnico)) + '</small></span>' + (temRota(i) ? '<span class="gps etiq ok">' + ic('pin') + '</span>' : '<span class="etiq aviso">sem rota</span>') + '</button>'; }).join('') +
+            '<button class="achado novo" id="r-novo"><span><b>' + ic('mais') + ' Não está na lista? Cadastrar granja nova</b>' + (bx.value.trim() ? '<small>"' + esc(bx.value.trim()) + '"</small>' : '') + '</span></button>';
+          $('#r-ach').querySelectorAll('[data-id]').forEach(function (b) { b.onclick = function () { st.it = integradoDe(b.dataset.id); desenharGranja(); }; });
+          $('#r-novo').onclick = function () { st.novo = true; st.nomeDigitado = bx.value.trim(); desenharGranja(); };
+        };
+        bx.oninput = mostrar; mostrar();
+      };
+      var desenharLocal = function () {
+        var el = $('#r-local');
+        if (st.modo === 'link') {
+          el.innerHTML = '<label class="campo"><span>Cole o link do Google Maps <em>(ou as coordenadas)</em></span><input class="inp" id="r-link" placeholder="https://maps.app.goo.gl/…  ou  -20.7315, -46.5722" value="' + esc(st.link || '') + '" autocomplete="off"></label><div id="r-link-ok" class="gps-leitura"></div>' +
+            '<p class="fraco" style="margin:6px 2px 0">No Maps: segure o dedo em cima da granja → <b>Compartilhar</b> → <b>Copiar link</b>.</p>';
+          var inp = $('#r-link'), avaliar = function () {
+            st.link = inp.value.trim(); var c = st.link ? NUCLEO.coordDeTexto(st.link) : null, box = $('#r-link-ok');
+            box.className = 'gps-leitura' + (st.link ? (c ? ' ok' : /^https?:\/\//i.test(st.link) ? ' ok' : ' grave') : '');
+            box.innerHTML = !st.link ? '' : c ? ic('ok') + '<span><b>Local encontrado</b>' + c[0].toFixed(5) + ', ' + c[1].toFixed(5) + '</span><a class="mini" target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + c[0] + ',' + c[1] + '">Conferir</a>' : /^https?:\/\//i.test(st.link) ? ic('ok') + '<span><b>Link guardado</b>O Maps abre direto nesse link.</span>' : ic('alerta') + '<span><b>Isso não parece um link</b>Copie o link pelo botão Compartilhar do Maps.</span>';
+          };
+          inp.oninput = avaliar; avaliar();
+          return;
+        }
+        var g = st.gps;
+        el.innerHTML = '<div class="gps-box">' + (g ? '<div class="gps-leitura ' + qualGps(g.prec)[1] + '">' + ic(st.lendo ? 'satelite' : 'pin') + '<span><b>' + (st.lendo ? 'Melhorando a precisão… ' : 'Local marcado · ') + '±' + g.prec + ' m (' + qualGps(g.prec)[0] + ')</b>' + g.lat + ', ' + g.lng + '</span>' + (st.lendo ? '<span class="roda" style="width:18px;height:18px;border-width:3px"></span>' : '<a class="mini" target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + g.lat + ',' + g.lng + '">Conferir</a>') + '</div>' : '') +
+          '<button class="btn ' + (g ? 'branco' : 'verde') + ' cheio" id="r-gps"' + (st.lendo ? ' disabled' : '') + '>' + ic('alvo') + (st.lendo ? 'Pegando o GPS…' : g ? 'Marcar de novo' : 'Marcar minha localização agora') + '</button>' +
+          '<p class="fraco" style="margin:6px 2px 0">Faça isso <b>na porteira ou no pátio da granja</b>, com o celular a céu aberto.</p></div>';
+        $('#r-gps').onclick = function () {
+          st.lendo = true; st.gps = null; desenharLocal();
+          gpsPreciso(function (x) { st.gps = x; if (st.lendo) desenharLocal(); }).then(function (x) { st.lendo = false; st.gps = x; if (!x) toast('Não consegui o GPS. Libere a localização do celular ou use o link do Maps.', true); desenharLocal(); });
+        };
+      };
+      f.querySelectorAll('[data-modo]').forEach(function (b) { b.onclick = function () { st.modo = b.dataset.modo; f.querySelectorAll('[data-modo]').forEach(function (x) { x.classList.toggle('on', x === b); }); desenharLocal(); }; });
+      desenharGranja(); desenharLocal();
+      $('#ok').onclick = function () {
+        var d = { obs_rota: $('#r-dica').value.trim() };
+        if (st.it) d.integrado_id = st.it.id;
+        else if (st.novo) { d.nome = ($('#r-nome').value || '').trim(); d.cidade = ($('#r-cid').value || '').trim(); d.tecnico = $('#r-tec').value; if (d.nome.length < 3) return toast('Digite o nome do integrado.', true); }
+        else return toast('Escolha a granja (ou cadastre uma nova).', true);
+        if (st.modo === 'gps' && st.gps) { if (st.lendo) return toast('Espere o GPS terminar.', true); if (st.gps.prec > 300) return toast('GPS fraco (±' + st.gps.prec + ' m). Vá para céu aberto e marque de novo, ou use o link.', true); d.lat = st.gps.lat; d.lng = st.gps.lng; d.prec = st.gps.prec; }
+        if (st.modo === 'link' && st.link) { if (!/^https?:\/\//i.test(st.link) && !NUCLEO.coordDeTexto(st.link)) return toast('Cole o link do Google Maps.', true); d.link = st.link; }
+        if (!d.lat && !d.link && !d.obs_rota) return toast('Marque a localização, cole o link ou escreva a dica de acesso.', true);
+        fecharFolha();
+        registrar('rota_cadastrar', d, 'Rota salva! Todos os motoristas já enxergam.');
+      };
+    });
 }
 function telaPerfil() {
   var v = V(), me = v.eu, p = pessoaDe(me.id) || {};
@@ -2241,7 +2595,7 @@ function telaGestor(r) {
     case 'indicadores': return telaIndicadores();
     case 'documentos': return telaDocumentos();
     case 'cad': return telaCadastro(p[1] || 'equipe');
-    case 'mapa': return telaMapa();
+    case 'mapa': return podeRast() ? telaMapa() : telaAoVivo();
     default: return telaAoVivo();
   }
 }
@@ -2281,11 +2635,10 @@ function telaAoVivo() {
   var h = '<div class="saudacao"><h1>' + saudacao() + ', ' + esc(v.eu.apelido.split(' ')[0]) + '</h1><p>' + dataLonga(hoje) + ' · atualizado ' + tick('tk-at', function () { var s = Math.round((Date.now() - ULTIMA_SINC) / 1000); return s < 60 ? 'agora' : 'há ' + Math.round(s / 60) + ' min'; }) + '</p></div>';
   h += '<div class="kpis"><div class="kpi destaque"><b class="num">' + abertas.length + '</b><small>em viagem agora</small></div><div class="kpi"><b class="num">' + deHoje.length + '</b><small>viagens hoje (' + finHoje.length + ' encerradas)</small></div>' +
     '<div class="kpi"><b class="num">' + fmt(km) + '</b><small>km rodados hoje</small></div><a class="kpi' + (ocAb.length ? ' vermelho' : '') + '" href="#ocorrencias" style="text-decoration:none;color:inherit"><b class="num">' + ocAb.length + '</b><small>ocorrências abertas</small></a></div>';
-  var modo = PREF.vivo || 'mapa', h2 = '';
-  h += '<div class="seg seg-vivo" style="margin-top:14px"><button data-vivo="mapa" class="' + (modo === 'mapa' ? 'on' : '') + '">' + ic('mapa') + ' Mapa ao vivo</button><button data-vivo="patio" class="' + (modo === 'patio' ? 'on' : '') + '">' + ic('caminhao') + ' Pátio 3D</button></div>';
+  var modo = podeRast() ? (PREF.vivo || 'mapa') : 'patio', h2 = '';
+  if (podeRast()) h += '<div class="seg seg-vivo" style="margin-top:14px"><button data-vivo="mapa" class="' + (modo === 'mapa' ? 'on' : '') + '">' + ic('mapa') + ' Mapa ao vivo</button><button data-vivo="patio" class="' + (modo === 'patio' ? 'on' : '') + '">' + ic('caminhao') + ' Pátio 3D</button></div>';
   if (modo === 'mapa') {
-    h += '<div class="mapa-card">' + cabMapaHtml(v) + slotMapa('min(58vh, 520px)') + '</div>';
-    h += '<details class="frota-lista"><summary>' + ic('caminhao') + ' Todos os caminhões <span class="fraco">(' + (v.caminhoes || []).filter(ativo).length + ')</span></summary><div class="lista-rast" id="lista-rast">' + listaRastHtml(v) + '</div></details>';
+    h += blocoMapaHtml(v, 'min(60vh, 560px)');
   } else {
     var cams = (v.caminhoes || []).filter(ativo).slice().sort(function (a, b) { return (Number(a.frota) || 9999) - (Number(b.frota) || 9999); });
     var ultimaDe = function (placa) { var l = (v.viagens || []).filter(function (x) { return x.placa === placa && x.status === 'Finalizada'; }); return l[l.length - 1]; };
@@ -2310,7 +2663,7 @@ function telaAoVivo() {
   if (ocAb.length) h += '<div class="secao"><h2>Ocorrências abertas</h2><a href="#ocorrencias">Ver todas</a></div><div class="lista">' + ocAb.slice(-3).reverse().map(cartaoOcorrencia).join('') + '</div>';
   h += '<div class="secao"><h2>Em viagem agora</h2><button class="link" onclick="formViagem()">+ Lançar</button></div>' + (abertas.length ? '<div class="lista">' + abertas.slice().sort(function (a, b) { return String(a.inicio).localeCompare(String(b.inicio)); }).map(cartaoViagem).join('') + '</div>' : '<div class="vazio" style="padding:16px">Nenhum caminhão em viagem agora.</div>');
   h += '<div class="secao"><h2>Jornadas abertas</h2><a href="#jornada">Detalhes</a></div>' + (jAt.length ? '<div class="lista">' + jAt.map(linhaJornada).join('') + '</div>' : '<div class="vazio" style="padding:16px">Ninguém em jornada agora.</div>');
-  h += '<div class="atalhos" style="margin-top:16px"><a class="atalho" href="#indicadores"><span class="ico" style="background:#E3EEFF;color:#1665C1">' + ic('grafico') + '</span><span><b>Indicadores</b><small>Onde o tempo está indo</small></span></a><a class="atalho" href="#mapa"><span class="ico" style="background:#DBF4E8;color:#08794F">' + ic('mapa') + '</span><span><b>Mapa</b><small>Caminhões e granjas</small></span></a></div>';
+  h += '<div class="atalhos" style="margin-top:16px"><a class="atalho" href="#indicadores"><span class="ico" style="background:#E3EEFF;color:#1665C1">' + ic('grafico') + '</span><span><b>Indicadores</b><small>Onde o tempo está indo</small></span></a><a class="atalho" href="#' + (podeRast() ? 'mapa' : 'cad/integrados') + '"><span class="ico" style="background:#DBF4E8;color:#08794F">' + ic('mapa') + '</span><span><b>' + (podeRast() ? 'Rastreamento' : 'Granjas e rotas') + '</b><small>' + (podeRast() ? 'Frota ao vivo no mapa' : 'Localização das granjas') + '</small></span></a></div>';
   return h;
 }
 function rastVagaHtml(placa) {
@@ -2492,7 +2845,7 @@ function telaMais() {
   var semGps = (v.integrados || []).filter(function (i) { return ativo(i) && !i.latitude && !i.link_rota; }).length;
   return '<div class="secao" style="margin-top:4px"><h2>Mais</h2></div><div class="menu-lista">' +
     it('#indicadores', 'grafico', 'background:#E3EEFF;color:#1665C1', 'Indicadores', 'Tempos por etapa, pontualidade, granjas que mais seguram') +
-    it('#mapa', 'mapa', 'background:#DBF4E8;color:#08794F', 'Frota no mapa', 'Posição ao vivo pelo rastreador Sascar') +
+    (podeRast() ? it('#mapa', 'satelite', 'background:#DBF4E8;color:#08794F', 'Rastreamento da frota', 'Posição ao vivo pelo rastreador Sascar · acesso restrito') : '') +
     it('#documentos', 'doc', 'background:#FFF3D1;color:#7A4B00', 'Documentos fiscais', 'NF, GTA e tickets enviados pelos motoristas') +
     '</div><div class="secao"><h2>Cadastros</h2></div><div class="menu-lista">' +
     it('#cad/equipe', 'pessoas', '', 'Motoristas e gestores', (v.equipe || []).filter(function (e) { return ativo(e) && e.perfil === 'Motorista'; }).length + ' motoristas ativos') +
@@ -2530,7 +2883,7 @@ function telaDocumentos() {
 
 /* ============================================================ CADASTROS */
 var CAD = {
-  equipe: { tab: 'Equipe', lista: 'equipe', ch: 'id', tit: 'Motoristas e gestores', campos: [['nome', 'Nome completo'], ['apelido', 'Apelido (como aparece no app)'], ['perfil', 'Perfil', ['Motorista', 'Supervisor', 'Analista']], ['matricula', 'Matrícula'], ['senha', 'Senha (motorista: 3 primeiros números do CPF)'], ['telefone', 'Telefone'], ['placa_padrao', 'Caminhão de costume', 'placas'], ['ativo', 'Ativo', ['SIM', 'NÃO']]] },
+  equipe: { tab: 'Equipe', lista: 'equipe', ch: 'id', tit: 'Motoristas e gestores', campos: [['nome', 'Nome completo'], ['apelido', 'Apelido (como aparece no app)'], ['perfil', 'Perfil', ['Motorista', 'Encarregado', 'Supervisor', 'Coordenador', 'Analista']], ['matricula', 'Matrícula'], ['senha', 'Senha (motorista: 3 primeiros números do CPF)'], ['telefone', 'Telefone'], ['placa_padrao', 'Caminhão de costume', 'placas'], ['ativo', 'Ativo', ['SIM', 'NÃO']], ['rastreador', 'Acesso ao rastreador (vê o mapa da frota)', ['NÃO', 'SIM']]] },
   caminhoes: { tab: 'Caminhoes', lista: 'caminhoes', ch: 'placa', tit: 'Caminhões', campos: [['placa', 'Placa'], ['frota', 'Nº frota'], ['modelo', 'Modelo'], ['ano', 'Ano'], ['proprietario', 'Proprietário'], ['km_atual', 'KM atual'], ['ativo', 'Ativo', ['SIM', 'NÃO']], ['obs', 'Observações']] },
   integrados: { tab: 'Integrados', lista: 'integrados', ch: 'id', tit: 'Integrados (granjas)', campos: [['nome', 'Integrado'], ['cidade', 'Cidade'], ['tecnico', 'Técnico responsável', 'tecnicos'], ['latitude', 'Latitude'], ['longitude', 'Longitude'], ['link_rota', 'Link da rota (Google Maps)'], ['obs_rota', 'Dica de acesso para o motorista'], ['ativo', 'Ativo', ['SIM', 'NÃO']]] },
   tecnicos: { tab: 'Tecnicos', lista: 'tecnicos', ch: 'nome', tit: 'Técnicos', campos: [['nome', 'Nome'], ['telefone', 'Telefone (muda em todos os integrados dele)'], ['regiao', 'Região'], ['ativo', 'Ativo', ['SIM', 'NÃO']]] }
@@ -2546,7 +2899,7 @@ function telaCadastro(tipo) {
     '<div class="busca">' + ic('busca') + '<input id="bcad" placeholder="Procurar" value="' + esc(FC.busca) + '" autocomplete="off"></div><div id="lcad">';
   var item = function (x) {
     var t, s, d = '';
-    if (tipo === 'equipe') { t = x.nome; s = x.perfil + (x.matricula ? ' · mat. ' + x.matricula : '') + (x.telefone ? ' · ' + x.telefone : ''); d = x.tem_senha === false ? '<span class="etiq grave">sem senha</span>' : ''; }
+    if (tipo === 'equipe') { t = x.nome; s = x.perfil + (x.matricula ? ' · mat. ' + x.matricula : '') + (x.telefone ? ' · ' + x.telefone : ''); d = (x.tem_senha === false ? '<span class="etiq grave">sem senha</span>' : '') + (x.rastreador === 'SIM' ? '<span class="etiq azul">' + ic('satelite') + 'rastreador</span>' : ''); }
     else if (tipo === 'caminhoes') { t = (x.frota ? x.frota + ' · ' : '') + x.placa; s = [x.modelo, x.ano, x.proprietario].filter(Boolean).join(' · '); d = '<span class="num" style="font-weight:700">' + fmt(x.km_atual) + ' km</span>'; }
     else if (tipo === 'integrados') { t = x.nome; s = x.cidade + ' · ' + (x.tecnico || 'sem técnico'); d = x.link_rota || x.latitude ? '<span class="etiq ok">' + ic('pin') + 'rota</span>' : '<span class="etiq">sem rota</span>'; }
     else { t = x.nome; s = (x.telefone || 'sem telefone') + ' · ' + (v.integrados || []).filter(function (i) { return chave(i.tecnico) === chave(x.nome); }).length + ' integrados'; }
@@ -2561,9 +2914,10 @@ function formCadastro(tipo, chaveReg) {
   r = r || {};
   var campo = function (cp) {
     var k = cp[0], rot = cp[1], val = r[k] === undefined ? '' : r[k];
+    if (k === 'rastreador' && !(eu().perfil === 'Analista' && podeRast())) return '';
     if (k === 'senha' && !novo) return '<label class="campo"><span>' + rot + ' <em>(deixe em branco para manter)</em></span><input class="inp" data-k="senha" inputmode="numeric" placeholder="••• (não muda)"></label>';
     if ((k === c.ch && !novo && tipo !== 'equipe' && tipo !== 'integrados') || k === 'id') return '<label class="campo"><span>' + rot + '</span><input class="inp" value="' + esc(val) + '" disabled></label>';
-    if (Array.isArray(cp[2])) return '<label class="campo"><span>' + rot + '</span><select class="inp" data-k="' + k + '">' + cp[2].map(function (o) { return '<option' + (String(val || cp[2][0]).toUpperCase() === o.toUpperCase() ? ' selected' : '') + '>' + o + '</option>'; }).join('') + '</select></label>';
+    if (Array.isArray(cp[2])) return '<label class="campo"><span>' + rot + '</span><select class="inp" data-k="' + k + '">' + (val && cp[2].every(function (o) { return o.toUpperCase() !== String(val).toUpperCase(); }) ? [String(val)] : []).concat(cp[2]).map(function (o) { return '<option' + (String(val || cp[2][0]).toUpperCase() === o.toUpperCase() ? ' selected' : '') + '>' + o + '</option>'; }).join('') + '</select></label>';
     if (cp[2] === 'placas') return '<label class="campo"><span>' + rot + '</span><select class="inp" data-k="' + k + '"><option value="">—</option>' + (v.caminhoes || []).map(function (x) { return '<option value="' + x.placa + '"' + (x.placa === val ? ' selected' : '') + '>' + esc(frotaTxt(x)) + '</option>'; }).join('') + '</select></label>';
     if (cp[2] === 'tecnicos') return '<label class="campo"><span>' + rot + '</span><select class="inp" data-k="' + k + '"><option value="">—</option>' + (v.tecnicos || []).filter(ativo).map(function (x) { return '<option' + (chave(x.nome) === chave(val) ? ' selected' : '') + '>' + esc(x.nome) + '</option>'; }).join('') + '</select></label>';
     return '<label class="campo"><span>' + rot + '</span><input class="inp" data-k="' + k + '" value="' + esc(val) + '"' + (k === 'km_atual' ? ' inputmode="numeric"' : '') + '></label>';
@@ -2584,43 +2938,30 @@ function formCadastro(tipo, chaveReg) {
 }
 
 
-/* Rota Viva Frango — Passos | rastreador Sascar: posições ao vivo, mapa e conferências */
+/* Rota Viva Frango — Passos | rastreador Sascar: posições ao vivo, mapa e conferências
+   Acesso: só quem tem SIM na coluna "Acesso ao rastreador" (aba Equipe). As posições vêm da planilha
+   (ação "rastreio"); o endereço da Sascar nunca chega ao celular. */
 
-var RAST = { d: {}, quando: 0, carregando: null, erro: '' };
-var ESTADO_RAST = { mov: ['Rodando', '#19B77C'], lig: ['Parado, ligado', '#F59E0B'], par: ['Desligado', '#8593A6'], off: ['Sem sinal', '#E5484D'], sem: ['Sem rastreador', '#B9C3D0'] };
+var RAST = { d: {}, quando: 0, carregando: null, erro: '', dono: '' };
+var ESTADO_RAST = { mov: ['Rodando', '#12A150'], lig: ['Parado, ligado', '#E58A00'], par: ['Desligado', '#64748B'], off: ['Sem sinal', '#DC3545'], sem: ['Sem rastreador', '#A8B4C4'] };
 var BASE_PASSOS = [-20.7315, -46.5722], DESTINO_DEMO = [-20.7262, -46.6005];
 
-function rastUrl() { return (DB && DB.config && DB.config.rastreador_url) || ''; }
+function podeRast() { return !!(DB && DB.eu && DB.eu.rast); }
 function carregarRast(forcar, idadeMax) {
+  if (!podeRast()) { RAST.d = {}; return Promise.resolve(RAST.d); }
+  if (RAST.dono !== DB.eu.id) { RAST.d = {}; RAST.quando = 0; RAST.dono = DB.eu.id; }
   if (!forcar && Date.now() - RAST.quando < (idadeMax || 25000)) return Promise.resolve(RAST.d);
   if (RAST.carregando) return RAST.carregando;
-  if (DEMO) { RAST.d = rastDemo(); RAST.quando = Date.now(); return Promise.resolve(RAST.d); }
-  var u = rastUrl();
-  if (!u) return Promise.resolve(RAST.d);
-  var limite = new Promise(function (ok, erro) { setTimeout(function () { erro(new Error('demorou')); }, 20000); });
-  limite.catch(function () {});
-  RAST.carregando = Promise.race([fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + 'cb=rv&_=' + Date.now(), { credentials: 'omit' }).then(function (r) { return r.text(); }), limite])
-    .then(function (t) {
-      var i = t.indexOf('('), j = t.lastIndexOf(')');
-      var js = JSON.parse(i >= 0 && j > i && t.charAt(0) !== '{' ? t.slice(i + 1, j) : t);
-      var d = {};
-      (js.veiculos || js.frota || []).forEach(function (x) {
-        if (!x || !x.placa) return;
-        var p = String(x.placa).trim().toUpperCase().replace(/-\d+$/, '').replace(/[^A-Z0-9]/g, '');
-        var lat = Number(x.lat), lng = Number(x.lon !== undefined ? x.lon : x.lng);
-        if (isNaN(lat) || isNaN(lng)) return;
-        d[p] = { lat: lat, lng: lng, km: parseInt(x.km, 10) || 0, vel: parseInt(x.vel, 10) || 0, ign: !!x.ign, ts: Number(x.ts) || Date.parse(x.ts) || Date.now(), end: String(x.end || x.endereco || '') };
-      });
-      RAST.d = d; RAST.quando = Date.now(); RAST.erro = '';
-      return d;
-    })
-    .catch(function () { RAST.erro = 'Rastreador sem resposta agora'; RAST.quando = Date.now() - 15000; return RAST.d; })
+  if (DEMO) { RAST.d = rastDemo(); RAST.quando = Date.now(); RAST.erro = ''; return Promise.resolve(RAST.d); }
+  RAST.carregando = chamarUma('rastreio', {})
+    .then(function (r) { RAST.d = r.posicoes || {}; RAST.quando = Date.now(); RAST.erro = ''; return RAST.d; })
+    .catch(function (e) { RAST.erro = e.codigo === 'PERM' ? 'Sem acesso ao rastreador' : 'Rastreador sem resposta agora'; RAST.quando = Date.now() - 15000; return RAST.d; })
     .then(function (d) { RAST.carregando = null; return d; });
   return RAST.carregando;
 }
-/** posição do caminhão (aceita placa com 1 letra trocada no cadastro da Sascar) */
+/** posição do caminhão (a planilha já casa a placa com o cadastro da Sascar) */
 function rastDe(placa) {
-  if (!placa) return null;
+  if (!placa || !podeRast()) return null;
   if (RAST.d[placa]) return RAST.d[placa];
   var ks = Object.keys(RAST.d);
   for (var i = 0; i < ks.length; i++) {
@@ -2634,7 +2975,7 @@ function idadeRast(r) { return r ? Math.max(0, Math.round((Date.now() - r.ts) / 
 function estadoRast(r) { if (!r) return 'sem'; if (idadeRast(r) > 180) return 'off'; if (r.ign && r.vel >= 5) return 'mov'; return r.ign ? 'lig' : 'par'; }
 function textoRast(r) {
   var e = estadoRast(r);
-  if (e === 'mov') return r.vel + ' km/h';
+  if (e === 'mov') return 'Rodando a ' + r.vel + ' km/h';
   if (e === 'off') return 'Sem sinal há ' + idadeTxt(idadeRast(r));
   return ESTADO_RAST[e][0];
 }
@@ -2650,7 +2991,7 @@ function distKm(a, b) {
 function coordIntegrado(it) { if (!it) return null; var a = Number(String(it.latitude).replace(',', '.')), b = Number(String(it.longitude).replace(',', '.')); return isNaN(a) || isNaN(b) || !a ? null : [a, b]; }
 function coordDestino() { var s = (DB.config && DB.config.destino_coord) || ''; var p = s.split(',').map(function (x) { return Number(x.trim()); }); return p.length === 2 && !isNaN(p[0]) && p[0] ? p : (DEMO ? DESTINO_DEMO : null); }
 function fmtKm(k) { return k === null || k === undefined ? '—' : k < 1 ? Math.round(k * 1000) + ' m' : (k < 10 ? k.toFixed(1).replace('.', ',') : Math.round(k)) + ' km'; }
-/** distância e previsão até o próximo ponto da viagem (granja ou frigorífico) */
+/** distância e previsão até o próximo ponto da viagem (granja ou frigorífico) — só no painel do rastreador */
 function rumoViagem(vg) {
   var r = rastDe(vg.placa); if (!r || idadeRast(r) > 60) return null;
   var e = etapaAtual(vg), alvo = null, nome = '';
@@ -2660,25 +3001,14 @@ function rumoViagem(vg) {
   var d = distKm([r.lat, r.lng], alvo), vel = r.vel > 25 ? r.vel : 55;
   return { dist: d, eta: Math.round(d * 1.3 / vel * 60), nome: nome, alvo: alvo, r: r, chegou: d < 0.5 };
 }
-/** completa a ação com a posição e o KM do rastreador (quando o GPS do celular falhar) */
-function anexarRast(placa, d, comKm) {
-  var r = rastDe(placa); if (!r) return d;
-  var idade = idadeRast(r);
-  if (idade <= 20 && !d.lat) { d.lat = r.lat.toFixed(6); d.lng = r.lng.toFixed(6); d.prec = idade <= 5 ? 60 : 500; d.gps_fonte = 'rastreador'; }
-  if (comKm && idade <= 30 && r.km) d.km_rast = r.km;
-  return d;
-}
-function gpsComRast(placa) {
-  var ate = new Promise(function (ok) { setTimeout(ok, 7000); });
-  return Promise.all([gpsRapido(), Promise.race([carregarRast(false, 60000), ate])]).then(function (x) { return x[0]; });
-}
+function viagemDaPlaca(v, placa) { return (v.viagens || []).filter(function (x) { return x.placa === placa && x.status === 'Em andamento'; })[0]; }
 
 /* ------------------------------------------------------------ demonstração: caminhões andando de verdade */
 function rastDemo() {
   var v = V(), d = {}, agora = Date.now();
   var mistura = function (a, b, f) { return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]; };
   (v.caminhoes || []).forEach(function (c, i) {
-    var vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0];
+    var vg = viagemDaPlaca(v, c.placa);
     var base = [BASE_PASSOS[0] + (i % 4) * 0.0004, BASE_PASSOS[1] + Math.floor(i / 4) * 0.0005];
     var pos = base, vel = 0, ign = false, km = (Number(c.km_atual) || 100000) + 31250 + i * 7;
     if (vg) {
@@ -2692,13 +3022,26 @@ function rastDemo() {
     }
     var ts = agora - (i * 37000) % 240000;
     if (c.placa === 'TKL6D24') { ts = agora - 40 * 86400000; pos = [-21.1397, -47.7594]; ign = false; vel = 0; }
-    d[c.placa] = { lat: pos[0], lng: pos[1], km: km, vel: vel, ign: ign, ts: ts, end: vel ? 'Rod MG-050' : 'Passos/MG - Rod MG-050' };
+    d[c.placa] = { lat: pos[0], lng: pos[1], km: km, vel: vel, ign: ign, ts: ts, end: vel ? 'Passos/MG - Rod MG-050' : 'Passos/MG - Av. Comendador Francisco Avelino Maia' };
   });
   return d;
 }
+/** o "servidor" da demonstração lê as mesmas posições (para conferir o KM igual na planilha) */
+function rastDemoBruto() { var d = rastDemo(); return Object.keys(d).map(function (p) { var x = d[p]; return { placa: p, lat: x.lat, lon: x.lng, km: x.km, vel: x.vel, ign: x.ign, ts: x.ts, end: x.end }; }); }
 
-/* ============================================================ MAPA AO VIVO (Leaflet) */
-var MAPA = { el: null, map: null, marc: {}, extras: null, ajustado: false, semFundo: false, filtro: 'todos' };
+/* ============================================================ MAPA AO VIVO (Leaflet + mapas Esri, sem chave) */
+var MAPA = { el: null, map: null, marc: {}, extras: null, ajustado: false, filtro: 'todos', busca: '', camadas: {}, base: '', cheia: false, sel: '' };
+var FUNDOS = {
+  claro: { nome: 'Claro', camadas: [
+    ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', 16],
+    ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', 16]] },
+  ruas: { nome: 'Ruas', camadas: [['https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', 19]] },
+  satelite: { nome: 'Satélite', camadas: [
+    ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', 19],
+    ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', 19],
+    ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', 19]] },
+  osm: { nome: 'OSM', camadas: [['https://tile.openstreetmap.org/{z}/{x}/{y}.png', 19]] }
+};
 function carregarLeaflet() {
   if (window.L) return Promise.resolve();
   if (carregarLeaflet.p) return carregarLeaflet.p;
@@ -2708,128 +3051,181 @@ function carregarLeaflet() {
   });
   return carregarLeaflet.p;
 }
-function corViagem(vg) { return vg ? COR_ESTADO[estadoCaminhao(vg)] : COR_ESTADO.livre; }
+function trocarFundo(nome) {
+  if (!MAPA.map || !FUNDOS[nome]) return;
+  Object.keys(MAPA.camadas).forEach(function (k) { MAPA.map.removeLayer(MAPA.camadas[k]); });
+  MAPA.camadas = {}; MAPA.base = nome;
+  var erros = 0;
+  FUNDOS[nome].camadas.forEach(function (c, i) {
+    var t = L.tileLayer(c[0], { maxZoom: 19, maxNativeZoom: c[1], attribution: nome === 'osm' ? '© OpenStreetMap' : 'Mapa © Esri · HERE · Garmin · OpenStreetMap', crossOrigin: true });
+    if (i === 0) t.on('tileerror', function () { if (++erros > 6 && nome !== 'osm') { erros = -999; trocarFundo('osm'); } });
+    t.addTo(MAPA.map); t.bringToBack && i === 0 && t.bringToBack();
+    MAPA.camadas[i] = t;
+  });
+  MAPA.el.classList.toggle('fundo-escuro', nome === 'satelite');
+  document.querySelectorAll('[data-fundo]').forEach(function (b) { b.classList.toggle('on', b.dataset.fundo === (nome === 'osm' ? 'ruas' : nome)); });
+  if (nome !== 'osm') { PREF.fundo = nome; salvarPref(); }
+}
+var IC_FROTA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7h11v9h-11z"/><path d="M13.5 10h3.8l3.2 3.2V16h-7"/><circle cx="7" cy="17" r="1.8" fill="currentColor"/><circle cx="17" cy="17" r="1.8" fill="currentColor"/></svg>';
 function iconeCaminhao(c, r, vg) {
-  var e = estadoRast(r), cor = e === 'off' ? '#E5484D' : corViagem(vg);
-  var rot = c.frota || c.placa.slice(-4);
-  return L.divIcon({ className: 'mk-wrap', iconSize: [46, 46], iconAnchor: [23, 23], popupAnchor: [0, -20],
-    html: '<div class="mk ' + e + (vg ? ' vg' : '') + '" style="--c:' + cor + '"><i class="anel"></i><span>' + esc(rot) + '</span>' + (e === 'mov' ? '<em>' + r.vel + '</em>' : '') + '</div>' });
+  var e = estadoRast(r), cor = ESTADO_RAST[e][1], rot = c.frota || c.placa.slice(-4);
+  var tag = e === 'mov' ? '<b>' + r.vel + '</b> km/h' : '';
+  return L.divIcon({ className: 'vk-wrap', iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -16],
+    html: '<div class="vk ' + e + (vg ? ' vg' : '') + (MAPA.sel === c.placa ? ' sel' : '') + (String(rot).length > 3 ? ' longo' : '') + '" style="--c:' + cor + '"><span class="vk-pin">' + esc(rot) + '</span>' + (tag ? '<span class="vk-tag">' + tag + '</span>' : '') + '</div>' });
 }
 function popupCaminhao(c, r, vg) {
-  var m = vg ? apelido(vg.motorista_id, vg.motorista) : '', rumo = vg ? rumoViagem(vg) : null;
-  return '<div class="pop"><div class="pop-t">' + placaHtml(c.placa) + (c.frota ? '<b>frota ' + esc(c.frota) + '</b>' : '') + '</div>' +
-    '<div class="pop-e" style="--c:' + ESTADO_RAST[estadoRast(r)][1] + '"><i></i>' + esc(textoRast(r)) + ' · ' + esc(idadeTxt(idadeRast(r))) + '</div>' +
-    '<div class="pop-l">' + esc(r.end || '') + '</div>' +
-    (vg ? '<div class="pop-v"><b>' + esc(m) + '</b> · ' + esc(vg.integrado || vg.operacao) + '<br><span>' + esc(ondeEsta(vg)) + ' há ' + hmCurto(minEntre(vg[etapaAtual(vg)])) + (rumo ? ' · a ' + fmtKm(rumo.dist) + ' da ' + rumo.nome : '') + '</span></div>' : '<div class="pop-v"><span>Sem viagem aberta</span></div>') +
-    '<div class="pop-b">' + (vg ? '<a href="#viagem/' + esc(vg.uid) + '">Ver viagem</a>' : '') + '<a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + r.lat + ',' + r.lng + '">Google Maps</a></div></div>';
+  var e = estadoRast(r), m = vg ? apelido(vg.motorista_id, vg.motorista) : '', rumo = vg ? rumoViagem(vg) : null;
+  return '<div class="pop">' +
+    '<div class="pop-cab"><div class="pop-frota"><small>Frota</small><b>' + esc(c.frota || '—') + '</b></div><div class="pop-id">' + placaHtml(c.placa) + '<span>' + esc(c.modelo || 'Frangueira') + '</span></div></div>' +
+    '<div class="pop-est" style="--c:' + ESTADO_RAST[e][1] + '"><i></i><b>' + esc(textoRast(r)) + '</b><span>' + esc(idadeTxt(idadeRast(r))) + '</span></div>' +
+    (r.end ? '<div class="pop-end">' + ic('pin') + '<span>' + esc(r.end) + '</span></div>' : '') +
+    '<div class="pop-grade"><div><small>Velocidade</small><b>' + (r.vel || 0) + '<i> km/h</i></b></div><div><small>Ignição</small><b>' + (r.ign ? 'Ligada' : 'Desligada') + '</b></div><div><small>Hodômetro</small><b>' + fmt(r.km) + '</b></div></div>' +
+    (vg ? '<div class="pop-vg"><div class="pop-vg-t"><b>' + esc(m) + '</b><span class="pop-etapa">' + esc(ondeEsta(vg)) + ' · ' + hmCurto(minEntre(vg[etapaAtual(vg)])) + '</span></div><div class="pop-vg-s">' + esc(vg.integrado || vg.operacao) + (vg.numero ? ' · ' + esc(vg.numero) : '') + '</div>' +
+      (rumo ? '<div class="pop-rumo">' + ic('navegar') + (rumo.chegou ? 'No local da ' + rumo.nome : '<b>' + fmtKm(rumo.dist) + '</b>&nbsp;até a ' + rumo.nome + ' · chega em ~' + hmCurto(rumo.eta)) + '</div>' : '') + '</div>'
+      : '<div class="pop-vg livre">Sem viagem aberta no app</div>') +
+    '<div class="pop-acoes">' + (vg ? '<a class="pa pri" href="#viagem/' + esc(vg.uid) + '">Ver viagem</a>' : '') + '<a class="pa" target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + r.lat + ',' + r.lng + '">Abrir no Maps</a></div></div>';
 }
-function slotMapa(alt, cls) { return '<div class="mapa-slot ' + (cls || '') + '" id="slot-mapa" style="height:' + alt + '"><div class="carregando" style="min-height:100%"><div class="roda"></div>Abrindo o mapa…</div></div>'; }
+function slotMapa(alt, cls) { return '<div class="mapa-slot ' + (cls || '') + '" id="slot-mapa" style="--alt:' + alt + '"><div class="mapa-carregando"><div class="roda"></div>Abrindo o mapa…</div></div>'; }
+function controlesMapa() {
+  var f = PREF.fundo || 'claro';
+  return '<div class="mapa-ctl topo-dir"><div class="mseg">' + ['claro', 'ruas', 'satelite'].map(function (k) { return '<button data-fundo="' + k + '" class="' + (f === k ? 'on' : '') + '">' + FUNDOS[k].nome + '</button>'; }).join('') + '</div></div>' +
+    '<div class="mapa-ctl topo-esq"><button class="mbtn" onclick="centralizarMapa()" title="Ver a frota inteira" aria-label="Ver a frota inteira">' + ic('alvo') + '</button><button class="mbtn" onclick="telaCheiaMapa()" title="Tela cheia" aria-label="Tela cheia" id="bt-cheia">' + ic(MAPA.cheia ? 'recolher' : 'expandir') + '</button></div>' +
+    '<div class="mapa-legenda">' + ['mov', 'lig', 'par', 'off'].map(function (k) { return '<span><i style="background:' + ESTADO_RAST[k][1] + '"></i>' + ESTADO_RAST[k][0].replace(', ligado', '') + '</span>'; }).join('') + '<span class="lg-vg"><i></i>Em viagem</span><span class="lg-vel"><i>62</i>km/h</span></div>';
+}
 function montarMapa() {
   var slot = document.getElementById('slot-mapa'); if (!slot) return;
   carregarLeaflet().then(function () {
     slot = document.getElementById('slot-mapa'); if (!slot) return;
     if (!MAPA.el) { MAPA.el = document.createElement('div'); MAPA.el.className = 'mapa-vivo'; }
     slot.innerHTML = ''; slot.appendChild(MAPA.el);
+    slot.insertAdjacentHTML('beforeend', controlesMapa());
     if (!MAPA.map) {
-      MAPA.map = L.map(MAPA.el, { zoomControl: false, attributionControl: true, preferCanvas: false }).setView(BASE_PASSOS, 10);
-      L.control.zoom({ position: 'bottomright' }).addTo(MAPA.map);
-      var tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '© OpenStreetMap · © CARTO' });
-      var erros = 0; tiles.on('tileerror', function () { if (++erros > 3 && !MAPA.semFundo) { MAPA.semFundo = true; MAPA.el.classList.add('sem-fundo'); } });
-      tiles.addTo(MAPA.map);
+      MAPA.map = L.map(MAPA.el, { zoomControl: false, attributionControl: true, zoomSnap: .5 }).setView(BASE_PASSOS, 10);
+      MAPA.map.attributionControl.setPrefix(false);
+      L.control.zoom({ position: 'bottomright', zoomInTitle: 'Aproximar', zoomOutTitle: 'Afastar' }).addTo(MAPA.map);
       MAPA.extras = L.layerGroup().addTo(MAPA.map);
+      MAPA.map.on('popupclose', function () { MAPA.sel = ''; var sl = document.getElementById('slot-mapa'); if (sl) sl.classList.remove('pop-aberto'); });
+      MAPA.map.on('popupopen', function () { var sl = document.getElementById('slot-mapa'); if (sl) sl.classList.add('pop-aberto'); });
     }
+    trocarFundo(PREF.fundo && FUNDOS[PREF.fundo] ? PREF.fundo : 'claro');
+    slot.querySelectorAll('[data-fundo]').forEach(function (b) { b.onclick = function (ev) { ev.stopPropagation(); trocarFundo(b.dataset.fundo); }; });
+    L.DomEvent.disableClickPropagation(slot.querySelector('.topo-dir')); L.DomEvent.disableClickPropagation(slot.querySelector('.topo-esq'));
+    if (MAPA.map._popup && MAPA.map.hasLayer(MAPA.map._popup)) slot.classList.add('pop-aberto');
     setTimeout(function () { MAPA.map.invalidateSize(); }, 30);
     carregarRast(false).then(atualizarMapa);
-  }, function () { slot.innerHTML = '<div class="vazio" style="height:100%;display:grid;place-items:center">Não consegui abrir o mapa (sem internet?).</div>'; });
+  }, function () { slot.innerHTML = '<div class="mapa-carregando">Não consegui abrir o mapa (sem internet?).</div>'; });
+}
+function telaCheiaMapa() {
+  var card = document.querySelector('.mapa-card'); if (!card) return;
+  MAPA.cheia = !MAPA.cheia; card.classList.toggle('cheia', MAPA.cheia); document.body.classList.toggle('mapa-cheio', MAPA.cheia);
+  var b = document.getElementById('bt-cheia'); if (b) b.innerHTML = ic(MAPA.cheia ? 'recolher' : 'expandir');
+  setTimeout(function () { if (MAPA.map) MAPA.map.invalidateSize(); }, 60);
 }
 function atualizarMapa() {
   if (!MAPA.map || !window.L) return;
   var v = V(), pts = [], vistos = {};
-  var abertas = (v.viagens || []).filter(function (x) { return x.status === 'Em andamento'; });
   MAPA.extras.clearLayers();
   (v.caminhoes || []).filter(ativo).forEach(function (c) {
     var r = rastDe(c.placa); if (!r) return;
-    var vg = abertas.filter(function (x) { return x.placa === c.placa; })[0];
-    if (!filtroMapaOk(r, vg)) { if (MAPA.marc[c.placa]) { MAPA.map.removeLayer(MAPA.marc[c.placa]); delete MAPA.marc[c.placa]; } return; }
+    var vg = viagemDaPlaca(v, c.placa);
+    if (!filtroMapaOk(c, r, vg)) { if (MAPA.marc[c.placa]) { MAPA.map.removeLayer(MAPA.marc[c.placa]); delete MAPA.marc[c.placa]; } return; }
     vistos[c.placa] = 1;
     var ll = [r.lat, r.lng], m = MAPA.marc[c.placa];
-    if (!m) { m = L.marker(ll, { icon: iconeCaminhao(c, r, vg), riseOnHover: true }).addTo(MAPA.map); MAPA.marc[c.placa] = m; }
+    if (!m) { m = L.marker(ll, { icon: iconeCaminhao(c, r, vg), riseOnHover: true, title: c.placa }).addTo(MAPA.map); MAPA.marc[c.placa] = m; m.on('click', function () { MAPA.sel = c.placa; }); }
     else { m.setLatLng(ll); m.setIcon(iconeCaminhao(c, r, vg)); }
-    m.setZIndexOffset(vg ? 500 : 0);
+    m.setZIndexOffset(MAPA.sel === c.placa ? 1000 : vg ? 500 : estadoRast(r) === 'mov' ? 300 : 0);
     var aberto = m.isPopupOpen && m.isPopupOpen();
-    m.bindPopup(popupCaminhao(c, r, vg), { maxWidth: 270, className: 'pop-rv' });
+    m.bindPopup(popupCaminhao(c, r, vg), { maxWidth: 300, minWidth: 260, className: 'pop-rv', autoPanPaddingTopLeft: [16, 64], autoPanPaddingBottomRight: [16, 20] });
     if (aberto) m.openPopup();
     if (estadoRast(r) !== 'off') pts.push(ll);
     if (vg) {
-      var rumo = rumoViagem(vg), it = integradoDe(vg.integrado_id), g = coordIntegrado(it);
-      if (g && ['inicio', 'chegada_granja', 'inicio_carga'].indexOf(etapaAtual(vg)) >= 0) {
-        L.marker(g, { icon: L.divIcon({ className: 'mk-wrap', iconSize: [30, 30], iconAnchor: [15, 28], html: '<div class="mk-granja">' + ic('granja') + '</div>' }) }).bindTooltip(esc(vg.integrado), { direction: 'top', offset: [0, -24] }).addTo(MAPA.extras);
-      }
-      if (rumo) L.polyline([ll, rumo.alvo], { color: corViagem(vg), weight: 3, dashArray: '6 8', opacity: .9 }).addTo(MAPA.extras)
-        .bindTooltip(fmtKm(rumo.dist) + ' até a ' + rumo.nome + ' · ~' + hmCurto(rumo.eta), { sticky: true, direction: 'top', className: 'tt-rumo' });
+      var rumo = rumoViagem(vg), g = coordIntegrado(integradoDe(vg.integrado_id));
+      if (g && ['inicio', 'chegada_granja', 'inicio_carga'].indexOf(etapaAtual(vg)) >= 0)
+        L.marker(g, { icon: L.divIcon({ className: 'vk-wrap', iconSize: [28, 28], iconAnchor: [14, 14], html: '<div class="mk-ponto granja">' + ic('granja') + '</div>' }) }).bindTooltip('<b>' + esc(vg.integrado) + '</b><br>' + esc(c.frota ? 'Frota ' + c.frota : c.placa) + ' indo/carregando', { direction: 'top', offset: [0, -14], className: 'tt-mapa' }).addTo(MAPA.extras);
+      if (rumo) L.polyline([ll, rumo.alvo], { color: '#1665C1', weight: 2.5, dashArray: '2 7', lineCap: 'round', opacity: .85 }).addTo(MAPA.extras)
+        .bindTooltip(fmtKm(rumo.dist) + ' até a ' + rumo.nome + ' · ~' + hmCurto(rumo.eta), { sticky: true, direction: 'top', className: 'tt-mapa' });
     }
   });
   Object.keys(MAPA.marc).forEach(function (p) { if (!vistos[p]) { MAPA.map.removeLayer(MAPA.marc[p]); delete MAPA.marc[p]; } });
   var dst = coordDestino();
-  if (dst) L.marker(dst, { icon: L.divIcon({ className: 'mk-wrap', iconSize: [34, 34], iconAnchor: [17, 30], html: '<div class="mk-granja frigo">' + ic('fabrica') + '</div>' }) }).bindTooltip('Frigorífico', { direction: 'top', offset: [0, -26] }).addTo(MAPA.extras);
-  if (!MAPA.ajustado && pts.length) { MAPA.map.fitBounds(pts, { padding: [40, 40], maxZoom: 12 }); MAPA.ajustado = true; }
+  if (dst) L.marker(dst, { icon: L.divIcon({ className: 'vk-wrap', iconSize: [30, 30], iconAnchor: [15, 15], html: '<div class="mk-ponto frigo">' + ic('fabrica') + '</div>' }) }).bindTooltip('<b>Frigorífico</b>', { direction: 'top', offset: [0, -15], className: 'tt-mapa' }).addTo(MAPA.extras);
+  if (!MAPA.ajustado && pts.length) { MAPA.map.fitBounds(pts, { padding: [56, 56], maxZoom: 13 }); MAPA.ajustado = true; }
+  var f = document.getElementById('mapa-fonte'); if (f) f.innerHTML = fonteRastHtml();
 }
-function filtroMapaOk(r, vg) {
-  var e = estadoRast(r);
-  switch (MAPA.filtro) { case 'viagem': return !!vg; case 'mov': return e === 'mov'; case 'par': return e === 'par' || e === 'lig'; case 'off': return e === 'off'; default: return true; }
+function filtroMapaOk(c, r, vg) {
+  var e = estadoRast(r), q = chave(MAPA.busca);
+  if (q && chave([c.placa, c.frota, vg ? apelido(vg.motorista_id, vg.motorista) + ' ' + vg.motorista + ' ' + vg.integrado : ''].join(' ')).indexOf(q) < 0) return false;
+  switch (MAPA.filtro) { case 'viagem': return !!vg; case 'mov': return e === 'mov'; case 'par': return e === 'par' || e === 'lig'; case 'off': return e === 'off' || e === 'sem'; default: return true; }
 }
 function focarCaminhao(placa) {
   var r = rastDe(placa);
   if (!r) return toast('Esse caminhão não aparece no rastreador.', true);
   if (rotaAtual() !== 'mapa' && rotaAtual() !== 'aovivo') { ir('mapa'); setTimeout(function () { focarCaminhao(placa); }, 900); return; }
   if (!MAPA.map) return;
-  if (!MAPA.marc[placa]) { MAPA.filtro = 'todos'; atualizarMapa(); }
-  MAPA.map.flyTo([r.lat, r.lng], 14, { duration: .8 });
-  setTimeout(function () { if (MAPA.marc[placa]) MAPA.marc[placa].openPopup(); }, 850);
-  var s = document.getElementById('slot-mapa'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (!MAPA.marc[placa]) { MAPA.filtro = 'todos'; MAPA.busca = ''; atualizarMapa(); }
+  MAPA.sel = placa;
+  MAPA.map.flyTo([r.lat, r.lng], 15, { duration: .7 });
+  setTimeout(function () { if (MAPA.marc[placa]) MAPA.marc[placa].openPopup(); }, 760);
+  document.querySelectorAll('.rast-linha').forEach(function (x) { x.classList.toggle('on', x.dataset.placa === placa); });
+  var s = document.getElementById('slot-mapa'); if (s && !MAPA.cheia && window.innerWidth < 980) s.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
-function centralizarMapa() { MAPA.ajustado = false; atualizarMapa(); }
+function centralizarMapa() { MAPA.ajustado = false; MAPA.sel = ''; if (MAPA.map) MAPA.map.closePopup(); atualizarMapa(); }
 function contagemRast(v) {
-  var c = { mov: 0, lig: 0, par: 0, off: 0, sem: 0 };
-  (v.caminhoes || []).filter(ativo).forEach(function (x) { c[estadoRast(rastDe(x.placa))]++; });
+  var c = { mov: 0, lig: 0, par: 0, off: 0, sem: 0, viagem: 0, total: 0 };
+  (v.caminhoes || []).filter(ativo).forEach(function (x) { c[estadoRast(rastDe(x.placa))]++; c.total++; if (viagemDaPlaca(v, x.placa)) c.viagem++; });
   return c;
 }
+function fonteRastHtml() {
+  if (RAST.erro) return '<span class="mf-erro">' + ic('alerta') + esc(RAST.erro) + '</span>';
+  if (!RAST.quando) return '<span>Conectando ao rastreador…</span>';
+  var s = Math.round((Date.now() - RAST.quando) / 1000);
+  return '<span class="mf-vivo"><i></i>Ao vivo</span><span>Sascar · ' + (s < 60 ? 'há ' + Math.max(s, 1) + ' s' : 'há ' + Math.round(s / 60) + ' min') + '</span>';
+}
 function cabMapaHtml(v) {
-  var c = contagemRast(v), at = RAST.quando ? idadeTxt(Math.round((Date.now() - RAST.quando) / 60000)) : '—';
-  return '<div class="mapa-cab"><div class="mapa-chips">' +
-    [['todos', 'Todos', ''], ['viagem', 'Em viagem', ''], ['mov', c.mov + ' rodando', 'mov'], ['par', (c.par + c.lig) + ' parados', 'par'], ['off', c.off + ' sem sinal', 'off']].map(function (f) {
-      return '<button class="mchip' + (MAPA.filtro === f[0] ? ' on' : '') + '" data-mf="' + f[0] + '">' + (f[2] ? '<i style="background:' + ESTADO_RAST[f[2]][1] + '"></i>' : '') + f[1] + '</button>';
-    }).join('') + '</div><span class="mapa-fonte">' + (RAST.erro ? '⚠ ' + esc(RAST.erro) : '🛰 Sascar · ' + (at === 'agora' ? 'agora' : 'há ' + at)) + '</span></div>';
+  var c = contagemRast(v);
+  var kpi = function (k, n, rot, cor) { return '<button class="mk-kpi' + (MAPA.filtro === k ? ' on' : '') + '" data-mf="' + k + '"' + (cor ? ' style="--c:' + cor + '"' : '') + '><b>' + n + '</b><span>' + (cor ? '<i></i>' : '') + rot + '</span></button>'; };
+  return '<div class="mapa-cab"><div class="mc-tit"><div><h3>Frota ao vivo</h3><div class="mapa-fonte" id="mapa-fonte">' + fonteRastHtml() + '</div></div></div>' +
+    '<div class="mc-kpis">' + kpi('todos', c.total, 'Frota', '') + kpi('viagem', c.viagem, 'Em viagem', '#1665C1') + kpi('mov', c.mov, 'Rodando', ESTADO_RAST.mov[1]) + kpi('par', c.par + c.lig, 'Parados', ESTADO_RAST.par[1]) + kpi('off', c.off + c.sem, 'Sem sinal', ESTADO_RAST.off[1]) + '</div></div>';
 }
 function ligarCabMapa() {
-  document.querySelectorAll('[data-mf]').forEach(function (b) { b.onclick = function () { MAPA.filtro = b.dataset.mf; document.querySelectorAll('[data-mf]').forEach(function (x) { x.classList.toggle('on', x === b); }); atualizarMapa(); var l = document.getElementById('lista-rast'); if (l) l.innerHTML = listaRastHtml(V()); }; });
+  document.querySelectorAll('[data-mf]').forEach(function (b) { b.onclick = function () { MAPA.filtro = MAPA.filtro === b.dataset.mf && b.dataset.mf !== 'todos' ? 'todos' : b.dataset.mf; document.querySelectorAll('[data-mf]').forEach(function (x) { x.classList.toggle('on', x.dataset.mf === MAPA.filtro); }); MAPA.ajustado = false; atualizarMapa(); redesenharListaRast(); }; });
+  var bq = document.getElementById('busca-rast'); if (bq) bq.oninput = function () { MAPA.busca = bq.value; atualizarMapa(); redesenharListaRast(); };
 }
+function redesenharListaRast() { var l = document.getElementById('lista-rast'); if (l) l.innerHTML = listaRastHtml(V()); }
 function linhaRast(c, v) {
-  var r = rastDe(c.placa), vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0], e = estadoRast(r);
-  var rumo = vg ? rumoViagem(vg) : null;
-  return '<button class="rast-linha" onclick="focarCaminhao(\'' + c.placa + '\')"><span class="rl-frota" style="--c:' + (e === 'off' ? '#E5484D' : corViagem(vg)) + '">' + esc(c.frota || '—') + '</span><span class="rl-meio"><b>' + esc(c.placa) + (vg ? ' · ' + esc(apelido(vg.motorista_id, vg.motorista)) : '') + '</b>' +
-    '<small>' + (vg ? esc(ondeEsta(vg)) + (rumo ? ' · ' + fmtKm(rumo.dist) + ' (~' + hmCurto(rumo.eta) + ')' : '') : esc(cidadeRast(r) || 'sem posição')) + '</small></span>' +
-    '<span class="rl-dir"><b style="color:' + ESTADO_RAST[e][1] + '">' + esc(e === 'mov' ? r.vel + ' km/h' : ESTADO_RAST[e][0]) + '</b><small>' + (r ? esc(idadeTxt(idadeRast(r))) : '') + '</small></span></button>';
+  var r = rastDe(c.placa), vg = viagemDaPlaca(v, c.placa), e = estadoRast(r), rumo = vg ? rumoViagem(vg) : null;
+  var sub = vg ? esc(ondeEsta(vg)) + (rumo && !rumo.chegou ? ' · ' + fmtKm(rumo.dist) + ' (~' + hmCurto(rumo.eta) + ')' : '') : esc(cidadeRast(r) || 'sem posição');
+  return '<button class="rast-linha' + (MAPA.sel === c.placa ? ' on' : '') + '" data-placa="' + esc(c.placa) + '" onclick="focarCaminhao(\'' + c.placa + '\')" style="--c:' + ESTADO_RAST[e][1] + '">' +
+    '<span class="rl-frota"><small>frota</small>' + esc(c.frota || '—') + '</span>' +
+    '<span class="rl-meio"><b>' + esc(c.placa.slice(0, 3) + '-' + c.placa.slice(3)) + (vg ? '<span class="rl-quem">' + esc(apelido(vg.motorista_id, vg.motorista)) + '</span>' : '') + '</b><small>' + (vg ? '<i class="rl-vg"></i>' : '') + sub + '</small></span>' +
+    '<span class="rl-dir"><b>' + (e === 'mov' ? r.vel + '<i> km/h</i>' : esc(ESTADO_RAST[e][0].replace(', ligado', ' ligado'))) + '</b><small>' + (r ? esc(idadeTxt(idadeRast(r))) : '') + '</small></span></button>';
 }
 function listaRastHtml(v) {
-  var cams = (v.caminhoes || []).filter(ativo).filter(function (c) { var vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0]; return !rastDe(c.placa) ? MAPA.filtro === 'todos' : filtroMapaOk(rastDe(c.placa), vg); });
+  var cams = (v.caminhoes || []).filter(ativo).filter(function (c) { var r = rastDe(c.placa); return r ? filtroMapaOk(c, r, viagemDaPlaca(v, c.placa)) : (MAPA.filtro === 'todos' || MAPA.filtro === 'off') && !MAPA.busca; });
   var ord = { mov: 0, lig: 1, par: 2, off: 3, sem: 4 };
-  cams.sort(function (a, b) { var va = (v.emUso || []).some(function (x) { return x.placa === a.placa; }), vb = (v.emUso || []).some(function (x) { return x.placa === b.placa; }); return (vb - va) || (ord[estadoRast(rastDe(a.placa))] - ord[estadoRast(rastDe(b.placa))]) || (Number(a.frota) - Number(b.frota)); });
-  return cams.map(function (c) { return linhaRast(c, v); }).join('') || '<div class="vazio" style="padding:14px">Nenhum caminhão nesse filtro.</div>';
+  cams.sort(function (a, b) { var va = !!viagemDaPlaca(v, a.placa), vb = !!viagemDaPlaca(v, b.placa); return (vb - va) || (ord[estadoRast(rastDe(a.placa))] - ord[estadoRast(rastDe(b.placa))]) || (Number(a.frota) - Number(b.frota)); });
+  return cams.map(function (c) { return linhaRast(c, v); }).join('') || '<div class="vazio" style="padding:18px">Nenhum caminhão nesse filtro.</div>';
+}
+function painelListaRast(v) {
+  return '<div class="painel-rast"><div class="pr-cab"><div class="busca">' + ic('busca') + '<input id="busca-rast" placeholder="Placa, frota ou motorista" value="' + esc(MAPA.busca) + '" autocomplete="off"></div></div><div class="lista-rast" id="lista-rast">' + listaRastHtml(v) + '</div></div>';
+}
+function blocoMapaHtml(v, alt) {
+  return '<div class="mapa-pagina"><div class="mapa-card' + (MAPA.cheia ? ' cheia' : '') + '">' + cabMapaHtml(v) + slotMapa(alt) + '</div>' + painelListaRast(v) + '</div>';
 }
 function telaMapa() {
   var v = V();
-  var h = '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button><div class="secao" style="margin-top:0"><h2>Frota no mapa</h2><button class="link" onclick="centralizarMapa()">Centralizar</button></div>' +
-    '<div class="mapa-pagina"><div class="mapa-card">' + cabMapaHtml(v) + slotMapa('min(68vh, 640px)') + '</div><div class="lista-rast" id="lista-rast">' + listaRastHtml(v) + '</div></div>';
+  var h = (gestor() ? '<button class="voltar" onclick="ir(\'mais\')">' + ic('esq') + 'Mais</button>' : '') +
+    '<div class="secao" style="margin-top:' + (gestor() ? '0' : '4px') + '"><h2>Rastreamento da frota</h2><span class="fraco">' + ic('cadeado') + ' acesso restrito</span></div>' + blocoMapaHtml(v, 'min(70vh, 680px)');
   POS_DESENHO = function () { ligarCabMapa(); montarMapa(); };
   return h;
 }
 /* ------------------------------------------------------------ alertas que só o rastreador enxerga */
 function alertasRast(v) {
+  if (!podeRast()) return [];
   var out = [], cfg = v.config;
   (v.caminhoes || []).filter(ativo).forEach(function (c) {
     var r = rastDe(c.placa); if (!r) return;
-    var vg = (v.viagens || []).filter(function (x) { return x.placa === c.placa && x.status === 'Em andamento'; })[0];
+    var vg = viagemDaPlaca(v, c.placa);
     var quem = vg ? apelido(vg.motorista_id, vg.motorista) : 'sem viagem aberta';
     if (estadoRast(r) === 'mov' && r.vel > cfg.vel_alerta && idadeRast(r) <= 10) out.push({ g: 2, t: c.placa + ' a ' + r.vel + ' km/h', s: quem + ' · ' + (r.end || '') + ' (limite configurado ' + cfg.vel_alerta + ' km/h)', a: 'javascript:focarCaminhao(\'' + c.placa + '\')' });
     if (vg && idadeRast(r) > 60) out.push({ g: 1, t: c.placa + ' sem sinal do rastreador há ' + idadeTxt(idadeRast(r)), s: quem + ' · viagem aberta (' + (vg.integrado || vg.operacao) + ')', a: '#viagem/' + vg.uid });
@@ -2838,17 +3234,18 @@ function alertasRast(v) {
   return out;
 }
 
-/** busca posições novas quando a tela precisa (gestor: 30 s · motorista com viagem: 90 s) */
+/** busca posições novas quando a tela precisa (a cada 30 s, só para quem tem acesso) */
 function ganchoRast(r) {
-  if (!DB || !TOKEN) return;
-  var base = String(r || '').split('/')[0], g = gestor();
-  var precisa = g ? ['aovivo', 'mapa', 'viagem', ''].indexOf(base) >= 0 : (base === 'inicio' || base === '') && !!viagemAbertaDe(V(), V().eu.id);
-  if (!precisa || RAST.carregando || Date.now() - RAST.quando < (g ? 30000 : 90000)) return;
+  if (!DB || !TOKEN || !podeRast()) return;
+  var base = String(r || '').split('/')[0];
+  var precisa = gestor() ? ['aovivo', 'mapa', 'viagem', ''].indexOf(base) >= 0 : base === 'mapa';
+  if (!precisa || RAST.carregando || Date.now() - RAST.quando < 30000) return;
   var antes = RAST.quando;
-  carregarRast(true).then(function () { if (RAST.quando !== antes) { if (MAPA.map) atualizarMapa(); redesenhar(); } });
+  carregarRast(true).then(function () { if (RAST.quando !== antes) { if (MAPA.map && document.getElementById('slot-mapa')) { atualizarMapa(); redesenharListaRast(); var cab = document.querySelector('.mapa-cab'); if (cab) { cab.outerHTML = cabMapaHtml(V()); ligarCabMapa(); } } else redesenhar(); } });
 }
-setInterval(function () { if (document.visibilityState === 'visible' && !FORM) ganchoRast(rotaAtual()); }, 10000);
+setInterval(function () { if (document.visibilityState === 'visible' && !FORM) ganchoRast(rotaAtual()); var f = document.getElementById('mapa-fonte'); if (f) f.innerHTML = fonteRastHtml(); }, 10000);
 window.addEventListener('resize', function () { if (MAPA.map) { clearTimeout(MAPA._rz); MAPA._rz = setTimeout(function () { MAPA.map.invalidateSize(); }, 150); } });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && MAPA.cheia) telaCheiaMapa(); });
 
 /* Rota Viva Frango — Passos | indicadores, relatório para a JBS e início do app */
 
@@ -2926,7 +3323,7 @@ function htmlInd(I, p) {
   if (I.granjas.length) h += '<div class="secao"><h2>Granjas que mais seguram o caminhão</h2></div><div class="cartao rolagem" style="margin:0"><table class="tabela"><thead><tr><th>Integrado</th><th class="n">Viag.</th><th class="n">Espera</th><th class="n">Carreg.</th><th class="n">Atraso</th></tr></thead><tbody>' +
     I.granjas.slice(0, 10).map(function (g) { return '<tr><td><b>' + esc(g.nome) + '</b><br><span class="fraco">' + esc(g.cidade || '') + '</span></td><td class="n">' + g.n + '</td><td class="n"' + (g.espMed > 60 ? ' style="color:#B42318;font-weight:800"' : '') + '>' + hm(g.espMed) + '</td><td class="n">' + hm(g.carMed) + '</td><td class="n">' + (g.atrMed === null ? '—' : hmCurto(g.atrMed)) + '</td></tr>'; }).join('') + '</tbody></table></div>';
   if (I.ocTipos.length) { var mx = I.ocTipos[0][1]; h += '<div class="secao"><h2>Ocorrências</h2><span class="fraco">' + I.ocN + ' no período</span></div><div class="cartao"><div class="barras">' + I.ocTipos.map(function (t) { var c = tipoOc(t[0]); return '<div><span>' + esc(t[0]) + '</span><div class="tr"><i style="width:' + (t[1] / mx * 100).toFixed(0) + '%;background:' + c[2] + '"></i></div><b>' + t[1] + '</b></div>'; }).join('') + '</div></div>'; }
-  if (I.conf.n) h += '<div class="secao"><h2>Conferência de KM</h2><span class="fraco">digitado × rastreador</span></div><div class="cartao"><div class="kpis" style="margin-top:0;grid-template-columns:repeat(3,1fr)"><div class="kpi" style="box-shadow:none;background:var(--fundo)"><b>' + I.conf.n + '</b><small>viagens conferidas</small></div><div class="kpi' + (I.conf.div ? ' vermelho' : '') + '" style="box-shadow:none;background:var(--fundo)"><b>' + I.conf.div + '</b><small>com diferença</small></div><div class="kpi" style="box-shadow:none;background:var(--fundo)"><b>' + (I.conf.rast ? (I.conf.digit / I.conf.rast * 100).toFixed(0) + '%' : '—') + '</b><small>digitado ÷ rastreador</small></div></div>' +
+  if (I.conf.n && podeRast()) h += '<div class="secao"><h2>Conferência de KM</h2><span class="fraco">digitado × rastreador</span></div><div class="cartao"><div class="kpis" style="margin-top:0;grid-template-columns:repeat(3,1fr)"><div class="kpi" style="box-shadow:none;background:var(--fundo)"><b>' + I.conf.n + '</b><small>viagens conferidas</small></div><div class="kpi' + (I.conf.div ? ' vermelho' : '') + '" style="box-shadow:none;background:var(--fundo)"><b>' + I.conf.div + '</b><small>com diferença</small></div><div class="kpi" style="box-shadow:none;background:var(--fundo)"><b>' + (I.conf.rast ? (I.conf.digit / I.conf.rast * 100).toFixed(0) + '%' : '—') + '</b><small>digitado ÷ rastreador</small></div></div>' +
     (I.conf.lista.length ? '<div class="rolagem" style="margin-top:10px"><table class="tabela"><thead><tr><th>Viagem</th><th>Motorista</th><th class="n">Digitado</th><th class="n">Rastreador</th></tr></thead><tbody>' + I.conf.lista.map(function (x) { return '<tr><td><a href="#viagem/' + esc(x.uid) + '">' + esc(x.numero) + '</a><br><span class="fraco">' + esc(dataBR(x.data) + ' · ' + x.placa) + '</span></td><td>' + esc(apelido(x.motorista_id, x.motorista)) + '</td><td class="n" style="color:#B42318;font-weight:800">' + fmt(x.km_rodado) + '</td><td class="n">' + fmt(x.km_rast_rodado) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="fraco" style="margin:10px 0 0">Tudo batendo com o rastreador ✓</p>') + '</div>';
   h += '<div class="secao"><h2>Por motorista</h2></div><div class="cartao rolagem" style="margin:0"><table class="tabela"><thead><tr><th>Motorista</th><th class="n">Viag.</th><th class="n">KM</th><th class="n">Horas</th><th class="n">Extras</th><th class="n">Alertas</th></tr></thead><tbody>' +
     I.mot.map(function (m) { return '<tr><td>' + esc(apelido(m.id, m.nome)) + '</td><td class="n">' + m.n + '</td><td class="n">' + fmt(m.km) + '</td><td class="n">' + hm(m.trab) + '</td><td class="n"' + (m.ext > 600 ? ' style="color:#B42318;font-weight:800"' : '') + '>' + hm(m.ext) + '</td><td class="n">' + (m.al || '') + '</td></tr>'; }).join('') + '</tbody></table></div>';
