@@ -3136,7 +3136,9 @@ function desembolarEtiquetas() {
     }
     return { vk: lider.vk, x: lider.x, y: lider.y, w: alvo.offsetWidth || 150, h: alvo.offsetHeight || 26 };
   });
-  var ocupado = vis.map(function (it) { return [it.x - 16, it.y - 16, it.x + 16, it.y + 16]; }), colide = function (r) { return ocupado.some(function (o) { return r[0] < o[2] && r[2] > o[0] && r[1] < o[3] && r[3] > o[1]; }); };
+  var tam = MAPA.map.getSize(), W = tam.x, H = tam.y;
+  var ocupado = vis.map(function (it) { return [it.x - 16, it.y - 16, it.x + 16, it.y + 16]; }).concat([[W - 300, 0, W, 64], [0, 0, 64, 112], [W - 64, H - 100, W, H]]);
+  var colide = function (r) { return r[0] < 4 || r[1] < 4 || r[2] > W - 4 || r[3] > H - 4 || ocupado.some(function (o) { return r[0] < o[2] && r[2] > o[0] && r[1] < o[3] && r[3] > o[1]; }); };
   vis.forEach(function (it) {
     var op = [['', [it.x + 13, it.y - it.h / 2, it.x + 13 + it.w, it.y + it.h / 2]], ['lado-e', [it.x - 13 - it.w, it.y - it.h / 2, it.x - 13, it.y + it.h / 2]],
       ['lado-c', [it.x - it.w / 2, it.y - 20 - it.h, it.x + it.w / 2, it.y - 20]], ['lado-b', [it.x - it.w / 2, it.y + 20, it.x + it.w / 2, it.y + 20 + it.h]]];
