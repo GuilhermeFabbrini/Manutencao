@@ -527,6 +527,15 @@ body.mapa-cheio { overflow: hidden; }
 .vk-info { display: flex; align-items: center; gap: 5px; padding: 0 7px; background: var(--noite); color: #CFE0F5; font-size: 10.5px; font-weight: 700; }
 .vk-info b { color: #fff; font: 800 12px/1 var(--fonte-titulo); }
 .vk-info em { font-style: normal; color: color-mix(in srgb, var(--c) 45%, #fff); }
+.vk.sem-tag .vk-tag, .vk.grupo > .vk-tag { display: none; }
+.vk-lista { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); z-index: 1; display: grid; gap: 3px; }
+.vk-lista .vk-tag { position: static; transform: none; cursor: pointer; }
+.vk-lista .vk-tag:hover { box-shadow: 0 0 0 2px var(--azul), 0 4px 12px -4px rgba(10,33,64,.55); }
+.vk-dot { width: 8px; flex: none; background: var(--c); }
+.vk-n { position: absolute; z-index: 3; right: -9px; top: -9px; min-width: 19px; height: 19px; padding: 0 4px; border-radius: 10px; background: var(--ouro); color: var(--noite); font: 800 11px/19px var(--fonte); text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
+.vk.lado-e .vk-lista { left: auto; right: 25px; }
+.vk.lado-c .vk-lista { left: 50%; top: auto; bottom: 35px; transform: translateX(-50%); }
+.vk.lado-b .vk-lista { left: 50%; top: 35px; transform: translateX(-50%); }
 .vk.lado-e .vk-tag { left: auto; right: 25px; }
 .vk.lado-c .vk-tag { left: 50%; top: auto; bottom: 35px; transform: translateX(-50%); }
 .vk.lado-b .vk-tag { left: 50%; top: 35px; transform: translateX(-50%); }
@@ -3096,13 +3105,39 @@ function desembolarEtiquetas() {
   Object.keys(MAPA.marc).forEach(function (p) {
     var m = MAPA.marc[p], el = m.getElement && m.getElement(); if (!el) return;
     var vk = el.querySelector('.vk'), tag = el.querySelector('.vk-tag'); if (!vk || !tag) return;
-    vk.classList.remove('lado-e', 'lado-c', 'lado-b');
+    vk.classList.remove('lado-e', 'lado-c', 'lado-b', 'grupo', 'sem-tag');
+    var velha = vk.querySelector('.vk-lista'); if (velha) velha.remove();
+    var n = vk.querySelector('.vk-n'); if (n) n.remove();
     var pt = MAPA.map.latLngToContainerPoint(m.getLatLng());
-    itens.push({ vk: vk, x: pt.x, y: pt.y, w: tag.offsetWidth || 150, h: tag.offsetHeight || 26, prio: vk.classList.contains('vg') ? 0 : vk.classList.contains('mov') ? 1 : 2 });
+    itens.push({ vk: vk, tag: tag, x: pt.x, y: pt.y, prio: vk.classList.contains('vg') ? 0 : vk.classList.contains('mov') ? 1 : 2 });
   });
   itens.sort(function (a, b) { return a.prio - b.prio || a.y - b.y; });
-  var ocupado = itens.map(function (it) { return [it.x - 16, it.y - 16, it.x + 16, it.y + 16]; }), colide = function (r) { return ocupado.some(function (o) { return r[0] < o[2] && r[2] > o[0] && r[1] < o[3] && r[3] > o[1]; }); };
+  /* caminhões no mesmo lugar (pátio, granja, fila do frigorífico): uma lista só com todas as placas */
+  var grupos = [];
   itens.forEach(function (it) {
+    var g = grupos.filter(function (g) { return Math.abs(g[0].x - it.x) < 30 && Math.abs(g[0].y - it.y) < 30; })[0];
+    if (g) g.push(it); else grupos.push([it]);
+  });
+  var vis = grupos.map(function (g) {
+    var lider = g[0], alvo = lider.tag;
+    if (g.length > 1) {
+      lider.vk.classList.add('grupo');
+      var lista = document.createElement('span'); lista.className = 'vk-lista';
+      g.forEach(function (it, k) {
+        if (k) it.vk.classList.add('sem-tag');
+        var linha = it.tag.cloneNode(true); linha.style.setProperty('--c', it.vk.style.getPropertyValue('--c'));
+        linha.insertAdjacentHTML('afterbegin', '<i class="vk-dot"></i>');
+        linha.onclick = function (ev) { ev.stopPropagation(); focarCaminhao(it.vk.dataset.placa); };
+        lista.appendChild(linha);
+      });
+      lider.vk.appendChild(lista);
+      lider.vk.querySelector('.vk-pin').insertAdjacentHTML('afterend', '<span class="vk-n">' + g.length + '</span>');
+      alvo = lista;
+    }
+    return { vk: lider.vk, x: lider.x, y: lider.y, w: alvo.offsetWidth || 150, h: alvo.offsetHeight || 26 };
+  });
+  var ocupado = vis.map(function (it) { return [it.x - 16, it.y - 16, it.x + 16, it.y + 16]; }), colide = function (r) { return ocupado.some(function (o) { return r[0] < o[2] && r[2] > o[0] && r[1] < o[3] && r[3] > o[1]; }); };
+  vis.forEach(function (it) {
     var op = [['', [it.x + 13, it.y - it.h / 2, it.x + 13 + it.w, it.y + it.h / 2]], ['lado-e', [it.x - 13 - it.w, it.y - it.h / 2, it.x - 13, it.y + it.h / 2]],
       ['lado-c', [it.x - it.w / 2, it.y - 20 - it.h, it.x + it.w / 2, it.y - 20]], ['lado-b', [it.x - it.w / 2, it.y + 20, it.x + it.w / 2, it.y + 20 + it.h]]];
     var esc0 = op.filter(function (o) { return !colide(o[1]); })[0] || op[0];
