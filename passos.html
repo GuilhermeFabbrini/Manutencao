@@ -2972,7 +2972,7 @@ function rastDe(placa) {
   return null;
 }
 function idadeRast(r) { return r ? Math.max(0, Math.round((Date.now() - r.ts) / 60000)) : null; }
-function estadoRast(r) { if (!r) return 'sem'; if (idadeRast(r) > 180) return 'off'; if (r.ign && r.vel >= 5) return 'mov'; return r.ign ? 'lig' : 'par'; }
+function estadoRast(r) { if (!r) return 'sem'; if (idadeRast(r) > 60) return 'off'; if (r.ign && r.vel >= 5) return 'mov'; return r.ign ? 'lig' : 'par'; }
 function textoRast(r) {
   var e = estadoRast(r);
   if (e === 'mov') return 'Rodando a ' + r.vel + ' km/h';
