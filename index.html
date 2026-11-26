@@ -394,7 +394,7 @@ tbody tr:hover td{background:#EEF2FF}
   <div class="tabs">
     <div class="tab active" onclick="ST('dash')"><span class="tab-icon">📊</span>PAINEL</div>
     <div class="tab" onclick="ST('frota')"><span class="tab-icon">🚛</span>FROTA</div>
-    <div class="tab" onclick="ST('rastreio')"><span class="tab-icon">🛰️</span>RASTREIO</div>
+    <div class="tab" id="tabRastBtn" onclick="ST('rastreio')"><span class="tab-icon">🛰️</span>RASTREIO</div>
     <div class="tab" onclick="ST('registro')"><span class="tab-icon">📝</span>REGISTRO</div>
     <div class="tab" onclick="ST('alertas')"><span class="tab-icon">🔔</span>ALERTAS</div>
     <div class="tab" onclick="ST('relatorio')"><span class="tab-icon">📋</span>RELATÓRIO</div>
@@ -462,7 +462,7 @@ tbody tr:hover td{background:#EEF2FF}
           <div class="oil-status-num" style="color:#065F46" id="onum-ok">0</div>
         </div>
         <div style="margin-top:12px;padding-top:10px;border-top:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:11px;color:#94A3B8">🛰️ <span id="dashRast">— rastreados</span></span>
+          <span id="dashRastWrap" style="font-size:11px;color:#94A3B8">🛰️ <span id="dashRast">— rastreados</span></span>
           <span style="font-size:11px;color:#94A3B8" id="dashSyncTime">—</span>
         </div>
       </div>
@@ -901,7 +901,7 @@ function rRastMapa(){
 }
 function rRastStats(){let tot=0,mov=0,par=0,off=0;TRUCKS.forEach(t=>{const v=TELE[t.p];if(!v)return;tot++;const s=_estado(v);if(s==='mov')mov++;else if(s==='par')par++;else off++;});document.getElementById('rs-tot').textContent=tot;document.getElementById('rs-mov').textContent=mov;document.getElementById('rs-par').textContent=par;document.getElementById('rs-off').textContent=off;document.getElementById('rastUpd').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 function rRastList(){const f=(document.getElementById('srchRast').value||'').toLowerCase();const ic={mov:['tel-mov','🚚'],par:['tel-par','🅿️'],off:['tel-off','📡']};const list=TRUCKS.filter(t=>t.p.toLowerCase().includes(f)||t.m.toLowerCase().includes(f));document.getElementById('rastList').innerHTML=list.map(t=>{const v=TELE[t.p];if(!v)return'';const s=_estado(v);const cls=ic[s][0],emo=ic[s][1];return'<div class="tel-card" onclick="OM(\''+t.p+'\')"><div class="tel-ic '+cls+'">'+emo+'</div><div class="tel-info"><div class="tel-pl">'+t.p+' <span class="'+(v.sinal?'live-dot':'live-dot off')+'"></span></div><div class="tel-end">📍 '+v.end+'</div><div class="tel-meta">🕐 '+fmtTempo(v.ts)+' atras · '+t.m+'</div></div><div class="tel-r"><div class="tel-km">'+v.km.toLocaleString('pt-BR')+' km</div><div class="tel-vel" style="color:'+(s==='mov'?'var(--vd)':s==='par'?'var(--lr)':'#94A3B8')+'">'+(s==='mov'?v.vel+' km/h':s==='par'?'Parado':'Sem sinal')+'</div></div></div>';}).join('')||'<p style="color:#94A3B8;font-size:13px">Nenhum veiculo.</p>';}
-function tickRastreio(){var el=document.getElementById('tab-rastreio');if(el&&el.style.display==='block'){carregarTelemetria(()=>{mesclarKmTelemetria();rRastMapa();rRastList();rRastStats();rSt();});}}
+function tickRastreio(){if(!podeRast())return;var el=document.getElementById('tab-rastreio');if(el&&el.style.display==='block'){carregarTelemetria(()=>{mesclarKmTelemetria();rRastMapa();rRastList();rRastStats();rSt();});}}
 function relogio(){const n=new Date();document.getElementById('relogio').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dataHoje').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
 
 // ── Formata data para dd/mm/aaaa (remove hora/timezone) ──────────────────────
@@ -1010,6 +1010,7 @@ function eApp(){
   try{
     document.getElementById('appScreen').style.display='block';
     document.getElementById('huser').textContent=user.nome+' · '+user.cargo;
+    (function(){const ok=podeRast();const b=document.getElementById('tabRastBtn');if(b)b.style.display=ok?'':'none';const w=document.getElementById('dashRastWrap');if(w)w.style.display=ok?'':'none';})();
     const _h=new Date().getHours();
     const _greet=_h<12?'Bom dia':_h<18?'Boa tarde':'Boa noite';
     const _gEl=document.getElementById('dashGreet');
@@ -1279,7 +1280,9 @@ async function excluirRegistro(placa,idx){
   if(d.hist.length>0){const ul=d.hist[d.hist.length-1];d.sup=ul.sup||'';d.motorista=ul.motorista||'';d.km=ul.km||'';d.hist.forEach(h=>{const tp=h.tp||'';if(tp.includes('oleo'))d.od=h.dt;if(tp.includes('lubrificacao'))d.ld=h.dt;if(tp.includes('calibracao'))d.cd=h.dt;if(tp.includes('rodizio'))d.rd=h.dt;});}
   vd[placa]=d;sVd();toast('✅ Registro excluído!','tok');rAll();CM();setTimeout(()=>OM(placa),300);
 }
-function ST(t){const TABS=['dash','frota','rastreio','registro','alertas','relatorio','equipe'];TABS.forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',TABS[i]===t));if(t==='alertas')rAl();if(t==='rastreio')abrirRastreio();}
+const RAST_USERS=['guilherme','elton','gilson'];
+function podeRast(){return !!(user&&RAST_USERS.indexOf(String(user.user||'').toLowerCase())>=0);}
+function ST(t){if(t==='rastreio'&&!podeRast())t='dash';const TABS=['dash','frota','rastreio','registro','alertas','relatorio','equipe'];TABS.forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',TABS[i]===t));if(t==='alertas')rAl();if(t==='rastreio'&&podeRast())abrirRastreio();}
 function toast(msg,cls='tok'){const t=document.getElementById('tst');t.textContent=msg;t.className='toast show '+cls;setTimeout(()=>t.className='toast',3600);}
 async function init(){
   try{vd=gVd();user=gU();}catch(e){localStorage.clear();vd={};user=null;}
